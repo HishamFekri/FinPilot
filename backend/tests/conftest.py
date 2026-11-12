@@ -52,6 +52,20 @@ def redact(text_value: str, secrets: Iterable[str]) -> str:
     return text_value
 
 
+def redact_longrepr(longrepr: object, secrets: Iterable[str]) -> object:
+    """A report's longrepr with every known password removed, in a form pytest still accepts.
+
+    A skip keeps pytest's (path, line, reason) tuple: the terminal summary folds skips by it and
+    asserts that shape, so turning it into a string crashed the run whenever a test skipped while
+    a password was known (CI's superuser database skips the provisioned-role checks). Strings stay
+    strings, and tracebacks render to text, a supported form, then get scrubbed.
+    """
+    if isinstance(longrepr, tuple) and len(longrepr) == 3:
+        path, line, reason = longrepr
+        return (redact(str(path), secrets), line, redact(str(reason), secrets))
+    return redact(str(longrepr), secrets)
+
+
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_makereport(call: pytest.CallInfo[None]) -> Generator[None, object, object]:
     """Tracebacks print function arguments, which can include passwords. Scrub every report."""
@@ -59,8 +73,7 @@ def pytest_runtest_makereport(call: pytest.CallInfo[None]) -> Generator[None, ob
     secrets = known_database_passwords()
     if secrets and isinstance(report, pytest.TestReport):
         if report.longrepr is not None:
-            # A plain string is a supported report form, and every traceback style renders to it.
-            report.longrepr = redact(str(report.longrepr), secrets)
+            report.longrepr = redact_longrepr(report.longrepr, secrets)  # type: ignore[assignment]
         report.sections = [(name, redact(body, secrets)) for name, body in report.sections]
     return report
 
