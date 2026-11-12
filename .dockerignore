@@ -1,0 +1,16 @@
+# Build context for apps/web/Dockerfile (the repository root). Only the web app and the lockfile.
+# The API image uses backend/ as its context, with backend/.dockerignore.
+*
+!package.json
+!package-lock.json
+!apps/web/
+apps/web/node_modules/
+apps/web/.next/
+apps/web/coverage/
+apps/web/*.tsbuildinfo
+apps/web/next-env.d.ts
+apps/web/Dockerfile
+**/.env
+**/.env.*
+**/*.pem
+**/*.key

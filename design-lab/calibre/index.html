@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calibre · FinPilot concept B</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300..700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/lab.css">
+<style>
+:root {
+  --bg: #f3f4f4; --surface: #ffffff; --ink: #1e2124; --ink-2: #5b636b; --hair: #dadde0; --hair-2: #c5cacf;
+  --brass: #86672c; --brass-hi: #c9a25a; --pos: #2c7356; --neg: #a3402a;
+  --ease: cubic-bezier(.23, 1, .32, 1);
+  --font: "Onest", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #15171a; --surface: #1c1f23; --ink: #eceded; --ink-2: #9aa1a8; --hair: #2c3136; --hair-2: #3b4147;
+  --brass: #d6b26b; --brass-hi: #e3c486; --pos: #74c6a0; --neg: #f0907a; color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] { --bg: #15171a; --surface: #1c1f23; --ink: #eceded; --ink-2: #9aa1a8; --hair: #2c3136; --hair-2: #3b4147;
+    --brass: #d6b26b; --brass-hi: #e3c486; --pos: #74c6a0; --neg: #f0907a; color-scheme: dark; }
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font); }
+:root:lang(ar) { --font: "IBM Plex Sans Arabic", system-ui, sans-serif; }
+:lang(ar) body { line-height: 1.75; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-weight: 450; letter-spacing: -.015em; }
+:lang(ar) :is(h1, h2, h3) { letter-spacing: 0; font-weight: 500; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; border-radius: 4px; }
+[tabindex="-1"]:focus { outline: none; }
+.num { font-variant-numeric: tabular-nums; }
+bdi { unicode-bidi: isolate; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+svg.i { width: 20px; height: 20px; stroke-width: 1.5; flex: none; }
+[hidden] { display: none !important; }
+.muted { color: var(--ink-2); }
+.label { font-size: 13.5px; color: var(--ink-2); letter-spacing: .01em; }
+
+.btn { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; cursor: pointer;
+  text-decoration: none; font-weight: 500; transition: transform 140ms var(--ease), background-color 200ms ease; }
+.btn:active { transform: scale(.97); }
+.btn-ink { background: var(--ink); color: var(--bg); }
+.btn-line { background: transparent; box-shadow: inset 0 0 0 1px var(--hair-2); }
+.g-btn { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--hair-2); padding-inline: 18px 24px; }
+@media (hover: hover) and (pointer: fine) { .g-btn:hover { box-shadow: inset 0 0 0 1px var(--ink-2); } }
+.g-btn .g { display: grid; place-items: center; width: 22px; height: 22px; }
+.g-btn .g svg { width: 20px; height: 20px; }
+.g-btn .spin { display: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--hair-2); border-top-color: var(--brass); animation: spin 650ms linear infinite; }
+[data-auth="redirecting"] .g-btn .g svg { display: none; }
+[data-auth="redirecting"] .g-btn .spin { display: block; }
+@keyframes spin { to { transform: rotate(1turn); } }
+
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 550; font-size: 18px; letter-spacing: -.01em; text-decoration: none; view-transition-name: brand; }
+.brand-mark { width: 26px; height: 26px; }
+
+/* ---------- Odometer: digits roll, everything else stays still */
+.odo-wrap { display: inline-flex; gap: 0; align-items: baseline; line-height: 1; white-space: nowrap; }
+.odo { display: inline-flex; direction: ltr; unicode-bidi: isolate; }
+:root:lang(ar) .odo-wrap { gap: .22em; }
+.odo .d { display: inline-block; height: 1em; overflow: hidden; }
+.odo .d > span { display: flex; flex-direction: column; transition: transform 520ms var(--ease); }
+.odo .d > span > span { height: 1em; }
+.odo .c { display: inline-block; }
+
+/* ---------- Dial: 31 ticks, magnified near the pointer */
+.dial { position: relative; height: 120px; display: flex; align-items: flex-end; gap: 0; touch-action: pan-y; cursor: ew-resize; user-select: none; padding-block-start: 22px; }
+.dial .tick { flex: 1; display: flex; justify-content: center; align-items: flex-end; height: 100%; position: relative; }
+.dial .tick i { display: block; width: 2px; border-radius: 2px; background: var(--hair-2); height: var(--h); transform-origin: bottom; transition: transform 220ms var(--ease), background-color 160ms ease; }
+.dial .tick.past i { background: var(--ink-2); }
+.dial .tick.sel i { background: var(--brass); width: 3px; }
+.dial .tick .inc { position: absolute; top: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--brass-hi); }
+.dial .rule { position: absolute; inset-inline: 0; bottom: 0; height: 1px; background: var(--hair-2); }
+.dial-scale { display: flex; justify-content: space-between; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+.dial:focus-visible { outline-offset: 8px; }
+
+/* ---------- Landing */
+.lhead { display: flex; justify-content: space-between; align-items: center; padding: 22px clamp(16px, 4vw, 48px); max-width: 1320px; margin: 0 auto; }
+.lhero { max-width: 1120px; margin: 0 auto; padding: clamp(24px, 5vw, 72px) clamp(16px, 4vw, 48px) 48px; display: grid; gap: 28px; }
+.lhero h1 { font-size: clamp(30px, 3.6vw, 52px); font-weight: 350; max-width: 20ch; line-height: 1.12; }
+.lhero .readout { font-size: clamp(64px, 12vw, 176px); font-weight: 250; letter-spacing: -.045em; }
+:lang(ar) .lhero .readout { letter-spacing: -.02em; }
+.lhero .meta { display: flex; flex-wrap: wrap; gap: 8px 28px; align-items: baseline; }
+.lhero .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: -4px; }
+.cta-share { view-transition-name: cta; }
+.ltwo { max-width: 1120px; margin: 0 auto; padding: 72px clamp(16px, 4vw, 48px) 96px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 32px; border-top: 1px solid var(--hair); }
+.ltwo h2 { font-size: 28px; line-height: 1.2; }
+.ltwo .v { font-size: 44px; font-weight: 300; letter-spacing: -.03em; margin: 8px 0 6px; }
+.lfoot { max-width: 1120px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 48px) 48px; color: var(--ink-2); font-size: 14px; }
+
+/* ---------- Sign in */
+.sgn { min-height: calc(100vh - 40px); display: grid; place-items: center; padding: 32px 16px; }
+.sgn-card { width: min(100%, 420px); display: grid; gap: 22px; text-align: center; justify-items: center; }
+.ring { width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--hair-2); position: relative; }
+.ring::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: repeating-conic-gradient(var(--hair-2) 0 1.2deg, transparent 1.2deg 11.6deg);
+  -webkit-mask: radial-gradient(circle, transparent 31px, #000 32px); mask: radial-gradient(circle, transparent 31px, #000 32px); }
+.ring::after { content: ""; position: absolute; width: 2px; height: 30px; background: var(--brass); top: 14px; transform-origin: 50% 30px; transform: rotate(var(--r, 0deg)); transition: transform 900ms var(--ease); }
+[data-auth="redirecting"] .ring::after { --r: 300deg; }
+.sgn-card h1 { font-size: 32px; font-weight: 400; }
+.sgn-card .g-btn { width: 100%; justify-content: center; min-height: 54px; font-size: 16.5px; }
+.sgn-card small { color: var(--ink-2); font-size: 13.5px; }
+.alert { display: none; width: 100%; padding: 12px 14px; border-radius: 10px; text-align: start; box-shadow: inset 2px 0 0 var(--neg); background: color-mix(in oklab, var(--neg) 7%, var(--surface)); }
+:root[dir="rtl"] .alert { box-shadow: inset -2px 0 0 var(--neg); }
+[data-auth="cancelled"] .alert-cancelled, [data-auth="expired"] .alert-expired { display: block; }
+.proto { font-size: 13px; color: var(--ink-2); border-top: 1px solid var(--hair); padding-top: 14px; width: 100%; }
+
+/* ---------- App shell: a slim rail, tooltips that skip their delay once one is open */
+.app { display: grid; grid-template-columns: 72px minmax(0, 1fr); min-height: calc(100vh - 40px); }
+.rail { position: sticky; top: 40px; height: calc(100vh - 40px); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 0; border-inline-end: 1px solid var(--hair); }
+.rail .brand { margin-bottom: 22px; }
+.rail a { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: var(--ink-2); transition: background-color 160ms ease, color 160ms ease; }
+.rail a[aria-current="page"] { color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 1px var(--hair); }
+.rail a[aria-current="page"]::before { content: ""; position: absolute; inset-inline-start: -14px; width: 2px; height: 18px; border-radius: 2px; background: var(--brass); }
+@media (hover: hover) and (pointer: fine) { .rail a:hover { color: var(--ink); } }
+.tip { position: absolute; inset-inline-start: calc(100% + 10px); white-space: nowrap; background: var(--ink); color: var(--bg); font-size: 13px; padding: 5px 9px; border-radius: 7px; pointer-events: none;
+  opacity: 0; transform: scale(.97); transform-origin: var(--tip-origin, left center); transition: opacity 125ms ease, transform 125ms var(--ease); z-index: 40; }
+:root[dir="rtl"] .tip { --tip-origin: right center; }
+.rail a.tip-on .tip { opacity: 1; transform: none; }
+.rail.instant .tip { transition-duration: 0ms; }
+.main { padding: 22px clamp(16px, 3.4vw, 56px) 72px; min-width: 0; }
+.top { display: flex; align-items: center; gap: 14px; margin-bottom: clamp(28px, 4vw, 48px); }
+.top h1 { font-size: 20px; font-weight: 500; }
+.badge { font-size: 13px; color: var(--ink-2); padding: 3px 10px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--hair); }
+.top .end { margin-inline-start: auto; display: flex; gap: 10px; align-items: center; position: relative; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; background: var(--surface); box-shadow: inset 0 0 0 1px var(--hair-2); font-weight: 550; transition: transform 140ms var(--ease); }
+.avatar:active { transform: scale(.95); }
+.pop { position: absolute; top: calc(100% + 8px); inset-inline-end: 0; min-width: 260px; z-index: 30; background: var(--surface); border-radius: 14px; padding: 6px;
+  box-shadow: 0 0 0 1px var(--hair), 0 20px 48px -20px rgb(0 0 0 / .3); transform-origin: top right; transition: opacity 150ms ease, transform 170ms var(--ease); }
+:root[dir="rtl"] .pop { transform-origin: top left; }
+@starting-style { .pop { opacity: 0; transform: scale(.97); } }
+.pop .who { padding: 10px 12px 12px; border-bottom: 1px solid var(--hair); margin-bottom: 6px; font-size: 14px; color: var(--ink-2); }
+.pop .who strong { display: block; color: var(--ink); font-weight: 550; font-size: 15.5px; }
+.pop button { display: flex; width: 100%; gap: 10px; align-items: center; padding: 9px 12px; border: 0; background: none; border-radius: 9px; cursor: pointer; text-align: start; }
+@media (hover: hover) and (pointer: fine) { .pop button:hover { background: var(--bg); } }
+.pop label { display: grid; gap: 6px; padding: 8px 12px; font-size: 14px; color: var(--ink-2); }
+.pop input { font: inherit; font-size: 26px; font-weight: 300; padding: 8px 0; border: 0; border-bottom: 1px solid var(--hair-2); background: transparent; color: var(--ink); border-radius: 0; }
+.pop input:focus-visible { outline: none; border-bottom-color: var(--brass); }
+.pop .echo { padding: 4px 12px; color: var(--ink-2); font-size: 14px; }
+.pop .echo bdi { color: var(--ink); }
+.pop .soon { padding: 6px 12px 10px; font-size: 13px; color: var(--ink-2); }
+
+.inst { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 64px); align-items: end; }
+.inst .big { font-size: clamp(56px, 7.4vw, 112px); font-weight: 250; letter-spacing: -.045em; margin-top: 6px; }
+.inst .when { margin-top: 10px; color: var(--ink-2); min-height: 1.5em; }
+.facts { display: grid; gap: 0; }
+.fact { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid var(--hair); }
+.fact .v { font-size: 22px; font-weight: 400; }
+.fact .why { grid-column: 1 / -1; font-size: 14px; color: var(--ink-2); }
+.dial-wrap { margin-top: clamp(28px, 4vw, 48px); }
+
+.lower { margin-top: 64px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 72px); }
+.lower h2 { font-size: 15px; font-weight: 550; margin-bottom: 8px; }
+.cat { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 12px 0; border-top: 1px solid var(--hair); align-items: baseline; }
+.cat .t { font-size: 15.5px; }
+.cat .a { font-size: 15.5px; }
+.gauge { grid-column: 1 / -1; position: relative; height: 3px; background: var(--hair); border-radius: 3px; }
+.gauge i { position: absolute; inset-block: 0; inset-inline-start: 0; width: calc(var(--p) * 100%); border-radius: 3px; background: var(--ink); }
+.gauge i.over { background: var(--neg); }
+.gauge b { position: absolute; top: -4px; width: 1px; height: 11px; background: var(--brass); inset-inline-start: calc(var(--l) * 100%); }
+.cat .s { grid-column: 1 / -1; font-size: 13px; color: var(--ink-2); }
+.cat .s.over { color: var(--neg); }
+.rec { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 14px; padding: 11px 0; border-top: 1px solid var(--hair); align-items: baseline; }
+.rec .d { font-size: 13px; color: var(--ink-2); min-width: 46px; }
+.rec .a.pos { color: var(--pos); }
+.rec .n { grid-column: 2 / -1; font-size: 13px; color: var(--ink-2); }
+.memo { margin-top: 22px; padding: 14px 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.memo .v { color: var(--brass); font-size: 20px; }
+.cur2 { margin-top: 10px; font-size: 14px; color: var(--ink-2); }
+
+.bottom { display: none; }
+@media (max-width: 1023px) {
+  .ltwo { grid-template-columns: minmax(0, 1fr); }
+  .inst, .lower { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) {
+  .app { display: block; }
+  .rail { display: none; }
+  .main { padding-bottom: 110px; }
+  .top .qa-desk { display: none; }
+  .dial { height: 96px; }
+  .bottom { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; inset-inline: 0; bottom: 0; z-index: 20; background: color-mix(in oklab, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px); border-top: 1px solid var(--hair); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  .bottom a, .bottom button { display: grid; justify-items: center; gap: 3px; font-size: 11px; color: var(--ink-2); text-decoration: none; background: none; border: 0; min-height: 48px; padding: 5px 0; cursor: pointer; }
+  .bottom [aria-current="page"] { color: var(--ink); }
+  .bottom .qa { align-self: center; width: 56px; height: 40px; margin: 0 auto; border-radius: 999px; background: var(--ink); color: var(--bg); display: grid; place-items: center; transition: transform 140ms var(--ease); }
+  .bottom .qa:active { transform: scale(.95); }
+}
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; } }
+::view-transition-group(*) { animation-duration: 420ms; animation-timing-function: cubic-bezier(.23, 1, .32, 1); }
+</style>
+</head>
+<body>
+
+<!-- ============ LANDING ============ -->
+<main id="view-landing" data-view="landing">
+  <header class="lhead">
+    <a class="brand" href="#landing" data-go="landing"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M13 13 L13 4.5" stroke="var(--brass)" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="13" r="2" fill="currentColor"/></svg><span>FinPilot</span></a>
+    <a class="btn btn-line" href="#signin" data-go="signin" data-i18n="signin">Sign in</a>
+  </header>
+  <section class="lhero" aria-labelledby="b-hero">
+    <h1 id="b-hero" tabindex="-1" data-i18n="b.hero">Every euro, accounted for. Quietly.</h1>
+    <div class="ctas">
+      <a class="btn g-btn cta-share" href="#signin" data-go="signin"><span class="g"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span><span data-i18n="google">Continue with Google</span></a>
+    </div>
+    <div>
+      <p class="label" id="b-l-label"></p>
+      <p class="readout num" id="b-l-odo" aria-live="off"></p>
+    </div>
+    <div class="dial-wrap" style="margin-top:0">
+      <div class="dial" id="b-l-dial" role="slider" tabindex="0" aria-valuemin="1" aria-valuemax="31" aria-labelledby="b-l-label"></div>
+      <div class="dial-scale"><span id="b-l-s1"></span><span class="muted" data-i18n="b.drag">Drag or use the arrow keys. Illustrative data.</span><span id="b-l-s2"></span></div>
+    </div>
+  </section>
+  <section class="ltwo" aria-label="How FinPilot counts">
+    <h2 data-i18n="b.two.h">Two numbers, kept honest.</h2>
+    <div><p class="label" data-i18n="spent">Spent</p><p class="v num"><bdi data-money="100" data-whole></bdi></p><p class="muted" data-i18n="b.two.spent">Your share of a €300 group dinner.</p></div>
+    <div><p class="label" data-i18n="cashout">Cash out</p><p class="v num"><bdi data-money="300" data-whole></bdi></p><p class="muted" data-i18n="b.two.cash">What actually left your account. The rest is owed back to you.</p></div>
+  </section>
+  <footer class="lfoot" data-i18n="b.foot">FinPilot records what you tell it. It never holds or moves money and never connects to a bank.</footer>
+</main>
+
+<!-- ============ SIGN IN ============ -->
+<main id="view-signin" data-view="signin" hidden>
+  <div class="sgn">
+    <div class="sgn-card">
+      <span class="ring" aria-hidden="true"></span>
+      <h1 tabindex="-1" data-i18n="signin.title">Sign in to FinPilot</h1>
+      <p class="alert alert-cancelled" role="alert" data-i18n="signin.err.cancelled">Sign-in was cancelled.</p>
+      <p class="alert alert-expired" role="alert" data-i18n="signin.err.expired">You were signed out.</p>
+      <p class="muted" data-i18n="signin.body">Use your Google account.</p>
+      <button class="btn g-btn cta-share" type="button" data-google aria-describedby="b-proto"><span class="g"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span class="spin"></span></span><span data-i18n="google">Continue with Google</span></button>
+      <small data-i18n="signin.note">No bank connections. You record everything yourself.</small>
+      <small data-i18n="signin.legal">By continuing you agree to the Terms and Privacy notice.</small>
+      <p class="proto" id="b-proto" data-i18n="proto.noauth">Prototype: this button only switches the preview.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ============ APP SHELL ============ -->
+<div id="view-app" data-view="app" hidden>
+  <div class="app">
+    <nav class="rail" aria-label="Main" id="b-rail">
+      <a class="brand" href="#app" aria-label="FinPilot"><svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M13 13 L13 4.5" stroke="var(--brass)" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="13" r="2" fill="currentColor"/></svg></a>
+      <a href="#app" aria-current="page"><svg class="i"><use href="#i-home"/></svg><span class="tip" data-i18n="nav.home">Home</span></a>
+      <a href="#app"><svg class="i"><use href="#i-accounts"/></svg><span class="tip" data-i18n="nav.accounts">Accounts</span></a>
+      <a href="#app"><svg class="i"><use href="#i-transactions"/></svg><span class="tip" data-i18n="nav.transactions">Transactions</span></a>
+      <a href="#app"><svg class="i"><use href="#i-budgets"/></svg><span class="tip" data-i18n="nav.budgets">Budgets</span></a>
+      <a href="#app"><svg class="i"><use href="#i-insights"/></svg><span class="tip" data-i18n="nav.insights">Insights</span></a>
+      <a href="#app"><svg class="i"><use href="#i-reports"/></svg><span class="tip" data-i18n="nav.reports">Reports</span></a>
+      <a href="#app"><svg class="i"><use href="#i-trips"/></svg><span class="tip" data-i18n="nav.trips">Trips</span></a>
+      <a href="#app" style="margin-top:auto"><svg class="i"><use href="#i-settings"/></svg><span class="tip" data-i18n="nav.settings">Settings</span></a>
+    </nav>
+    <main class="main" aria-labelledby="b-month">
+      <div class="top">
+        <h1 id="b-month" tabindex="-1" data-month>October 2026</h1>
+        <span class="badge" data-i18n="illustrative">Illustrative data</span>
+        <div class="end">
+          <button class="btn btn-ink qa-desk" type="button" aria-haspopup="dialog" aria-controls="b-qa" aria-expanded="false"><svg class="i"><use href="#i-plus"/></svg><span data-i18n="quickadd">Quick Add</span></button>
+          <button class="avatar" type="button" aria-haspopup="menu" aria-controls="b-menu" aria-expanded="false" aria-label="Account: Alex Demir">A</button>
+          <div class="pop" id="b-qa" data-popover hidden role="dialog" aria-label="Quick Add">
+            <label><span data-i18n="qa.amount">Amount</span><input inputmode="decimal" autocomplete="off" data-qa-input="#b-echo" placeholder="0"></label>
+            <p class="echo"><span data-i18n="qa.reads">Reads as</span> <bdi id="b-echo">—</bdi></p>
+            <p class="soon" data-i18n="qa.soon">Recording arrives with transactions (A3).</p>
+          </div>
+          <div class="pop" id="b-menu" data-popover hidden role="menu">
+            <p class="who"><span data-i18n="menu.signedin">Signed in as</span><strong>Alex Demir</strong>alex@example.com</p>
+            <button role="menuitem" type="button"><svg class="i"><use href="#i-user"/></svg><span data-i18n="menu.profile">Profile</span></button>
+            <button role="menuitem" type="button"><svg class="i"><use href="#i-sessions"/></svg><span data-i18n="menu.sessions">Sessions</span></button>
+            <button role="menuitem" type="button"><svg class="i"><use href="#i-globe"/></svg><span data-i18n="menu.language">Language</span></button>
+            <button role="menuitem" type="button" data-go="landing"><svg class="i"><use href="#i-signout"/></svg><span data-i18n="menu.signout">Sign out</span></button>
+          </div>
+        </div>
+      </div>
+
+      <section class="inst" aria-label="This month">
+        <div>
+          <p class="label" id="b-a-label"></p>
+          <p class="big num" id="b-a-odo"></p>
+          <p class="when" id="b-a-when" aria-live="polite"></p>
+        </div>
+        <div class="facts">
+          <div class="fact"><span class="muted" data-i18n="cashout">Cash out</span><span class="v num" id="b-f-cash"></span><span class="why" data-i18n="b.why">Includes €200 you paid for others on the Cappadocia dinner.</span></div>
+          <div class="fact"><span class="muted" data-i18n="income">Income</span><span class="v num" id="b-f-inc"></span></div>
+          <div class="fact"><span class="muted" data-i18n="b.balance">Balance, all EUR accounts</span><span class="v num" id="b-f-bal"></span></div>
+        </div>
+      </section>
+      <div class="dial-wrap">
+        <div class="dial" id="b-a-dial" role="slider" tabindex="0" aria-valuemin="1" aria-valuemax="31" aria-labelledby="b-a-label"></div>
+        <div class="dial-scale"><span id="b-a-s1"></span><span class="muted" data-i18n="b.ticks">Tick height is the day's spending. Brass dots are income.</span><span id="b-a-s2"></span></div>
+      </div>
+
+      <div class="lower">
+        <section aria-labelledby="b-cats-h">
+          <h2 id="b-cats-h" data-i18n="b.cats">Categories, against plan</h2>
+          <div id="b-cats"></div>
+        </section>
+        <section aria-labelledby="b-rec-h">
+          <h2 id="b-rec-h" data-i18n="recent">Recent</h2>
+          <div id="b-rec"></div>
+          <div class="memo"><span data-i18n="trip.owed">Cappadocia trip: you're owed</span><span class="v num"><bdi data-money="200"></bdi></span></div>
+          <p class="cur2"><span data-i18n="try.spent">Turkish lira spending:</span> <bdi class="num" data-money="4120" data-currency="TRY"></bdi>. <span data-i18n="b.sep">Shown on its own, never converted into this total.</span></p>
+        </section>
+      </div>
+    </main>
+  </div>
+  <nav class="bottom" aria-label="Main">
+    <a href="#app" aria-current="page"><svg class="i"><use href="#i-home"/></svg><span data-i18n="nav.home">Home</span></a>
+    <a href="#app"><svg class="i"><use href="#i-transactions"/></svg><span data-i18n="nav.transactions">Transactions</span></a>
+    <button class="qa" type="button" aria-haspopup="dialog" aria-controls="b-qa" aria-expanded="false" data-i18n-label="quickadd"><svg class="i"><use href="#i-plus"/></svg></button>
+    <a href="#app"><svg class="i"><use href="#i-trips"/></svg><span data-i18n="nav.trips">Trips</span></a>
+    <a href="#app"><svg class="i"><use href="#i-more"/></svg><span data-i18n="nav.more">More</span></a>
+  </nav>
+</div>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+  const S = {
+    en: { "b.hero": "Every euro, accounted for. Quietly.", "b.drag": "Drag or use the arrow keys. Illustrative data.",
+      "b.two.h": "Two numbers, kept honest.", "b.two.spent": "Your share of a €300 group dinner.", "b.two.cash": "What actually left your account. The rest is owed back to you.",
+      "b.foot": "FinPilot records what you tell it. It never holds or moves money and never connects to a bank.",
+      "b.spentby": "Spent by {date}", "b.why": "Includes €200 you paid for others on the Cappadocia dinner.", "b.balance": "Balance, all EUR accounts",
+      "b.ticks": "Tick height is the day's spending. Brass dots are income.", "b.cats": "Categories, against plan", "b.sep": "Shown on its own, never converted into this total.",
+      "b.day": "That day: {spent} spent", "b.day.inc": ", {inc} income", "b.plan": "Plan {limit}" },
+    ar: { "b.hero": "كل يورو في مكانه. بهدوء.", "b.drag": "اسحب أو استخدم مفاتيح الأسهم. بيانات توضيحية.",
+      "b.two.h": "رقمان، بصدق.", "b.two.spent": "حصتك من عشاء جماعي بقيمة 300 €.", "b.two.cash": "ما خرج فعلاً من حسابك. والباقي مستحق لك.",
+      "b.foot": "يسجّل FinPilot ما تخبره به فقط. لا يحتفظ بالأموال ولا ينقلها، ولا يرتبط بأي بنك.",
+      "b.spentby": "الإنفاق حتى {date}", "b.why": "يشمل 200 € دفعتها عن الآخرين في عشاء كابادوكيا.", "b.balance": "الرصيد، كل حسابات اليورو",
+      "b.ticks": "ارتفاع العلامة هو إنفاق اليوم. النقاط النحاسية للدخل.", "b.cats": "الفئات مقارنةً بالخطة", "b.sep": "يُعرض منفصلاً، ولا يُحوَّل إلى هذا المجموع.",
+      "b.day": "ذلك اليوم: إنفاق {spent}", "b.day.inc": "، ودخل {inc}", "b.plan": "الخطة {limit}" },
+    tr: { "b.hero": "Her euro kayıtlı. Sessizce.", "b.drag": "Sürükleyin veya ok tuşlarını kullanın. Örnek veriler.",
+      "b.two.h": "İki rakam, dürüstçe.", "b.two.spent": "300 €'luk grup yemeğindeki payınız.", "b.two.cash": "Hesabınızdan gerçekten çıkan. Kalanı size geri ödenecek.",
+      "b.foot": "FinPilot yalnızca bildirdiklerinizi kaydeder. Para tutmaz, aktarmaz ve hiçbir bankaya bağlanmaz.",
+      "b.spentby": "{date} itibarıyla harcama", "b.why": "Kapadokya yemeğinde başkaları için ödediğiniz 200 € dahildir.", "b.balance": "Bakiye, tüm EUR hesapları",
+      "b.ticks": "Çizgi yüksekliği günlük harcamadır. Pirinç noktalar gelirdir.", "b.cats": "Kategoriler, plana göre", "b.sep": "Ayrı gösterilir, bu toplama asla çevrilmez.",
+      "b.day": "O gün: {spent} harcama", "b.day.inc": ", {inc} gelir", "b.plan": "Plan {limit}" },
+  };
+  const $ = (s) => document.querySelector(s);
+  const D = LAB.DAYS;
+  const cum = (key, day) => D.slice(0, day).reduce((a, d) => a + d[key], 0);
+
+  // Odometer: rebuilds only when the shape of the string changes; digits roll otherwise.
+  function odo(el, value, label) {
+    const text = LAB.money(value), parts = LAB.moneyParts(value);
+    el.setAttribute("aria-label", label ? `${label}: ${text}` : text);
+    const num = parts.find((p) => p.type === "number").value;
+    const shape = parts.map((p) => (p.type === "number" ? p.value.replace(/\d/g, "0") : p.value)).join("|");
+    if (el.dataset.shape !== shape) {
+      el.dataset.shape = shape;
+      el.innerHTML = `<span class="odo-wrap" aria-hidden="true">${parts.map((p) => p.type !== "number" ? `<span class="cur">${p.value}</span>`
+        : `<span class="odo">${[...p.value].map((ch) => /\d/.test(ch)
+          ? `<span class="d"><span>${"0123456789".split("").map((n) => `<span>${n}</span>`).join("")}</span></span>`
+          : `<span class="c">${ch}</span>`).join("")}</span>`).join("")}</span>`;
+    }
+    const cols = el.querySelectorAll(".d > span"); let i = 0;
+    [...num].forEach((ch) => { if (/\d/.test(ch)) { const col = cols[i++]; col.style.transitionDelay = `${(cols.length - i) * 14}ms`; col.style.transform = `translateY(${-Number(ch)}em)`; } });
+  }
+
+  // Dial: ticks by day. Pointer proximity magnifies ticks (transform only).
+  function buildDial(el) {
+    const max = Math.max(...D.slice(1).map((d) => d.spent));
+    el.innerHTML = D.map((d) => {
+      const h = d.day === 1 ? 100 : Math.max(8, Math.round((d.spent / max) * 86));
+      return `<span class="tick" data-d="${d.day}"><i style="--h:${h}%"></i>${d.income ? '<span class="inc"></span>' : ""}</span>`;
+    }).join("") + '<span class="rule"></span>';
+  }
+  function magnify(el, clientX) {
+    const ticks = el.querySelectorAll(".tick i");
+    if (LAB.reduced() || clientX == null) { ticks.forEach((t) => (t.style.transform = "")); return; }
+    ticks.forEach((t) => {
+      const r = t.getBoundingClientRect(); const dist = Math.abs(r.left + r.width / 2 - clientX);
+      t.style.transform = `scaleY(${1 + Math.max(0, 1 - dist / 90) * 0.45})`;
+    });
+  }
+  function dayFromX(el, clientX) {
+    const r = el.getBoundingClientRect(); let p = (clientX - r.left) / r.width;
+    if (document.dir === "rtl") p = 1 - p;
+    return Math.min(31, Math.max(1, Math.floor(p * 31) + 1));
+  }
+  function wireDial(el, onDay) {
+    let dragging = false;
+    el.addEventListener("pointerdown", (e) => { dragging = true; el.setPointerCapture(e.pointerId); onDay(dayFromX(el, e.clientX)); });
+    el.addEventListener("pointermove", (e) => { magnify(el, e.clientX); if (dragging || e.pointerType === "mouse") onDay(dayFromX(el, e.clientX)); });
+    el.addEventListener("pointerup", () => (dragging = false));
+    el.addEventListener("pointerleave", () => { magnify(el, null); });
+    el.addEventListener("keydown", (e) => {
+      const rtl = document.dir === "rtl", cur = +el.getAttribute("aria-valuenow");
+      const delta = { ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1, ArrowUp: 1, ArrowDown: -1, PageUp: 7, PageDown: -7, Home: -99, End: 99 }[e.key];
+      if (delta === undefined) return; e.preventDefault(); onDay(Math.min(31, Math.max(1, cur + delta)));
+    });
+  }
+  function markDial(el, day) {
+    el.querySelectorAll(".tick").forEach((t) => { const d = +t.dataset.d; t.classList.toggle("sel", d === day); t.classList.toggle("past", d < day); });
+    el.setAttribute("aria-valuenow", day);
+  }
+
+  let landDay = 31, appDay = 31;
+  function setLand(day) {
+    landDay = day;
+    const label = LAB.t("b.spentby", { date: LAB.date(day) });
+    $("#b-l-label").textContent = label; odo($("#b-l-odo"), cum("spent", day), label);
+    markDial($("#b-l-dial"), day); $("#b-l-dial").setAttribute("aria-valuetext", `${label}: ${LAB.money(cum("spent", day))}`);
+  }
+  function setApp(day) {
+    appDay = day;
+    const label = LAB.t("b.spentby", { date: LAB.date(day) }), d = D[day - 1];
+    $("#b-a-label").textContent = label; odo($("#b-a-odo"), cum("spent", day), label);
+    $("#b-f-cash").textContent = LAB.money(cum("cashout", day));
+    $("#b-f-inc").textContent = LAB.money(cum("income", day));
+    $("#b-f-bal").textContent = LAB.money(d.balance);
+    let when = LAB.t("b.day", { spent: LAB.money(d.spent) }); if (d.income) when += LAB.t("b.day.inc", { inc: LAB.money(d.income) });
+    $("#b-a-when").textContent = when;
+    markDial($("#b-a-dial"), day); $("#b-a-dial").setAttribute("aria-valuetext", `${label}: ${LAB.money(cum("spent", day))}`);
+  }
+
+  function lists() {
+    const budget = Object.fromEntries(LAB.BUDGETS.map((b) => [b.key, b]));
+    const scale = 1.3; // the gauge spans 130% of plan, so overspend is visible
+    $("#b-cats").innerHTML = LAB.CATEGORIES.map((c) => {
+      const b = budget[c.key];
+      if (!b) return `<div class="cat"><span class="t">${LAB.t("cat." + c.key)}</span><span class="a num"><bdi>${LAB.money(c.amount)}</bdi></span></div>`;
+      const over = b.spent > b.limit;
+      return `<div class="cat"><span class="t">${LAB.t("cat." + c.key)}</span><span class="a num"><bdi>${LAB.money(c.amount)}</bdi></span>
+        <span class="gauge" aria-hidden="true"><i class="${over ? "over" : ""}" style="--p:${Math.min(1, b.spent / (b.limit * scale))}"></i><b style="--l:${1 / scale}"></b></span>
+        <span class="s${over ? " over" : ""}">${over ? LAB.t("budget.over", { amount: LAB.money(b.spent - b.limit) }) : LAB.t("budget.left", { amount: LAB.money(b.limit - b.spent) })}. ${LAB.t("b.plan", { limit: LAB.money(b.limit, { whole: true }) })}</span></div>`;
+    }).join("");
+    $("#b-rec").innerHTML = LAB.RECENT.map((r) => `<div class="rec"><span class="d">${LAB.date(r.day)}</span><span>${LAB.t(r.key)}</span>
+      <span class="a num${r.amount > 0 ? " pos" : ""}"><bdi>${LAB.money(r.amount, { sign: true })}</bdi></span>
+      ${r.trip ? `<span class="n">${LAB.t("tx.dinner.note", { paid: LAB.money(r.paid), share: LAB.money(-r.amount) })}</span>` : ""}</div>`).join("");
+  }
+  function scales() {
+    ["l", "a"].forEach((k) => { $(`#b-${k}-s1`).textContent = LAB.date(1); $(`#b-${k}-s2`).textContent = LAB.date(31); });
+  }
+
+  buildDial($("#b-l-dial")); buildDial($("#b-a-dial"));
+  wireDial($("#b-l-dial"), setLand); wireDial($("#b-a-dial"), setApp);
+
+  // Rail tooltips: first one waits, the next ones open instantly (and without animation).
+  const rail = $("#b-rail"); let tipTimer, warm = false, coolTimer;
+  rail.querySelectorAll("a:has(.tip)").forEach((a) => {
+    const show = () => { clearTimeout(coolTimer); clearTimeout(tipTimer);
+      if (warm) { rail.classList.add("instant"); a.classList.add("tip-on"); }
+      else tipTimer = setTimeout(() => { warm = true; a.classList.add("tip-on"); }, 450); };
+    const hide = () => { clearTimeout(tipTimer); a.classList.remove("tip-on");
+      coolTimer = setTimeout(() => { warm = false; rail.classList.remove("instant"); }, 300); };
+    a.addEventListener("pointerenter", show); a.addEventListener("pointerleave", hide);
+    a.addEventListener("focus", () => { a.classList.add("tip-on"); }); a.addEventListener("blur", hide);
+    a.setAttribute("aria-label", a.querySelector(".tip").textContent);
+  });
+
+  // First arrival: the readout rolls from 1 October to today once.
+  let intro = { landing: false, app: false };
+  function arrive(view) {
+    if (intro[view]) return; intro[view] = true;
+    const set = view === "landing" ? setLand : setApp;
+    if (LAB.reduced()) { set(31); return; }
+    set(1); setTimeout(() => set(31), 380);
+  }
+
+  LAB.init({
+    name: "B · Calibre", strings: S,
+    onLocale: () => {
+      lists(); scales();
+      rail.querySelectorAll("a:has(.tip)").forEach((a) => a.setAttribute("aria-label", a.querySelector(".tip").textContent));
+      $("#b-l-odo").dataset.shape = ""; $("#b-a-odo").dataset.shape = "";
+      setLand(landDay); setApp(appDay);
+    },
+    onView: (v) => { if (v === "landing" || v === "app") requestAnimationFrame(() => arrive(v)); },
+  });
+})();
+</script>
+</body>
+</html>

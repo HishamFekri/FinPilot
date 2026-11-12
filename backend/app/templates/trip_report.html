@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="{{ lang }}" dir="{{ dir }}">
+<head>
+<meta charset="utf-8">
+<title>FinPilot · {{ t.trip_report }}</title>
+{% include "_pdf_styles.html" %}
+</head>
+<body>
+  <header class="masthead">
+    <div>
+      <div class="brand"><span class="mark"></span>FinPilot</div>
+      <h1 dir="auto">{{ trip.name }}</h1>
+      <div>{{ t.trip_report }}{% if trip.dates %} · {{ t.dates }}: <bdi class="n">{{ trip.dates }}</bdi>{% endif %}</div>
+    </div>
+    <div class="meta">
+      <div>{{ t.generated }}: <bdi class="n">{{ generated }}</bdi></div>
+      <div>{{ t.base_currency }}: <bdi class="n">{{ trip.currency }}</bdi></div>
+    </div>
+  </header>
+
+  <div class="filters">
+    <strong>{{ t.filters }}:</strong>
+    {% if filters %}{% for label, value in filters %}<span>{{ label }}: <bdi>{{ value }}</bdi></span>{% endfor %}
+    {% else %}{{ t.no_filters }}{% endif %}
+  </div>
+  {% if complete %}
+  <p class="completeness ok">{{ completeness }}</p>
+  {% else %}
+  <div class="completeness partial"><strong>{{ t.partial_title }}</strong> {{ completeness }}</div>
+  {% endif %}
+  <p class="note">{{ t.no_private }}</p>
+  {% if former %}<p class="note"><strong>{{ former }}</strong></p>{% endif %}
+  {% if filtered %}<p class="note">{{ t.filtered_note }}</p>{% endif %}
+
+  <h2>{{ t.summary }}</h2>
+  <div class="tiles">
+    <div class="tile"><div class="label">{{ t.total_spent }}</div><div class="value"><bdi class="n">{{ total }}</bdi></div></div>
+    <div class="tile"><div class="label">{{ t.expense_count }}</div><div class="value"><bdi class="n">{{ count }}</bdi></div></div>
+    <div class="tile"><div class="label">{{ t.outstanding }}</div><div class="value"><bdi class="n">{{ outstanding }}</bdi></div></div>
+    <div class="tile"><div class="label">{{ t.members }}</div><div class="value"><bdi class="n">{{ member_count }}</bdi></div></div>
+  </div>
+  {% if pending_expenses %}<p class="note">{{ pending_expenses }}</p>{% endif %}
+
+  {% if categories %}
+  <h3>{{ t.by_category }}</h3>
+  <table>
+    <thead><tr><th>{{ t.category }}</th><th class="num">{{ t.amount }}</th><th class="num">{{ t.share }}</th></tr></thead>
+    <tbody>
+    {% for row in categories %}
+      <tr><td>{{ row.name }}<div class="bar"><span style="width: {{ row.width }}%"></span></div></td>
+          <td class="num"><bdi class="n">{{ row.amount }}</bdi></td><td class="num"><bdi class="n">{{ row.share }}%</bdi></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <h2>{{ t.by_member }}</h2>
+  <table>
+    <thead><tr>
+      <th>{{ t.members }}</th><th class="num">{{ t.paid }}</th><th class="num">{{ t.benefited }}</th>
+      <th class="num">{{ t.sent }}</th><th class="num">{{ t.received }}</th><th class="num">{{ t.balance }}</th>
+    </tr></thead>
+    <tbody>
+    {% for m in members %}
+      <tr>
+        <td dir="auto">{{ m.name }} <span class="tag">{{ m.role }}</span>{% if m.status %} <span class="tag">{{ m.status }}</span>{% endif %}</td>
+        <td class="num"><bdi class="n">{{ m.paid }}</bdi></td>
+        <td class="num"><bdi class="n">{{ m.benefited }}</bdi></td>
+        <td class="num"><bdi class="n">{{ m.sent }}</bdi></td>
+        <td class="num"><bdi class="n">{{ m.received }}</bdi></td>
+        <td class="num {{ m.tone }}"><bdi class="n">{{ m.net }}</bdi><div class="muted">{{ m.net_label }}</div></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>{{ t.settlements_confirmed }}</h2>
+  {% if confirmed %}
+  <table>
+    <thead><tr><th>{{ t.date }}</th><th>{{ t.from_to }}</th><th class="num">{{ t.amount }}</th><th>{{ t.status }}</th></tr></thead>
+    <tbody>
+    {% for s in confirmed %}
+      <tr class="{{ 'voided' if s.reversed else '' }}"><td class="nowrap"><bdi class="n">{{ s.date }}</bdi></td><td dir="auto">{{ s.who }}</td>
+          <td class="num"><bdi class="n">{{ s.amount }}</bdi></td><td><span class="tag confirmed">{{ s.status }}</span></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">{{ t.none }}</p>{% endif %}
+
+  {% if pending %}
+  <h3>{{ t.settlements_pending }}</h3>
+  <p class="note">{{ t.pending_not_counted }}</p>
+  <table>
+    <thead><tr><th>{{ t.date }}</th><th>{{ t.from_to }}</th><th class="num">{{ t.amount }}</th></tr></thead>
+    <tbody>
+    {% for s in pending %}
+      <tr><td class="nowrap"><bdi class="n">{{ s.date }}</bdi></td><td dir="auto">{{ s.who }}</td><td class="num"><bdi class="n">{{ s.amount }}</bdi></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <h2>{{ t.suggestions }}</h2>
+  <p class="note">{{ t.suggested_not_paid }}</p>
+  {% if suggestions %}
+  <table>
+    <thead><tr><th>{{ t.from_to }}</th><th class="num">{{ t.amount }}</th></tr></thead>
+    <tbody>
+    {% for s in suggestions %}
+      <tr><td dir="auto">{{ s.who }}</td><td class="num"><bdi class="n">{{ s.amount }}</bdi></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">{{ t.settled }}</p>{% endif %}
+
+  <h2>{{ t.expenses_list }}</h2>
+  {% if rows %}
+  <table>
+    <thead><tr>
+      <th>{{ t.date }}</th><th>{{ t.description }}</th><th>{{ t.category }}</th><th>{{ t.paid_by }}</th>
+      <th class="num">{{ t.original }}</th><th class="num">{{ t.amount }}</th><th>{{ t.shared_by }}</th>
+    </tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td class="nowrap"><bdi class="n">{{ r.date }}</bdi></td>
+        <td dir="auto">{{ r.description }}</td>
+        <td>{{ r.category }}</td>
+        <td dir="auto">{{ r.payer }}</td>
+        <td class="num muted"><bdi class="n">{{ r.original }}</bdi></td>
+        <td class="num"><bdi class="n">{{ r.amount }}</bdi></td>
+        <td class="muted" dir="auto">{{ r.shares }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">{{ t.none }}</p>{% endif %}
+</body>
+</html>

@@ -1,0 +1,724 @@
+/* Spending Intelligence: open sections and tabular money, on the app's theme tokens.
+   Series colors follow analytics.module.css: spending is tangerine. */
+
+.root {
+  --series-scheduled: #3a6fd0;
+  --series-variable: #eb6834;
+  --series-financed: #8a4fd0;
+  --series-trip: #1a9a8c;
+  display: grid;
+  gap: 18px;
+  min-inline-size: 0;
+}
+:global(.dark) .root {
+  --series-scheduled: #5d8fe6;
+  --series-variable: #e5622b;
+  --series-financed: #9b6fe2;
+  --series-trip: #2fa898;
+}
+.srOnly {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.muted {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.pageHeading {
+  font-family: var(--font-serif-stack);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.008em;
+}
+:global(html:lang(ar)) .pageHeading,
+:global(html:lang(ar)) .sectionTitle {
+  letter-spacing: 0;
+}
+
+/* --- Filters */
+.filters {
+  display: grid;
+  gap: 10px;
+}
+.periods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.period {
+  min-block-size: 36px;
+  padding-inline: 12px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+.period[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+.filterRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
+  gap: 8px 10px;
+}
+.filterRow > * {
+  min-inline-size: 0;
+  max-inline-size: none;
+}
+.field {
+  display: grid;
+  gap: 4px;
+  min-inline-size: 0;
+}
+.field label {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+/* --- Report */
+.report {
+  display: grid;
+  gap: clamp(26px, 3vw, 38px);
+  min-inline-size: 0;
+  transition: opacity 160ms ease;
+}
+.report[data-stale] {
+  opacity: 0.6;
+}
+.periodLine {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.notes {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.notes li,
+.warn,
+.unusual li {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--tang-text);
+}
+.notes svg,
+.warn svg,
+.unusual svg {
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 2px;
+}
+.section {
+  display: grid;
+  gap: 14px;
+  min-inline-size: 0;
+  scroll-margin-block-start: 16px;
+}
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-serif-stack);
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.008em;
+}
+.sectionLead {
+  margin: 2px 0 0;
+  max-inline-size: 72ch;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.groupTitle {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: 14px 24px;
+  margin: 0;
+}
+.stat {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  min-inline-size: 0;
+}
+.stat dt {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.stat dd {
+  margin: 0;
+  font-family: var(--font-serif-stack);
+  font-size: clamp(21px, 2vw, 26px);
+  font-weight: 500;
+  line-height: 1.2;
+  font-variant-numeric: lining-nums tabular-nums;
+  overflow-wrap: break-word;
+}
+.stat dd[data-tone="in"] {
+  color: var(--pos);
+}
+.stat dd[data-tone="out"] {
+  color: var(--tang-text);
+}
+.statSub {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.estimate {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+}
+.estimate em {
+  font-family: var(--font-stack);
+  font-size: 12px;
+  font-style: normal;
+  color: var(--ink-2);
+}
+
+/* --- Key insights */
+.insights {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: 1px solid var(--hair);
+}
+.insight {
+  border-block-end: 1px solid var(--hair);
+}
+.insightHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  inline-size: 100%;
+  min-block-size: 46px;
+  padding-block: 8px;
+  padding-inline: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: start;
+  cursor: pointer;
+}
+.insightHead svg {
+  flex: none;
+  inline-size: 17px;
+  block-size: 17px;
+  color: var(--ink-2);
+  transition: transform 180ms var(--ease);
+}
+.insight[data-open] .insightHead svg {
+  transform: rotate(180deg);
+}
+.insightBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 200ms var(--ease),
+    visibility 200ms;
+}
+.insightBody > div {
+  overflow: hidden;
+}
+.insightBody p {
+  margin: 0 0 4px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.insight[data-open] .insightBody {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+.insightLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-block-size: 28px;
+  margin-block-end: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tang-text);
+  text-decoration: none;
+}
+.insightLink svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+
+/* --- Comparisons */
+.tableWrap {
+  overflow-x: auto;
+}
+.compare {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.compare th,
+.compare td {
+  padding: 9px 12px 9px 0;
+  border-block-end: 1px solid var(--hair);
+  text-align: start;
+  vertical-align: top;
+}
+:global([dir="rtl"]) .compare th,
+:global([dir="rtl"]) .compare td {
+  padding: 9px 0 9px 12px;
+}
+.compare thead th {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.compare tbody th {
+  font-weight: 500;
+}
+/* A difference isn't good or bad by itself: spending less shouldn't read as a warning. */
+.plain bdi {
+  color: inherit;
+  white-space: nowrap;
+}
+.compare td bdi {
+  white-space: nowrap;
+}
+.compareHint {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+@media (max-width: 720px) {
+  .compare thead {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .compare,
+  .compare tbody,
+  .compare tr,
+  .compare th,
+  .compare td {
+    display: block;
+  }
+  .compare tr {
+    padding-block: 10px;
+    border-block-end: 1px solid var(--hair);
+  }
+  .compare th,
+  .compare td,
+  :global([dir="rtl"]) .compare th,
+  :global([dir="rtl"]) .compare td {
+    padding: 3px 0;
+    border: 0;
+  }
+  .compare tbody td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+}
+
+/* --- Charts */
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 16px;
+  min-inline-size: 0;
+}
+.card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-inline-size: 0;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.cardTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.chartNote {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.stepper {
+  display: inline-flex;
+  gap: 2px;
+}
+.stepper button {
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.stepper button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.stepper svg,
+.flip {
+  inline-size: 17px;
+  block-size: 17px;
+}
+:global([dir="rtl"]) .flip {
+  transform: scaleX(-1);
+}
+.stackedWrap {
+  display: grid;
+  gap: 8px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.swatch {
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 3px;
+  background: var(--series-variable);
+}
+.swatch[data-series="scheduled"],
+.segment[data-series="scheduled"] {
+  background: var(--series-scheduled);
+}
+.swatch[data-series="variable"],
+.segment[data-series="variable"] {
+  background: var(--series-variable);
+}
+.swatch[data-series="financed"],
+.segment[data-series="financed"] {
+  background: var(--series-financed);
+}
+.swatch[data-series="trip"],
+.segment[data-series="trip"] {
+  background: var(--series-trip);
+}
+.columns {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  block-size: 170px;
+  /* Time runs the same way in every language, as on the other charts. */
+  direction: ltr;
+}
+.column {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 18px;
+  flex: 1 1 0;
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  cursor: pointer;
+}
+.column[aria-pressed="true"] .stack {
+  outline: 2px solid var(--ink-2);
+  outline-offset: 1px;
+}
+.stack {
+  --h: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  align-self: end;
+  justify-self: center;
+  inline-size: min(100%, 22px);
+  block-size: calc(var(--h) * 100%);
+  min-block-size: 0;
+  overflow: hidden;
+  border-radius: 4px 4px 0 0;
+  transition: block-size 220ms var(--ease);
+}
+.segment {
+  flex-basis: 0;
+  min-block-size: 0;
+}
+.columnLabel {
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  white-space: nowrap;
+}
+.inspect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  min-block-size: 20px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.inspect strong {
+  color: var(--ink);
+}
+.table,
+.heat {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table td {
+  padding: 5px 8px;
+  border-block-end: 1px solid var(--hair);
+  font-weight: 400;
+  text-align: end;
+  white-space: nowrap;
+}
+.table th:first-child {
+  text-align: start;
+}
+.table thead th,
+.heat thead th {
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.heat {
+  font-size: 11.5px;
+}
+.heat th,
+.heat td {
+  padding: 7px 3px;
+  font-weight: 400;
+  text-align: end;
+  white-space: nowrap;
+}
+.heat th:first-child {
+  max-inline-size: 140px;
+  overflow: hidden;
+  text-align: start;
+  text-overflow: ellipsis;
+}
+.heat td {
+  --depth: 0;
+  background: color-mix(in oklab, var(--tang) calc(var(--depth) * 42%), transparent);
+  border: 1px solid var(--surface);
+  border-radius: 5px;
+}
+
+/* --- Category highlights */
+.highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 16px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.highlight {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 2px;
+  min-inline-size: 0;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--hair);
+}
+.highlight strong {
+  font-family: var(--font-serif-stack);
+  font-size: 18px;
+  font-weight: 500;
+}
+.highlightLabel {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.highlightText {
+  font-size: 13.5px;
+}
+.inlineList {
+  margin: 0;
+  font-size: 13.5px;
+}
+.unusual {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* --- Budgets, trips, method */
+.bullets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 14px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bullets li {
+  display: grid;
+  gap: 5px;
+  min-inline-size: 0;
+}
+.bulletHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.bulletState {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.bulletState[data-state="approaching"] {
+  color: var(--tang-text);
+}
+.bulletState[data-state="exceeded"] {
+  color: var(--neg);
+  font-weight: 600;
+}
+.bulletTrack {
+  position: relative;
+  display: block;
+  block-size: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+.bulletFill {
+  --fill: 0;
+  display: block;
+  block-size: 100%;
+  border-radius: 4px;
+  background: var(--tang);
+  inline-size: calc(var(--fill) * 100%);
+  transition: inline-size 240ms var(--ease);
+}
+.bulletFill[data-state="exceeded"] {
+  background: var(--neg);
+}
+.bulletLimit {
+  position: absolute;
+  inset-block: -3px;
+  /* The limit (100%) on a scale that runs to 125%. */
+  inset-inline-start: 80%;
+  inline-size: 2px;
+  background: var(--ink);
+}
+.bulletFigures {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.tripList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.tripList li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 14px;
+}
+.rateList .compareHint {
+  display: inline;
+}
+.method {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.method summary {
+  inline-size: fit-content;
+  font-weight: 500;
+  cursor: pointer;
+}
+.method ul {
+  display: grid;
+  gap: 5px;
+  max-inline-size: 76ch;
+  margin: 8px 0;
+  padding-inline-start: 18px;
+}
+.method p {
+  margin: 0;
+  max-inline-size: 76ch;
+}
+.empty {
+  display: grid;
+  gap: 4px;
+  padding-block: 12px;
+}
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-serif-stack);
+  font-size: 19px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report,
+  .period,
+  .insightHead svg,
+  .insightBody,
+  .stack,
+  .bulletFill {
+    transition: none;
+  }
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Heading: a navigation needle split along its course, set on a forward bearing. -->
+  <title>FinPilot, Heading</title>
+  <g transform="rotate(42 32 32)" stroke-linejoin="round" stroke-width="2.5">
+    <path d="M30.6 5 L19 40 L30.6 58 Z" fill="#FF6A2B" stroke="#FF6A2B"/>
+    <path d="M33.4 5 L45 40 L33.4 58 Z" fill="currentColor" stroke="currentColor"/>
+  </g>
+</svg>

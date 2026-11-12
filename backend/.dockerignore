@@ -1,0 +1,15 @@
+# Only what the image needs. Secrets and local state never enter the build context.
+*
+!pyproject.toml
+!uv.lock
+!alembic.ini
+!app/
+!migrations/
+!scripts/
+!tests_stack/
+**/__pycache__/
+**/*.py[cod]
+**/.env
+**/.env.*
+**/*.pem
+**/*.key

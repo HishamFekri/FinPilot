@@ -1,0 +1,115 @@
+[project]
+name = "finpilot-backend"
+version = "0.1.0"
+description = "FinPilot API: personal finance and shared expense management"
+requires-python = ">=3.13,<3.15"
+dependencies = [
+    "alembic>=1.20,<2",
+    "fastapi>=0.162,<0.163",
+    "httpx2>=2.16,<3",
+    "jinja2>=3.1,<4",
+    "playwright>=1.50,<2",
+    "psycopg[binary]>=3.3,<4",
+    "pydantic>=2.14,<3",
+    "pydantic-settings>=2.6,<3",
+    "pyjwt[crypto]>=2.15,<3",
+    "sqlalchemy>=2.1,<2.2",
+    "tzdata>=2025.2",
+    "uvicorn>=0.34,<1",
+]
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.1,<3",
+    "mypy>=1.15,<2",
+    "pytest>=8.3,<10",
+    "pyyaml>=6.0.2,<7",
+    "ruff>=0.11,<1",
+    "types-pyyaml>=6.0.12,<6.0.12.20261001",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+markers = [
+    "db: needs a dedicated PostgreSQL test database (TEST_DATABASE_URL); skipped when none is configured",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "C4", "SIM", "RUF"]
+ignore = ["B008"] # FastAPI's Depends() in defaults is the framework's documented pattern.
+
+[tool.ruff.lint.per-file-ignores]
+# SQL here only uses a constant test table name; F811: pytest fixtures shared by importing them.
+"tests/**" = ["S101", "S105", "S106", "S107", "S608", "F811"]
+"tests_e2e/**" = ["S101"] # pytest's plain asserts, as in tests/.
+"tests_stack/**" = ["S101", "S105", "S106"] # plain asserts; synthetic test values only.
+"scripts/**" = ["S105", "S106", "S608"] # SQL here only uses this script's own constants.
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["app", "scripts", "tests", "tests_e2e", "tests_stack", "migrations/env.py"]
+mypy_path = "."
+explicit_package_bases = true
+
+[tool.importlinter]
+root_package = "app"
+
+[[tool.importlinter.contracts]]
+name = "Layers only depend downward"
+type = "layers"
+layers = ["app.main", "app.api", "app.services", "app.db", "app.core"]
+
+# SECURITY.md §4.5: a trip can never read anyone's private accounts or transactions.
+[[tool.importlinter.contracts]]
+name = "Trip modules never import personal finance"
+type = "forbidden"
+source_modules = [
+    "app.services.trips",
+    "app.services.trip_expenses",
+    "app.services.allocation",
+    "app.services.settlements",
+    "app.services.trip_disputes",
+    "app.services.trip_reports",
+    "app.services.trip_planning",
+]
+forbidden_modules = [
+    "app.services.trip_links",
+    "app.services.accounts",
+    "app.services.ledger",
+    "app.services.transactions",
+    "app.services.budgets",
+    "app.services.reporting",
+    "app.services.summary",
+    "app.services.debts",
+    "app.services.recurring",
+    "app.services.movements",
+    "app.services.categories",
+]
+
+# The trip routes build every response other members see: they never touch links or ledgers
+# directly (the shared FX gateway comes from the finance routes, hence indirect imports allowed).
+[[tool.importlinter.contracts]]
+name = "Trip routes never read personal links or ledgers"
+type = "forbidden"
+source_modules = ["app.api.v1.trips", "app.api.v1.trip_reports", "app.api.v1.trip_planning"]
+forbidden_modules = [
+    "app.services.trip_links",
+    "app.services.ledger",
+    "app.services.transactions",
+    "app.services.accounts",
+    "app.services.reporting",
+    "app.services.budgets",
+    "app.db.models.links",
+]
+allow_indirect_imports = true

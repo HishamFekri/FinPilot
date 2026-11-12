@@ -1,0 +1,342 @@
+# FinPilot production stack: one compose project, isolated from everything else on the host.
+#
+# Run it only through deploy/scripts/*.sh. They pass both environment files and choose the
+# overlays:
+#   deploy/finpilot.env     site settings (from finpilot.env.example). Not secret.
+#   deploy/release.env      the image digests of one release. Not secret.
+#   compose.direct.yaml     added in FINPILOT_PROXY_MODE=direct: the proxy publishes loopback
+#                           ports and terminates TLS itself.
+#   compose.stacktest.yaml  added only by scripts/stack-test.sh: the stack tests and a stand-in
+#                           for the server's existing proxy. Never part of a deployment.
+# Secrets are files in deploy/secrets/ (scripts/init-secrets.sh), mounted under /run/secrets.
+# None is ever an environment variable, so none appears in `docker inspect`.
+#
+# Networks, each with its own fixed subnet so nothing depends on Docker's address pool:
+#   front   internal: proxy, web, api. No internet.
+#   data    internal: api, db, and the one-off database jobs. No internet.
+#   edge    internal: the proxy, and (behind mode) the server's existing proxy, at one fixed
+#           address that the FinPilot proxy alone trusts.
+#   egress  outbound: the proxy (certificates, direct mode) and the api (Google, exchange rates).
+# In behind mode nothing is published on the host at all.
+#
+# User IDs are unused on the host (docs/SERVER_READINESS.md §17, S-I2): api and jobs 10201,
+# web 10202. The database keeps the image's 999, which owns its data directory.
+#
+# Nothing here migrates, provisions or deletes on start. The jobs under the "ops" profile run
+# only when a script calls them by name.
+
+name: finpilot
+
+x-service: &service
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "5" }
+
+x-job: &job
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: "no"
+  profiles: [ops]
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "2" }
+
+x-api-image: &api-image ${FINPILOT_API_IMAGE:?FINPILOT_API_IMAGE must be set, by digest}
+
+services:
+  db:
+    <<: *service
+    image: ${FINPILOT_POSTGRES_IMAGE:-postgres:18.1-trixie}
+    # The image's postgres user. Its data volume is owned by it, so no root step is needed.
+    user: "999:999"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: postgres
+      # Local socket: peer only, so just the container's own postgres user. Network: SCRAM.
+      POSTGRES_INITDB_ARGS: "--auth-local=peer --auth-host=scram-sha-256 --encoding=UTF8"
+    command:
+      - postgres
+      - -c
+      - password_encryption=scram-sha-256
+      - -c
+      - max_connections=40
+      - -c
+      - shared_buffers=128MB
+      # No statement text in the server log: statements carry personal data.
+      - -c
+      - log_statement=none
+      - -c
+      - log_min_error_statement=panic
+    secrets: [postgres_password]
+    volumes:
+      - db_data:/var/lib/postgresql
+    tmpfs:
+      - /var/run/postgresql:size=8m
+      - /tmp:size=64m
+    shm_size: 128m
+    networks: [data]
+    mem_limit: 768m
+    cpus: 1.0
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -h /var/run/postgresql -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  api:
+    <<: *service
+    image: *api-image
+    user: "10201:10201"
+    # Docker's default seccomp profile plus exactly what Chromium's own sandbox needs (user, PID
+    # and network namespaces, then chroot), without CAP_SYS_ADMIN: deploy/seccomp/README.md.
+    # scripts/lib.sh sets the absolute path.
+    security_opt:
+      - "no-new-privileges:true"
+      - "seccomp=${FINPILOT_API_SECCOMP_PROFILE:?set by deploy/scripts/lib.sh}"
+    environment:
+      APP_ENV: production
+      LOG_LEVEL: INFO
+      # Settings reads database_url and google_client_secret from these files.
+      FINPILOT_SECRETS_DIR: /run/secrets
+      WEB_ORIGIN: ${FINPILOT_ORIGIN:?FINPILOT_ORIGIN must be set}
+      GOOGLE_CLIENT_ID: ${FINPILOT_GOOGLE_CLIENT_ID:?FINPILOT_GOOGLE_CLIENT_ID must be set}
+      GOOGLE_REDIRECT_URI: ${FINPILOT_ORIGIN}/api/v1/auth/google/callback
+      # Only the FinPilot proxy's X-Forwarded-For is believed. It always sends exactly one
+      # address: the client as it determined it (deploy/caddy/site.caddy).
+      TRUSTED_PROXIES: ${FINPILOT_PROXY_IP:-172.30.10.2}
+      DB_POOL_SIZE: "5"
+      DB_MAX_OVERFLOW: "5"
+      PDF_MAX_CONCURRENT: "2"
+    secrets: [database_url, google_client_secret]
+    tmpfs:
+      - /tmp:size=256m
+      # Chromium needs a writable home for its profile while rendering.
+      - /home/finpilot:size=64m,uid=10201,gid=10201,mode=0700
+    shm_size: 256m
+    networks: [front, data, egress]
+    depends_on:
+      db: { condition: service_healthy }
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 512
+    healthcheck:
+      # Ready means: database reachable, migrations current, role restricted and RLS on.
+      test:
+        - CMD
+        - python
+        - -c
+        - "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/readyz', timeout=4).status == 200 else 1)"
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+
+  web:
+    <<: *service
+    image: ${FINPILOT_WEB_IMAGE:?FINPILOT_WEB_IMAGE must be set, by digest}
+    user: "10202:10202"
+    tmpfs:
+      - /tmp:size=64m
+      - /app/apps/web/.next/cache:size=64m,uid=10202,gid=10202
+    networks: [front]
+    mem_limit: 384m
+    cpus: 1.0
+    pids_limit: 256
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/en').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  proxy:
+    <<: *service
+    image: ${FINPILOT_CADDY_IMAGE:-caddy:2.10.2-alpine}
+    # direct: TLS here, ports published by compose.direct.yaml.
+    # behind: plain HTTP on the edge network only, behind the server's existing proxy.
+    command:
+      - caddy
+      - run
+      - --config
+      - /etc/caddy/Caddyfile.${FINPILOT_PROXY_MODE:-direct}
+      - --adapter
+      - caddyfile
+    environment:
+      FINPILOT_HOST: ${FINPILOT_HOST:?FINPILOT_HOST must be set}
+      FINPILOT_ORIGIN: ${FINPILOT_ORIGIN:?FINPILOT_ORIGIN must be set}
+      FINPILOT_TLS: ${FINPILOT_TLS:-internal}
+      # Behind mode: the one address whose X-Forwarded-For this proxy believes.
+      FINPILOT_EDGE_IP: ${FINPILOT_EDGE_IP:-172.30.13.3}
+    volumes:
+      - ./caddy:/etc/caddy:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    tmpfs:
+      - /tmp:size=16m
+    networks:
+      front:
+        ipv4_address: ${FINPILOT_PROXY_IP:-172.30.10.2}
+        # Lets the stack tests reach the proxy by the site's own name.
+        aliases: ["${FINPILOT_HOST}"]
+      edge:
+        ipv4_address: ${FINPILOT_EDGE_PROXY_IP:-172.30.13.2}
+      egress: {}
+    depends_on:
+      api: { condition: service_healthy }
+      web: { condition: service_healthy }
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # --- One-off jobs. Each gets only the secret it needs.
+
+  migrate:
+    <<: *job
+    image: *api-image
+    user: "10201:10201"
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      APP_ENV: production
+      MIGRATION_DATABASE_URL_FILE: /run/secrets/owner_database_url
+    secrets: [owner_database_url]
+    tmpfs: [/tmp:size=16m]
+    networks: [data]
+    depends_on:
+      db: { condition: service_healthy }
+
+  db-provision:
+    <<: *job
+    image: *api-image
+    user: "10201:10201"
+    entrypoint: ["python", "-m", "scripts.db_hardening"]
+    environment:
+      ADMIN_DATABASE_URL_FILE: /run/secrets/admin_database_url
+      OWNER_ROLE_PASSWORD_FILE: /run/secrets/owner_role_password
+      RUNTIME_ROLE_PASSWORD_FILE: /run/secrets/runtime_role_password
+    secrets: [admin_database_url, owner_role_password, runtime_role_password]
+    tmpfs: [/tmp:size=16m]
+    networks: [data]
+    depends_on:
+      db: { condition: service_healthy }
+
+  db-apply:
+    <<: *job
+    image: *api-image
+    user: "10201:10201"
+    entrypoint: ["python", "-m", "scripts.db_hardening"]
+    environment:
+      OWNER_DATABASE_URL_FILE: /run/secrets/owner_database_url
+    secrets: [owner_database_url]
+    tmpfs: [/tmp:size=16m]
+    networks: [data]
+    depends_on:
+      db: { condition: service_healthy }
+
+  db-verify:
+    <<: *job
+    image: *api-image
+    user: "10201:10201"
+    entrypoint: ["python", "-m", "scripts.db_hardening", "verify"]
+    environment:
+      RUNTIME_DATABASE_URL_FILE: /run/secrets/database_url
+    secrets: [database_url]
+    tmpfs: [/tmp:size=16m]
+    networks: [data]
+    depends_on:
+      db: { condition: service_healthy }
+
+  # Writes a custom-format dump to stdout, as the schema owner: a role that RLS applies to can't
+  # dump. deploy/scripts/backup.sh encrypts it before it touches the disk.
+  backup:
+    <<: *job
+    image: ${FINPILOT_POSTGRES_IMAGE:-postgres:18.1-trixie}
+    # The image's postgres user, in the group that may read the owner's connection secret.
+    user: "999:10201"
+    entrypoint:
+      - sh
+      - -c
+      - 'url=$$(sed "s/postgresql+psycopg:/postgresql:/" /run/secrets/owner_database_url) && exec pg_dump --format=custom --compress=6 --dbname="$$url"'
+    secrets: [owner_database_url]
+    tmpfs: [/tmp:size=16m]
+    networks: [data]
+    depends_on:
+      db: { condition: service_healthy }
+
+  # Reads a dump on stdin into a NEW database named by RESTORE_DATABASE. Never the live one:
+  # deploy/scripts/restore.sh refuses any name that already exists.
+  restore:
+    <<: *job
+    image: ${FINPILOT_POSTGRES_IMAGE:-postgres:18.1-trixie}
+    user: "999:10201"
+    environment:
+      RESTORE_DATABASE: ${RESTORE_DATABASE:-}
+    entrypoint:
+      - sh
+      - -c
+      - 'test -n "$$RESTORE_DATABASE" && url=$$(sed "s/postgresql+psycopg:/postgresql:/" /run/secrets/owner_database_url) && exec pg_restore --exit-on-error --no-owner --single-transaction --dbname="$${url%/*}/$$RESTORE_DATABASE"'
+    secrets: [owner_database_url]
+    tmpfs: [/tmp:size=16m]
+    networks: [data]
+    depends_on:
+      db: { condition: service_healthy }
+
+networks:
+  front:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${FINPILOT_FRONT_SUBNET:-172.30.10.0/24}
+  data:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${FINPILOT_DATA_SUBNET:-172.30.11.0/24}
+  egress:
+    ipam:
+      config:
+        - subnet: ${FINPILOT_EGRESS_SUBNET:-172.30.12.0/24}
+  # In behind mode the server's existing proxy joins this network (by its full name,
+  # finpilot_edge) at FINPILOT_EDGE_IP. Nothing else ever does.
+  edge:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${FINPILOT_EDGE_SUBNET:-172.30.13.0/29}
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:
+
+secrets:
+  postgres_password:
+    file: ${FINPILOT_SECRETS_PATH:-./secrets}/postgres_password
+  admin_database_url:
+    file: ${FINPILOT_SECRETS_PATH:-./secrets}/admin_database_url
+  owner_role_password:
+    file: ${FINPILOT_SECRETS_PATH:-./secrets}/owner_role_password
+  runtime_role_password:
+    file: ${FINPILOT_SECRETS_PATH:-./secrets}/runtime_role_password
+  owner_database_url:
+    file: ${FINPILOT_SECRETS_PATH:-./secrets}/owner_database_url
+  database_url:
+    file: ${FINPILOT_SECRETS_PATH:-./secrets}/database_url
+  google_client_secret:
+    file: ${FINPILOT_SECRETS_PATH:-./secrets}/google_client_secret

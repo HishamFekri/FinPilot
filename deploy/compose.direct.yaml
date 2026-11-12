@@ -1,0 +1,11 @@
+# Overlay for FINPILOT_PROXY_MODE=direct (scripts/lib.sh adds it): the FinPilot proxy terminates
+# TLS itself and publishes its two ports on FINPILOT_BIND_ADDRESS, loopback unless changed.
+# In behind mode this file isn't used, and nothing is published on the host.
+#
+# The HTTP port's default is 8085: 8080 is already taken on the home server (docs/SERVER_READINESS.md §9).
+
+services:
+  proxy:
+    ports:
+      - "${FINPILOT_BIND_ADDRESS:-127.0.0.1}:${FINPILOT_HTTPS_PORT:-8443}:8443"
+      - "${FINPILOT_BIND_ADDRESS:-127.0.0.1}:${FINPILOT_HTTP_PORT:-8085}:8080"

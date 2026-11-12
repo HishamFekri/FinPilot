@@ -1,0 +1,181 @@
+/* Total Balance (total-balance.tsx). Theme tokens from app.module.css .theme. */
+
+.card {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+.title {
+  font-size: 15.5px;
+  font-weight: 600;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.iconButton {
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border: 1px solid var(--hair);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.iconButton svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+.iconButton:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iconButton:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+}
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px 18px;
+  margin: 0;
+}
+.figure {
+  display: grid;
+  align-content: end;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.count {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.big,
+.mid {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-inline-size: 0;
+  font-family: var(--font-display-stack);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.big {
+  font-size: clamp(22px, 3vw, 28px);
+  letter-spacing: -0.01em;
+}
+.mid {
+  font-size: 18px;
+}
+.approx {
+  font-size: 0.7em;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.missing {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--tang-text);
+}
+.warn svg {
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 2px;
+}
+.currencies {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 0 0;
+  border-block-start: 1px solid var(--hair);
+  list-style: none;
+}
+.currencies li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.equiv {
+  color: var(--ink-2);
+}
+.note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.link {
+  justify-self: start;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tang-text);
+  text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Total Balance: rate details on request */
+.ratesToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tang-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.ratesToggle svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+.rates {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,551 @@
+/* Accounts. Tokens come from the app shell's .theme (app.module.css): Waypoint teal and tangerine
+   in light, Midnight Indigo in dark. Calm and compact: numbers are the heroes (PRD §7). */
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 22px;
+}
+.headText {
+  display: grid;
+  gap: 4px;
+  min-inline-size: 0;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* --- Overview: totals per currency */
+.overview {
+  margin-block-end: 26px;
+}
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 10px;
+}
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 600;
+}
+.sectionNote {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.total {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.totalLabel {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.totalCode {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+.totalAmount {
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* --- Account cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.card {
+  display: grid;
+  gap: 14px;
+  block-size: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    transform 160ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    border-color: color-mix(in oklab, var(--tang) 55%, var(--hair));
+  }
+}
+.card:active {
+  transform: scale(0.99);
+}
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-inline-size: 0;
+}
+.typeIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  flex: none;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.typeIcon svg {
+  inline-size: 18px;
+  block-size: 18px;
+}
+.cardName {
+  display: grid;
+  min-inline-size: 0;
+}
+.cardTitle {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cardMeta {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.cardBalance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 8px;
+}
+/* The amount keeps its own line; the note under it wraps instead of breaking the number. */
+.cardBalance > .balance {
+  overflow-wrap: break-word;
+}
+.balance {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.negative {
+  color: var(--neg);
+}
+.archivedCard {
+  background: transparent;
+}
+.archivedCard .balance {
+  color: var(--ink-2);
+}
+
+.toggleRow {
+  display: flex;
+  justify-content: flex-start;
+  margin-block: 22px 12px;
+}
+
+/* --- Empty state */
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  max-inline-size: 520px;
+  margin: 24px auto;
+  padding: 32px 24px;
+  border: 1px dashed var(--hair-2);
+  border-radius: 16px;
+  text-align: center;
+}
+.emptyArt {
+  inline-size: 132px;
+  block-size: 56px;
+  color: var(--ink-2);
+}
+.emptyArt path {
+  fill: none;
+  stroke: var(--tang);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 4 6;
+}
+.emptyTitle {
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+/* --- Dialogs */
+.dialog {
+  position: fixed;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  z-index: 81;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  inline-size: min(calc(100vw - 24px), 480px);
+  max-block-size: min(calc(100dvh - 24px), 720px);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-pop);
+  translate: -50% -50%;
+  outline: none;
+  transition:
+    opacity 160ms ease,
+    transform 200ms var(--ease);
+}
+:global([dir="rtl"]) .dialog {
+  translate: 50% -50%;
+}
+.dialog[data-starting-style],
+.dialog[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.97);
+}
+.dialogHead {
+  display: grid;
+  gap: 4px;
+  padding: 20px 22px 4px;
+}
+.dialogTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+.dialogLead {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.dialogBody {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 16px 22px;
+  overflow-y: auto;
+}
+.dialogFoot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px 18px;
+  border-block-start: 1px solid var(--hair);
+}
+
+/* Account type: four radio cards */
+.types {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.typeOption {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 48px;
+  padding: 8px 12px;
+  border: 1px solid var(--hair-2);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.typeOption svg {
+  inline-size: 18px;
+  block-size: 18px;
+  flex: none;
+  color: var(--ink-2);
+}
+.typeOption input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.typeOption:has(input:checked) {
+  border-color: var(--tang);
+  background: var(--tang-wash);
+}
+.typeOption:has(input:checked) svg {
+  color: var(--tang-text);
+}
+.typeOption:has(input:focus-visible) {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+}
+
+/* Amount field: the currency sits inside the field, at its start. */
+.amountWrap {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+.amountCode {
+  position: absolute;
+  inset-block: 1px;
+  inset-inline-start: 1px;
+  display: grid;
+  place-items: center;
+  padding-inline: 12px;
+  border-start-start-radius: 9px;
+  border-end-start-radius: 9px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.amountInput {
+  padding-inline-start: 62px;
+  font-variant-numeric: tabular-nums;
+  text-align: start;
+}
+.echo {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* Review panel inside a dialog */
+.review {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.reviewRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+.reviewRow dt {
+  color: var(--ink-2);
+}
+.reviewRow dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+.reviewStrong {
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--hair-2);
+}
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.check input {
+  inline-size: 18px;
+  block-size: 18px;
+  margin-block-start: 1px;
+  accent-color: var(--tang);
+  flex: none;
+}
+
+/* --- Account detail */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-end: 14px;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.back svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+:global([dir="rtl"]) .back svg {
+  transform: scaleX(-1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .back:hover {
+    color: var(--ink);
+  }
+}
+.hero {
+  display: grid;
+  gap: 18px;
+  padding: 20px 22px;
+  margin-block-end: 20px;
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.heroTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.heroName {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-inline-size: 0;
+}
+.heroTitle {
+  font-family: var(--display);
+  font-size: clamp(19px, 2vw, 22px);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.heroBalance {
+  font-size: clamp(26px, 3.4vw, 34px);
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  margin: 0;
+  font-size: 13.5px;
+}
+.facts div {
+  display: flex;
+  gap: 6px;
+}
+.facts dt {
+  color: var(--ink-2);
+}
+.facts dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.activity {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.activityRow {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-block-end: 1px solid var(--hair);
+}
+.activityRow:last-child {
+  border-block-end: 0;
+}
+.activityText {
+  display: grid;
+  min-inline-size: 0;
+}
+.activityTitle {
+  display: -webkit-box;
+  font-weight: 500;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.activityMeta {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.activityAmount {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+.positive {
+  color: var(--pos);
+}
+
+@media (max-width: 767px) {
+  .head {
+    align-items: stretch;
+  }
+  .actions {
+    inline-size: 100%;
+  }
+  .actions > * {
+    flex: 1 1 auto;
+  }
+  .activityRow {
+    padding-inline: 16px;
+  }
+  .hero {
+    padding: 16px;
+  }
+  .dialogHead,
+  .dialogBody,
+  .dialogFoot {
+    padding-inline: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .dialog {
+    transition-duration: 0ms;
+  }
+}
+.overviewNote {
+  margin-block-start: 8px;
+}
+
+/* About how much an account is in the chosen display currency (display only). */
+.cardEquivalent {
+  display: block;
+  margin-block-start: 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryPair {
+  display: grid;
+  gap: 14px;
+  margin-block-end: 18px;
+}

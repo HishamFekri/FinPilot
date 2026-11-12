@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Waymark: an F (stem, long top bar, middle bar) whose middle bar curves up into the top bar to
+       close a P. The top bar runs on to a tangerine waypoint. -->
+  <title>FinPilot, Waymark</title>
+  <path d="M13 54V12h32" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M13 33h12a10.5 10.5 0 0 0 0-21" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="55" cy="12" r="5" fill="#FF6A2B"/>
+</svg>

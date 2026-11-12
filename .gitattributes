@@ -1,0 +1,5 @@
+# Keep LF everywhere: development is on Windows, and deployment targets Linux.
+* text=auto eol=lf
+*.ico binary
+*.png binary
+*.woff2 binary

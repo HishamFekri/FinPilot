@@ -1,0 +1,37 @@
+# FinPilot's proxy, behind mode: behind the server's existing proxy, which receives the public
+# traffic (Cloudflare Tunnel -> cloudflared -> existing Caddy) and terminates nothing here.
+#
+# - Plain HTTP on port 8080, reachable only on the internal edge network. Nothing is published
+#   on the host (compose.direct.yaml isn't used in this mode).
+# - Exactly one address is trusted for X-Forwarded-For: FINPILOT_EDGE_IP, the existing proxy's
+#   fixed address on the edge network. The header is read right to left (strict), so a value a
+#   visitor prepends is never taken. From anyone else, the connecting address is the client.
+# - HTTPS and the HTTP -> HTTPS redirect are the edge's job (Cloudflare "Always Use HTTPS").
+#   The API still sends HSTS, and its cookies stay __Host-, Secure.
+# - The site itself (routing, body limit, log filter) is in site.caddy.
+
+{
+	http_port 8080
+	https_port 8443
+	# No certificates and no redirects: TLS ends at the edge.
+	auto_https off
+	admin 127.0.0.1:2019
+	servers {
+		trusted_proxies static {$FINPILOT_EDGE_IP}/32
+		trusted_proxies_strict
+		client_ip_headers X-Forwarded-For
+		timeouts {
+			read_body 15s
+			read_header 10s
+			write 60s
+			idle 2m
+		}
+		max_header_size 32KB
+	}
+}
+
+import site.caddy
+
+http://{$FINPILOT_HOST}:8080 {
+	import finpilot_site
+}

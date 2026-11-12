@@ -1,0 +1,104 @@
+# Overlay for deploy/scripts/stack-test.sh only (scripts/lib.sh adds it when
+# FINPILOT_COMPOSE_TEST=1). Never part of a deployment: deploy.sh and provision.sh don't set it.
+#
+#   stack-test         the stack tests, through the FinPilot proxy (direct mode)
+#   edge               a stand-in for the server's existing proxy and Cloudflare, for behind mode:
+#                      TLS with its own test CA, trusts exactly one client (stack-test-behind, in
+#                      the role of cloudflared) for Cf-Connecting-Ip, and forwards that single
+#                      address to the FinPilot proxy, as the real one is to be configured
+#   stack-test-behind  the same tests, through the stand-in and the FinPilot proxy (behind mode)
+#
+# All synthetic: test people are under example.test, secrets are generated per run.
+
+x-test: &test
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: "no"
+  profiles: [test]
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "2" }
+
+services:
+  stack-test:
+    <<: *test
+    image: ${FINPILOT_STACK_TEST_IMAGE:-finpilot-api-stack-test:local}
+    # Root without capabilities: it only needs to read Caddy's local CA (in a 0700 folder owned
+    # by root) to trust the test certificate.
+    user: "0:0"
+    environment:
+      STACK_URL: https://${FINPILOT_HOST}:8443
+      STACK_ORIGIN: ${FINPILOT_ORIGIN}
+      STACK_HTTP_URL: http://${FINPILOT_HOST}:8080
+      STACK_CA: /caddy-data/caddy/pki/authorities/local/root.crt
+      STACK_OWNER_DATABASE_URL_FILE: /run/secrets/owner_database_url
+      STACK_RUNTIME_DATABASE_URL_FILE: /run/secrets/database_url
+      STACK_PHASE: ${STACK_PHASE:-main}
+    secrets: [owner_database_url, database_url]
+    volumes:
+      - caddy_data:/caddy-data:ro
+    tmpfs: [/tmp:size=64m]
+    networks: [front, data]
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 256
+
+  edge:
+    <<: *test
+    image: ${FINPILOT_CADDY_IMAGE:-caddy:2.10.2-alpine}
+    command: ["caddy", "run", "--config", "/etc/caddy/edge.Caddyfile", "--adapter", "caddyfile"]
+    environment:
+      FINPILOT_HOST: ${FINPILOT_HOST}
+      EDGE_UPSTREAM: ${FINPILOT_EDGE_PROXY_IP:-172.30.13.2}:8080
+      EDGE_TRUSTED_CLIENT: ${FINPILOT_STACK_TESTER_EDGE_IP:-172.30.13.4}
+    volumes:
+      - ./testing/edge.Caddyfile:/etc/caddy/edge.Caddyfile:ro
+      - edge_data:/data
+    tmpfs: [/tmp:size=16m, /config:size=4m]
+    networks:
+      edge:
+        ipv4_address: ${FINPILOT_EDGE_IP:-172.30.13.3}
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  stack-test-behind:
+    <<: *test
+    image: ${FINPILOT_STACK_TEST_IMAGE:-finpilot-api-stack-test:local}
+    user: "0:0"
+    # The site's name goes to the stand-in, as DNS sends it to Cloudflare in production.
+    extra_hosts:
+      - "${FINPILOT_HOST}:${FINPILOT_EDGE_IP:-172.30.13.3}"
+    environment:
+      STACK_URL: https://${FINPILOT_HOST}:18443
+      STACK_ORIGIN: ${FINPILOT_ORIGIN}
+      STACK_CA: /edge-data/caddy/pki/authorities/local/root.crt
+      STACK_OWNER_DATABASE_URL_FILE: /run/secrets/owner_database_url
+      STACK_RUNTIME_DATABASE_URL_FILE: /run/secrets/database_url
+      STACK_PHASE: behind
+      # The FinPilot proxy itself, skipping the stand-in: what anyone else on the edge network
+      # would reach.
+      STACK_PROXY_URL: http://${FINPILOT_EDGE_PROXY_IP:-172.30.13.2}:8080
+      STACK_HOST: ${FINPILOT_HOST}
+    secrets: [owner_database_url, database_url]
+    volumes:
+      - edge_data:/edge-data:ro
+    tmpfs: [/tmp:size=64m]
+    networks:
+      edge:
+        ipv4_address: ${FINPILOT_STACK_TESTER_EDGE_IP:-172.30.13.4}
+      data: {}
+    depends_on:
+      edge: { condition: service_healthy }
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 256
+
+volumes:
+  edge_data:

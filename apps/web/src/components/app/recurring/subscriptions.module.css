@@ -1,0 +1,226 @@
+.page {
+  display: grid;
+  gap: 14px;
+  min-inline-size: 0;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.costs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
+}
+.cost {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.costLabel {
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 650;
+}
+.costFigure {
+  display: grid;
+  gap: 1px;
+}
+.costMain {
+  font-size: 17px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.costUnit {
+  color: var(--ink-2);
+  font-size: 11.5px;
+}
+.costNote {
+  grid-column: 1 / -1;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+.card {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.cardTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+.occurrences,
+.list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Occurrence rows bring their own padding and dividers; let them run to the card's edges so
+   their content lines up with the card title instead of sitting indented twice. */
+.occurrences {
+  gap: 0;
+  margin-inline: -16px;
+}
+.occurrences > li {
+  padding-inline: 16px;
+}
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 6px 12px;
+  padding-block: 8px;
+  border-block-end: 1px solid var(--hair);
+}
+.item:last-child {
+  border-block-end: 0;
+}
+.dim {
+  opacity: 0.7;
+}
+.itemText {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.itemName {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.itemMeta {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.itemAmount {
+  display: grid;
+  justify-items: end;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.status {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+.status[data-status="active"] {
+  background: var(--pos-wash);
+  color: var(--pos);
+}
+.itemActions {
+  display: flex;
+  gap: 2px;
+}
+.iconAction {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.iconAction:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.iconAction:focus-visible,
+.segmented button:focus-visible {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+}
+.iconAction svg {
+  inline-size: 18px;
+  block-size: 18px;
+}
+.segmented {
+  display: inline-flex;
+  justify-self: start;
+  padding: 2px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.segmented button {
+  min-block-size: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.segmented button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 36px 16px;
+  border: 1px dashed var(--hair);
+  border-radius: 16px;
+  text-align: center;
+}
+.emptyTitle {
+  margin: 0;
+  font-weight: 650;
+}
+@media (max-width: 560px) {
+  .item {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .status {
+    justify-self: start;
+  }
+}
+
+/* Payment history (one subscription) */
+.historyList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.historyList li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 9px 0;
+  border-block-end: 1px solid var(--hair);
+  font-size: 14px;
+}
+.historyAmount {
+  font-variant-numeric: tabular-nums;
+}

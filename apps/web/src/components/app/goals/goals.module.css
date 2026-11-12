@@ -1,0 +1,244 @@
+.page {
+  display: grid;
+  gap: 14px;
+  min-inline-size: 0;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.check input {
+  inline-size: 16px;
+  block-size: 16px;
+  accent-color: var(--tang);
+}
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.goal {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.dim {
+  opacity: 0.72;
+}
+.goalTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.goalName {
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  text-align: start;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.goalName:hover {
+  text-decoration: underline;
+}
+.goalName:focus-visible {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.tag {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+.tag[data-tone="positive"] {
+  background: var(--pos-wash);
+  color: var(--pos);
+}
+.figures {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.figures strong {
+  font-size: 17px;
+}
+.percent {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.track {
+  display: block;
+  block-size: 8px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.fill {
+  display: block;
+  block-size: 100%;
+  border-radius: 6px;
+  background: var(--tang);
+  transition: inline-size 300ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.fill[data-done] {
+  background: var(--pos);
+}
+.meta {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 36px 16px;
+  border: 1px dashed var(--hair);
+  border-radius: 16px;
+  text-align: center;
+}
+.empty svg {
+  inline-size: 28px;
+  block-size: 28px;
+  color: var(--tang);
+}
+.emptyTitle {
+  margin: 0;
+  font-weight: 650;
+}
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.history {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.history li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  padding-block-end: 8px;
+  border-block-end: 1px solid var(--hair);
+  font-size: 13.5px;
+}
+.historyNote {
+  color: var(--ink-2);
+}
+.historyWhen {
+  color: var(--ink-2);
+  font-size: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}
+
+/* Home's compact plans panel */
+.plans {
+  display: grid;
+  gap: 12px;
+  padding: 0 16px 14px;
+}
+.planGroup {
+  display: grid;
+  gap: 6px;
+}
+.planHead {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.planHead:hover {
+  color: var(--tang-text);
+}
+.planHead svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+.planList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.planList li {
+  display: grid;
+  gap: 4px;
+}
+.planLine {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+.planName {
+  min-inline-size: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.planFigure {
+  flex: none;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.planNote {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 11.5px;
+}
+
+.planLink {
+  font-weight: 500;
+  color: var(--tang-text);
+}

@@ -1,0 +1,2021 @@
+/* Expense-first screens: Home with Quick Add, transactions, categories. Tokens come from the app
+   shell's .theme (Waypoint teal and tangerine; Midnight Indigo in dark). Calm, compact, fast. */
+
+/* --- Category palette: soft tile, strong ink. Each pair is checked for contrast in both themes. */
+.catIcon {
+  --cat-bg: #eef2f2;
+  --cat-fg: #3d555c;
+  display: grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  flex: none;
+  border-radius: 10px;
+  background: var(--cat-bg);
+  color: var(--cat-fg);
+}
+.catIcon svg {
+  inline-size: 17px;
+  block-size: 17px;
+}
+.catIconSm {
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 8px;
+}
+.catIconSm svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+.catIcon[data-color="tangerine"] {
+  --cat-bg: #ffe9dd;
+  --cat-fg: #b13f0c;
+}
+.catIcon[data-color="amber"] {
+  --cat-bg: #fdf0d2;
+  --cat-fg: #8a5a00;
+}
+.catIcon[data-color="green"] {
+  --cat-bg: #ddf3e7;
+  --cat-fg: #1b6e4b;
+}
+.catIcon[data-color="teal"] {
+  --cat-bg: #d9f1f1;
+  --cat-fg: #11636c;
+}
+.catIcon[data-color="sky"] {
+  --cat-bg: #ddf0fe;
+  --cat-fg: #165a8a;
+}
+.catIcon[data-color="ocean"] {
+  --cat-bg: #dde8fb;
+  --cat-fg: #2a4f9a;
+}
+.catIcon[data-color="indigo"] {
+  --cat-bg: #e4e4fb;
+  --cat-fg: #4338a8;
+}
+.catIcon[data-color="violet"] {
+  --cat-bg: #eee3fb;
+  --cat-fg: #6b35a8;
+}
+.catIcon[data-color="berry"] {
+  --cat-bg: #fbe2ef;
+  --cat-fg: #a3245f;
+}
+.catIcon[data-color="rose"] {
+  --cat-bg: #fde3e3;
+  --cat-fg: #a8303a;
+}
+.catIcon[data-color="slate"] {
+  --cat-bg: #e7ecef;
+  --cat-fg: #3f525c;
+}
+.catIcon[data-color="sand"] {
+  --cat-bg: #f1ece2;
+  --cat-fg: #6a5a3c;
+}
+:global(.dark) .catIcon {
+  --cat-bg: #232848;
+  --cat-fg: #c2c7e8;
+}
+:global(.dark) .catIcon[data-color="tangerine"] {
+  --cat-bg: #3a2420;
+  --cat-fg: #ffa47d;
+}
+:global(.dark) .catIcon[data-color="amber"] {
+  --cat-bg: #352c1a;
+  --cat-fg: #f5c562;
+}
+:global(.dark) .catIcon[data-color="green"] {
+  --cat-bg: #183327;
+  --cat-fg: #6fd9a6;
+}
+:global(.dark) .catIcon[data-color="teal"] {
+  --cat-bg: #17323a;
+  --cat-fg: #6cd3d8;
+}
+:global(.dark) .catIcon[data-color="sky"] {
+  --cat-bg: #172c44;
+  --cat-fg: #8fd0ff;
+}
+:global(.dark) .catIcon[data-color="ocean"] {
+  --cat-bg: #1a2648;
+  --cat-fg: #9db8ff;
+}
+:global(.dark) .catIcon[data-color="indigo"] {
+  --cat-bg: #232456;
+  --cat-fg: #b2b0ff;
+}
+:global(.dark) .catIcon[data-color="violet"] {
+  --cat-bg: #2c2150;
+  --cat-fg: #cfa9ff;
+}
+:global(.dark) .catIcon[data-color="berry"] {
+  --cat-bg: #3a1f37;
+  --cat-fg: #ff9ccc;
+}
+:global(.dark) .catIcon[data-color="rose"] {
+  --cat-bg: #3a2030;
+  --cat-fg: #ff9aa5;
+}
+:global(.dark) .catIcon[data-color="slate"] {
+  --cat-bg: #252b45;
+  --cat-fg: #b8c0dc;
+}
+:global(.dark) .catIcon[data-color="sand"] {
+  --cat-bg: #322d2a;
+  --cat-fg: #ddcba6;
+}
+
+/* --- Home layout: Quick Add leads; the month sits beside it on wide screens. A future
+   "Upcoming" panel slots into the side column without a redesign. */
+.home {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-areas:
+    "add month"
+    "recent month";
+  /* The side column spans both rows; its extra height goes to the second row, so Recent sits
+     right under Quick Add instead of below the side column's first block. */
+  grid-template-rows: auto 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.addArea {
+  grid-area: add;
+}
+.monthArea {
+  grid-area: month;
+  display: grid;
+  gap: 18px;
+}
+.recentArea {
+  grid-area: recent;
+}
+@media (max-width: 1099px) {
+  .home {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "add" "month" "recent";
+  }
+}
+
+/* --- Quick Add */
+.composer {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.composerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.composerTitle {
+  font-size: 15.5px;
+  font-weight: 600;
+}
+/* Expense / Income segmented control */
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.segment {
+  min-block-size: 32px;
+  padding-inline: 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+.segment[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+.segment[aria-pressed="true"][data-kind="expense"] {
+  color: var(--tang-text);
+}
+.segment[aria-pressed="true"][data-kind="income"] {
+  color: var(--pos);
+}
+
+/* The amount: the field the eye and the cursor go to first. */
+.amountRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 10px;
+  border: 1.5px solid var(--hair-2);
+  border-radius: 14px;
+  background: var(--bg);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+.amountRow:focus-within {
+  border-color: var(--tang);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--tang) 22%, transparent);
+}
+.amountRow[data-invalid="true"] {
+  border-color: var(--neg);
+}
+.amountCurrency {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink-2);
+  letter-spacing: 0.04em;
+}
+.amountInput {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 40px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: clamp(21px, 2.6vw, 25px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.amountInput::placeholder {
+  color: color-mix(in oklab, var(--ink-3) 60%, transparent);
+}
+.echo {
+  min-block-size: 18px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.echoError {
+  color: var(--neg);
+}
+
+/* Category chips: app-controlled radio group, never a long native list. */
+.chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding: 5px 8px;
+  border: 1px solid var(--hair);
+  border-radius: 11px;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms var(--ease);
+}
+.chip:active {
+  transform: scale(0.97);
+}
+.chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.chip:has(input:checked) {
+  border-color: var(--tang);
+  background: var(--tang-wash);
+}
+.chip:has(input:focus-visible) {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: var(--hair-2);
+  }
+}
+.chipLabel {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.moreChip {
+  justify-content: center;
+  color: var(--ink-2);
+}
+
+.fieldsRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 10px;
+}
+.compactLabel {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.composerFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.composerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hint {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.saved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--pos);
+  animation: savedIn 220ms var(--ease) both;
+}
+.saved svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+@keyframes savedIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+/* --- Month panel */
+.panel {
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 18px 0;
+}
+.panelTitle {
+  font-size: 15px;
+  font-weight: 600;
+}
+.panelBody {
+  padding: 12px 18px 16px;
+}
+.figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+.figure {
+  display: grid;
+  /* Values line up even when one label wraps onto two lines. */
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.figure dt {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.figure dd {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.currencyPick {
+  display: inline-flex;
+  gap: 4px;
+}
+.currencyPick button {
+  min-block-size: 28px;
+  padding-inline: 9px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.currencyPick button[aria-pressed="true"] {
+  border-color: var(--tang);
+  color: var(--tang-text);
+}
+
+/* Top categories: a bar list, which is also a readable list (no chart-only data). */
+.bars {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bar {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+.barName {
+  font-size: 13.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.barAmount {
+  font-size: 13.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.barTrack {
+  grid-column: 2 / 4;
+  block-size: 6px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.barFill {
+  display: block;
+  block-size: 100%;
+  border-radius: 6px;
+  background: var(--tang);
+  transform-origin: left center;
+  transition: inline-size 300ms var(--ease);
+}
+
+/* --- Transaction rows (Home and History) */
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  inline-size: 100%;
+  padding: 10px 18px;
+  border: 0;
+  border-block-end: 1px solid var(--hair);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.rows li:last-child .row {
+  border-block-end: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+  }
+}
+.rowText {
+  display: grid;
+  min-inline-size: 0;
+}
+.rowTitle {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowMeta {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* For narrow columns: names and details wrap instead of being cut off. */
+.rowsWrap .rowTitle,
+.rowsWrap .rowMeta {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.rowAmount {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.in {
+  color: var(--pos);
+}
+.voided {
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+.day {
+  padding: 12px 18px 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  border-block-end: 1px solid var(--hair);
+}
+.moreLink {
+  display: block;
+  padding: 10px 18px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--tang-text);
+  text-decoration: none;
+}
+.emptyState {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 26px 18px;
+  text-align: center;
+}
+.emptyArt {
+  inline-size: 112px;
+  block-size: 44px;
+}
+.emptyArt path {
+  fill: none;
+  stroke: var(--tang);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 4 6;
+}
+.emptyTitle {
+  font-weight: 600;
+}
+
+/* --- Currency choice on first visit */
+.welcome {
+  display: grid;
+  gap: 14px;
+  max-inline-size: 520px;
+  margin: 8vh auto 0;
+  padding: 24px;
+  border: 1px solid var(--hair);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.welcomeTitle {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* --- History filters */
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-block-end: 14px;
+}
+.filterDates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.historyHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 16px;
+}
+
+/* --- Transaction detail */
+.detailAmount {
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+.facts dt {
+  color: var(--ink-2);
+}
+.facts dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+.timeline {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* Global "Add" in the top bar, on every app page. */
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 38px;
+  padding-inline: 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--tang);
+  color: var(--tang-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 140ms var(--ease);
+}
+.addButton:active {
+  transform: scale(0.97);
+}
+.addButton svg {
+  inline-size: 17px;
+  block-size: 17px;
+}
+.kbd {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: color-mix(in oklab, var(--tang-ink) 12%, transparent);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .composer {
+    padding: 16px;
+  }
+  .figures {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .figure dd {
+    font-size: 16px;
+  }
+  .chips {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .fieldsRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .filters {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .filters > :first-child {
+    grid-column: 1 / -1;
+  }
+  .filters[data-folded] > [data-more] {
+    display: none;
+  }
+  .row {
+    padding-inline: 14px;
+  }
+  .addLabel,
+  .kbd {
+    display: none;
+  }
+  .addButton {
+    padding-inline: 10px;
+  }
+}
+@media (max-width: 380px) {
+  .chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saved {
+    animation: none;
+  }
+  .barFill,
+  .chip,
+  .segment,
+  .addButton {
+    transition-duration: 0ms;
+  }
+}
+
+/* ===== A4: Home, Quick Add dialog, history, detail, categories ===== */
+
+/* Home header: a short greeting, then straight to work. */
+.homeHead {
+  display: grid;
+  gap: 2px;
+  margin-block-end: 18px;
+}
+.homeTitle {
+  font-family: var(--display);
+  font-size: clamp(21px, 2.2vw, 25px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.homeTitle:lang(ar) {
+  letter-spacing: 0;
+}
+
+/* Quick Add details */
+.composerBare {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.fullRow {
+  grid-column: 1 / -1;
+}
+.note {
+  min-block-size: 64px;
+  resize: vertical;
+}
+.footStart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  min-inline-size: 0;
+}
+.savedSlot {
+  min-inline-size: 0;
+}
+.saved span {
+  overflow-wrap: anywhere;
+}
+.shortcutHint {
+  margin-block-start: -4px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.key {
+  display: inline-block;
+  min-inline-size: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--hair-2);
+  border-block-end-width: 2px;
+  border-radius: 5px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 17px;
+  text-align: center;
+  color: var(--ink-2);
+}
+@media (hover: none), (pointer: coarse) {
+  .shortcutHint {
+    display: none;
+  }
+}
+
+/* The global Quick Add dialog. Centred with insets (not translate), so RTL needs nothing extra. */
+.quickDialog {
+  position: fixed;
+  inset: 0;
+  z-index: 81;
+  display: grid;
+  gap: 12px;
+  inline-size: min(calc(100vw - 24px), 540px);
+  block-size: fit-content;
+  max-block-size: calc(100dvh - 24px);
+  margin: auto;
+  padding: 20px 22px 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-pop);
+  outline: none;
+  transition:
+    opacity 160ms ease,
+    transform 200ms var(--ease);
+}
+.quickDialog[data-starting-style],
+.quickDialog[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.97);
+}
+.quickDialogTitle {
+  font-family: var(--font-serif-stack);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.008em;
+}
+/* On phones the composer is a sheet: within thumb reach, sliding from the edge it rests on. */
+@media (max-width: 640px) {
+  .quickDialog {
+    inset: auto 0 0;
+    inline-size: 100%;
+    max-block-size: min(92dvh, 760px);
+    margin: 0;
+    padding-block-end: max(18px, env(safe-area-inset-bottom));
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    transition:
+      opacity 160ms ease,
+      transform 260ms var(--ease);
+  }
+  .quickDialog[data-starting-style],
+  .quickDialog[data-ending-style] {
+    opacity: 1;
+    transform: translateY(100%);
+  }
+}
+.catIconBare {
+  inline-size: 26px;
+  block-size: 26px;
+  background: transparent;
+  color: var(--cat-fg);
+}
+.catIconBare svg {
+  inline-size: 20px;
+  block-size: 20px;
+}
+.addHeader {
+  min-block-size: 40px;
+  padding-inline: 14px 16px;
+  white-space: nowrap;
+}
+.quickDialog .composerTop {
+  margin-block-start: -4px;
+}
+.addLabel {
+  white-space: nowrap;
+}
+
+/* Panels on Home */
+.panelNote {
+  margin-block-start: 10px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.headLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tang-text);
+  text-decoration: none;
+}
+.headLink svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+:global([dir="rtl"]) .flipRtl {
+  transform: scaleX(-1);
+}
+.links {
+  display: grid;
+  margin: 0;
+  padding: 6px 8px 8px;
+  list-style: none;
+}
+@media (min-width: 1100px) {
+  /* Beside the sidebar, the shortcuts are a compact two-column list. */
+  .links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 4px;
+  }
+}
+.linkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 40px;
+  padding-inline: 10px;
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 14px;
+  text-decoration: none;
+}
+.linkRow > svg:first-child {
+  inline-size: 17px;
+  block-size: 17px;
+  color: var(--ink-2);
+}
+.linkRow > span:nth-child(2) {
+  flex: 1;
+  min-inline-size: 0;
+}
+.linkRow > svg:last-child {
+  inline-size: 15px;
+  block-size: 15px;
+  color: var(--ink-3);
+}
+@media (hover: hover) and (pointer: fine) {
+  .headLink:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .linkRow:hover {
+    background: var(--surface-2);
+  }
+}
+.panel > .rows {
+  padding-block: 4px;
+}
+
+/* Transaction detail */
+.detail {
+  display: grid;
+  gap: 16px;
+}
+.detailTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+.detailTags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.factWithIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.noteText {
+  white-space: pre-wrap;
+}
+.subTitle {
+  margin-block-end: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.timeline li {
+  position: relative;
+  padding-inline-start: 14px;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.6em;
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--hair-2);
+}
+
+/* Transactions page */
+.searchWrap {
+  position: relative;
+}
+.searchWrap svg {
+  position: absolute;
+  inset-inline-start: 11px;
+  inset-block-start: 50%;
+  inline-size: 16px;
+  block-size: 16px;
+  color: var(--ink-3);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.searchWrap input {
+  padding-inline-start: 34px;
+}
+.filters {
+  align-items: end;
+}
+.filterDates {
+  align-items: end;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+.filterFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-block: -4px 14px;
+}
+/* The phone-only toggle for the filters other than search. */
+.moreFilters {
+  display: none;
+}
+@media (max-width: 767px) {
+  .moreFilters {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-block-size: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--hair);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 550;
+  }
+  .moreFilters svg {
+    inline-size: 16px;
+    block-size: 16px;
+  }
+  .moreFilters svg[data-open] {
+    transform: rotate(180deg);
+  }
+}
+.checkRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 32px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.checkRow input {
+  inline-size: 16px;
+  block-size: 16px;
+  accent-color: var(--tang);
+}
+.refreshing {
+  opacity: 0.6;
+  transition: opacity 150ms ease;
+}
+.listFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 18px 14px;
+  border-block-start: 1px solid var(--hair);
+}
+
+/* Categories settings */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-block-end: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.backLink svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+.catToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-block-end: 14px;
+}
+.gapBelow {
+  margin-block-end: 14px;
+}
+.catRow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding-block: 10px;
+  padding-inline: 18px 10px;
+  border-block-end: 1px solid var(--hair);
+}
+.rows .catRow:last-child {
+  border-block-end: 0;
+}
+.catActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.archivedBlock {
+  display: grid;
+  gap: 6px;
+  margin-block-start: 22px;
+}
+.catPreview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px dashed var(--hair-2);
+  border-radius: 12px;
+  font-weight: 500;
+}
+.alignStart {
+  justify-self: start;
+  margin-block-start: 2px;
+}
+.iconGrid,
+.swatches {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+.iconGrid {
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+}
+.swatches {
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+}
+.iconGrid legend,
+.swatches legend {
+  margin-block-end: 6px;
+}
+.iconOption,
+.swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  block-size: 40px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+.swatch {
+  block-size: 36px;
+  border-radius: 50%;
+}
+.swatch .catIcon {
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 50%;
+  background: var(--cat-fg);
+}
+.iconOption svg {
+  inline-size: 18px;
+  block-size: 18px;
+}
+.iconOption input,
+.swatch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.iconOption:has(input:checked),
+.swatch:has(input:checked) {
+  border-color: var(--tang);
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+.iconOption:has(input:focus-visible),
+.swatch:has(input:focus-visible) {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1099px) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .filters > :first-child {
+    grid-column: 1 / -1;
+  }
+  .filters[data-folded] > [data-more] {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .homeHead {
+    margin-block-end: 12px;
+  }
+  .quickDialog {
+    padding: 16px;
+  }
+  .catRow {
+    padding-inline: 14px 6px;
+  }
+  .catActions :global(button) span {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .filterDates {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quickDialog,
+  .refreshing,
+  .iconOption,
+  .swatch {
+    transition-duration: 0ms;
+  }
+}
+
+/* The amount row draws the focus ring (focus-within); the input itself needs no second one. */
+.amountInput:focus-visible {
+  outline: none;
+}
+/* History filters: search and three pickers on one row, the date range below. */
+@media (min-width: 1100px) {
+  .filters {
+    grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  }
+  .filterDates {
+    grid-column: 1 / 2;
+  }
+}
+/* Grids size to their content's minimum by default; these must shrink to the screen instead. */
+.composer,
+.detail {
+  grid-template-columns: minmax(0, 1fr);
+}
+.addArea,
+.monthArea,
+.recentArea,
+.composer > * {
+  min-inline-size: 0;
+}
+/* Long names wrap between words, or hyphenate in the page's language; never split mid-syllable. */
+.chipLabel {
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+.chips {
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+}
+@media (max-width: 767px) {
+  .chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ===== M5: currency conversion, Amount Equivalent ===== */
+
+/* The currency picker sits where the code was: same weight, clearly a control. */
+/* Layout only: the look is select.tsx's. The element selector outranks its size class. */
+button.currencySelect {
+  flex: none;
+  letter-spacing: 0.03em;
+}
+.inlineMoney {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.inlineMoney > input {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+/* Conversion: what was entered -> what the account sees, then how. */
+.convert {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in oklab, var(--tang) 35%, var(--hair));
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--tang-wash) 55%, var(--surface));
+}
+.convertTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.convertFlow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+.convertFlow > div {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.convertFlow dt {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.convertFlow dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.convertArrow {
+  inline-size: 18px;
+  block-size: 18px;
+  color: var(--ink-3);
+  transform: rotate(-90deg);
+}
+:global([dir="rtl"]) .convertArrow {
+  transform: rotate(90deg);
+}
+.estimate,
+.exact {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  vertical-align: 2px;
+}
+.estimate {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.exact {
+  background: color-mix(in oklab, var(--pos) 14%, transparent);
+  color: var(--pos);
+}
+.convertNote {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.convertWarn {
+  color: var(--tang-text);
+}
+.staleBox {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 13px;
+}
+.methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.methodOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-block-size: 32px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.methodOption input {
+  inline-size: 16px;
+  block-size: 16px;
+  accent-color: var(--tang);
+}
+.convertFine {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* Rows: an amount entered in another currency shows under the posted one. */
+.amountCell {
+  display: grid;
+  justify-items: end;
+}
+.rowOriginal {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.factNote {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+/* Amount Equivalent */
+.eqStrip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin-block-start: 6px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.eqStripLabel {
+  font-weight: 500;
+}
+.eq {
+  display: grid;
+  gap: 12px;
+}
+.eqInput {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 10px;
+}
+.eqHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.eqHead .subTitle {
+  margin: 0;
+}
+.eqHeadActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.iconText {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tang-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.iconText svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+.iconText:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.spinning {
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.eqChoices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.eqChoice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 32px;
+  padding-inline: 10px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.eqChoice:has(input:checked) {
+  border-color: var(--tang);
+  background: var(--tang-wash);
+}
+.eqChoice input {
+  accent-color: var(--tang);
+}
+.eqList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+}
+.eqItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  padding: 10px 14px;
+  border-block-end: 1px solid var(--hair);
+}
+.eqItem:last-child {
+  border-block-end: 0;
+}
+.eqName {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.eqValue {
+  font-size: 15px;
+  font-weight: 600;
+  text-align: end;
+}
+.eqMeta {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--ink-3);
+  overflow-wrap: anywhere;
+}
+.eqUnavailable {
+  grid-column: 2;
+  color: var(--ink-2);
+}
+
+@media (max-width: 767px) {
+  .convertFlow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .convertArrow,
+  :global([dir="rtl"]) .convertArrow {
+    transform: none;
+  }
+  .eqInput {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinning {
+    animation: none;
+  }
+}
+
+/* Chips stay readable in dialogs too: a slightly tighter chip, so long names fit whole. */
+.chips {
+  grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+}
+.chip {
+  gap: 6px;
+  padding-inline: 6px;
+}
+.chip .catIconSm {
+  inline-size: 26px;
+  block-size: 26px;
+}
+@media (max-width: 767px) {
+  .chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Home: this month's spending, roughly, in another currency (display only) */
+.eq {
+  display: grid;
+  gap: 4px;
+  margin-block-start: 10px;
+  padding-block-start: 10px;
+  border-block-start: 1px dashed var(--hair);
+  font-size: 13px;
+}
+.eqRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+}
+.eqHeadline {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-inline-size: 0;
+}
+.eqValue {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.eqMuted {
+  color: var(--ink-2);
+}
+.eqTag {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.eqWarn {
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+.eqControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.eqSelectLabel {
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+button.eqSelect {
+  min-block-size: 30px;
+  padding-inline: 8px 6px;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+.eqRefresh:focus-visible,
+.eqDetails summary:focus-visible {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+}
+.eqRefresh {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 30px;
+  block-size: 30px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.eqRefresh svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+.eqRefresh:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+.eqDetails summary {
+  inline-size: fit-content;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.eqParts {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.eqParts li {
+  display: grid;
+  gap: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.eqSource,
+.eqNote {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.eqNote {
+  margin-block-start: 6px;
+}
+
+/* Refunds of a purchase (everyday milestone) */
+.refundBox {
+  display: grid;
+  gap: 6px;
+  margin-block: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.refundTotals {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.refundList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.refundList li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: baseline;
+}
+.refundList li > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+
+/* Quick templates: favourites near Quick Add, and Settings → Templates */
+.templateStrip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-block-end: 10px;
+}
+.templateChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-inline-size: 100%;
+  min-block-size: 34px;
+  padding: 3px 10px 3px 4px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    transform 120ms ease;
+}
+.templateChip:hover {
+  border-color: var(--tang);
+}
+.templateChip:active {
+  transform: scale(0.97);
+}
+.templateChip:focus-visible,
+.templateManage:focus-visible,
+.iconAction:focus-visible {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+}
+.templateChip > svg {
+  inline-size: 16px;
+  block-size: 16px;
+  margin-inline-start: 6px;
+  color: var(--tang);
+}
+.templateName {
+  max-inline-size: 14ch;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.templateAmount {
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.templateManage {
+  padding: 4px 6px;
+  color: var(--tang-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.templateManage:hover {
+  text-decoration: underline;
+}
+.templatesPage {
+  display: grid;
+  gap: 14px;
+  max-inline-size: 860px;
+}
+.pageHeadRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.inlineCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+.inlineCheck input {
+  inline-size: 16px;
+  block-size: 16px;
+  accent-color: var(--tang);
+}
+.templateList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  background: var(--surface);
+  list-style: none;
+}
+.templateRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+}
+.templateRow + .templateRow {
+  border-block-start: 1px solid var(--hair);
+}
+.templateActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.iconAction {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.iconAction:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.iconAction svg {
+  inline-size: 17px;
+  block-size: 17px;
+}
+.iconAction svg[data-on] {
+  color: var(--tang);
+  fill: var(--tang);
+}
+@media (max-width: 560px) {
+  .templateRow {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .templateActions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .templateChip {
+    transition: none;
+  }
+}
+
+/* Category groups (Settings → Categories) */
+.groupStack {
+  display: grid;
+  gap: 12px;
+}
+.groupHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px 4px;
+}
+.groupTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+.groupCount {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.groupRename {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.groupRename input {
+  flex: 1 1 180px;
+  min-inline-size: 0;
+}
+button.groupSelect {
+  max-inline-size: 150px;
+  min-block-size: 32px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.groupEmpty {
+  margin: 0;
+  padding: 4px 14px 12px;
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+/* Quick Add, compact (2026-11-14): a search for every category, and quick dates. */
+.findCategory {
+  display: flex;
+  justify-content: flex-start;
+  margin-block-start: 8px;
+}
+.findCategory > button {
+  min-inline-size: 200px;
+  max-inline-size: 100%;
+}
+.dateRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.dateRow > input {
+  flex: 1 1 140px;
+  min-inline-size: 0;
+}
+.dateChips {
+  display: flex;
+  gap: 4px;
+}
+.dateChip {
+  min-block-size: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.dateChip[aria-pressed="true"] {
+  border-color: var(--tang);
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+
+/* The moment an entry is saved. */
+.saved svg {
+  animation: savedPop 320ms var(--ease) both;
+}
+@keyframes savedPop {
+  from {
+    transform: scale(0.6);
+    opacity: 0.2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .saved svg {
+    animation: none;
+  }
+}
+
+/* Phones have New transaction in the top bar. */
+@media (max-width: 767px) {
+  .addHeader {
+    display: none;
+  }
+}

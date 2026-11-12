@@ -1,0 +1,41 @@
+# FinPilot's proxy, direct mode: the only service that publishes a port (compose.direct.yaml).
+#
+# - TLS terminates here. FINPILOT_TLS is "internal" (Caddy's own CA: the private stage and local
+#   tests) or an email address (a public certificate from Let's Encrypt, once ports are opened).
+# - No upstream is trusted: Caddy replaces any X-Forwarded-For a visitor sends.
+# - The site itself (routing, body limit, log filter) is in site.caddy.
+
+{
+	# Unprivileged ports inside the container; compose maps the host's ports to them.
+	http_port 8080
+	https_port 8443
+	# The redirect below names the public origin, which may use a different port than 8443.
+	auto_https disable_redirects
+	# Never install Caddy's local CA into any system trust store.
+	skip_install_trust
+	# Reachable only inside this container, for its health check.
+	admin 127.0.0.1:2019
+	servers {
+		timeouts {
+			read_body 15s
+			read_header 10s
+			# PDF exports can take up to 30 s to render.
+			write 60s
+			idle 2m
+		}
+		max_header_size 32KB
+	}
+}
+
+import site.caddy
+
+{$FINPILOT_HOST} {
+	tls {$FINPILOT_TLS}
+	import finpilot_site
+}
+
+# Plain HTTP only ever redirects to the public HTTPS origin. Certificate challenges are still
+# answered on this port.
+http://{$FINPILOT_HOST} {
+	redir {$FINPILOT_ORIGIN}{uri} 308
+}

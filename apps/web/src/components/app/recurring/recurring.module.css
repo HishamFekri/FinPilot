@@ -1,0 +1,249 @@
+/* Recurring: expected money, answered one occurrence at a time. Calm cards, clear states. Income,
+   expenses and debts differ by icon and label as well as colour. */
+
+.headActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.main,
+.side {
+  display: grid;
+  gap: 18px;
+  min-inline-size: 0;
+}
+.emptyIcon {
+  inline-size: 30px;
+  block-size: 30px;
+  color: var(--tang);
+}
+
+/* Kind marks */
+.kindIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  flex: none;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.kindIcon svg {
+  inline-size: 17px;
+  block-size: 17px;
+}
+.kindIcon[data-kind="income"] {
+  background: color-mix(in oklab, var(--pos) 14%, transparent);
+  color: var(--pos);
+}
+.kindIcon[data-kind="expense"] {
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+.kindIcon[data-kind="debt_payment"] {
+  background: color-mix(in oklab, #6366f1 14%, transparent);
+  color: #4f46e5;
+}
+:global(.dark) .kindIcon[data-kind="debt_payment"] {
+  color: #b2b0ff;
+}
+
+/* States: a word, always; colour supports it. */
+.state {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.state[data-state="pending"] {
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+.state[data-state="overdue"] {
+  background: color-mix(in oklab, var(--neg) 14%, transparent);
+  color: var(--neg);
+}
+.state[data-state="confirmed"] {
+  background: color-mix(in oklab, var(--pos) 14%, transparent);
+  color: var(--pos);
+}
+
+/* Occurrence rows */
+.occurrences,
+.cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.occurrence {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icon text amount"
+    "icon actions actions";
+  align-items: center;
+  gap: 4px 12px;
+  padding: 12px 18px;
+  border-block-end: 1px solid var(--hair);
+}
+.occurrence:last-child {
+  border-block-end: 0;
+}
+.occurrence > :first-child {
+  grid-area: icon;
+  align-self: start;
+}
+.occText {
+  grid-area: text;
+  display: grid;
+  min-inline-size: 0;
+}
+.occName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.occSeq {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+.occMeta {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.occAmount {
+  grid-area: amount;
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.occExpected {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+.occActions {
+  grid-area: actions;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block-start: 4px;
+}
+.occFailure {
+  grid-column: 1 / -1;
+}
+.occurrenceCompact {
+  padding-block: 10px;
+}
+
+/* Rule and debt cards */
+.ruleCard {
+  display: grid;
+  gap: 6px;
+  padding: 12px 18px 14px;
+  border-block-end: 1px solid var(--hair);
+}
+.ruleCard:last-child {
+  border-block-end: 0;
+}
+.ruleInactive {
+  opacity: 0.72;
+}
+.ruleTop {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-areas: "icon text amount";
+  align-items: center;
+  gap: 12px;
+}
+.ruleTop > :first-child {
+  grid-area: icon;
+}
+.ruleMeta {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.ruleActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+.progress {
+  display: block;
+  block-size: 6px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.progress > span {
+  display: block;
+  block-size: 100%;
+  border-radius: 6px;
+  background: #6366f1;
+  transition: inline-size 300ms var(--ease);
+}
+
+/* Rule form */
+.windowFields,
+.endFields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+.windowFields legend,
+.endFields legend {
+  margin-block-end: 6px;
+}
+.windowDay {
+  display: grid;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.windowHint {
+  flex-basis: 100%;
+}
+
+@media (max-width: 1099px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 767px) {
+  .occurrence {
+    padding-inline: 14px;
+  }
+  .ruleCard {
+    padding-inline: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress > span {
+    transition: none;
+  }
+}

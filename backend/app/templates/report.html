@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="{{ lang }}" dir="{{ dir }}">
+<head>
+<meta charset="utf-8">
+<title>FinPilot · {{ t.title }}</title>
+{% include "_pdf_styles.html" %}
+</head>
+<body>
+  <header class="masthead">
+    <div>
+      <div class="brand"><span class="mark"></span>FinPilot</div>
+      <h1>{{ t.title }}</h1>
+      <div>{{ t.period }}: <strong>{{ period }}</strong></div>
+    </div>
+    <div class="meta">
+      <div>{{ t.generated }}: <bdi class="n">{{ generated }}</bdi></div>
+      <div>{{ t.time_zone }}: <bdi class="n">{{ time_zone }}</bdi></div>
+    </div>
+  </header>
+
+  <div class="filters">
+    <strong>{{ t.filters }}:</strong>
+    {% if filters %}{% for label, value in filters %}<span>{{ label }}: {{ value }}</span>{% endfor %}
+    {% else %}{{ t.no_filters }}{% endif %}
+    {% if allocation %}<span>{{ t.allocation }}: {{ allocation }}</span>{% endif %}
+  </div>
+  {% if complete %}
+  <p class="completeness ok">{{ completeness }}</p>
+  {% else %}
+  <div class="completeness partial"><strong>{{ t.partial_title }}</strong> {{ completeness }}</div>
+  {% endif %}
+  {% if search_note %}<p class="note">{{ search_note }}</p>{% endif %}
+
+  <h2>{{ t.summary }}</h2>
+  {% if not currencies %}<p class="muted">{{ t.none }}</p>{% endif %}
+  {% for c in currencies %}
+  <section class="currency">
+    <h3><bdi class="n">{{ c.code }}</bdi></h3>
+    <div class="tiles">
+      <div class="tile"><div class="label">{{ t.income }}</div><div class="value pos"><bdi class="n">{{ c.income }}</bdi></div><div class="prev">{{ t.previous }}: <bdi class="n">{{ c.prev_income }}</bdi></div></div>
+      <div class="tile"><div class="label">{{ t.expenses }}</div><div class="value"><bdi class="n">{{ c.expenses }}</bdi></div><div class="prev">{{ t.previous }}: <bdi class="n">{{ c.prev_expenses }}</bdi></div></div>
+      <div class="tile"><div class="label">{{ t.net }}</div><div class="value {{ 'neg' if c.net_negative else 'pos' }}"><bdi class="n">{{ c.net }}</bdi></div></div>
+      <div class="tile"><div class="label">{{ t.count_entries }}</div><div class="value"><bdi class="n">{{ c.count }}</bdi></div></div>
+    </div>
+    <p class="note">{{ t.net_note }}</p>
+    {% if c.trip_shares %}
+    <p class="note">{{ t.non_trip }}: <bdi class="n">{{ c.non_trip }}</bdi> · {{ t.trip_shares }}: <bdi class="n">{{ c.trip_shares }}</bdi></p>
+    <h3>{{ t.trip_shares }}</h3>
+    <p class="note">{{ t.trip_shares_note }}</p>
+    <table>
+      <thead><tr><th>{{ t.trip }}</th><th class="num">{{ t.expenses_list }}</th><th class="num">{{ t.amount }}</th></tr></thead>
+      <tbody>
+      {% for s in c.trips %}
+        <tr><td dir="auto">{{ s.name }}</td><td class="num"><bdi class="n">{{ s.count }}</bdi></td><td class="num"><bdi class="n">{{ s.amount }}</bdi></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if c.balances %}
+    <table>
+      <thead><tr><th>{{ t.balances }}</th><th class="num"><bdi class="n">{{ c.code }}</bdi></th></tr></thead>
+      <tbody>
+      {% for label, amount, strong in c.balances %}
+        <tr class="{{ 'total' if strong else '' }}"><td>{{ label }}</td><td class="num"><bdi class="n">{{ amount }}</bdi></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% elif balances_hidden %}<p class="note">{{ t.balances_hidden }}</p>{% endif %}
+
+    {% if c.categories %}
+    <h3>{{ t.by_category }}</h3>
+    <table>
+      <thead><tr><th>{{ t.category }}</th><th class="num">{{ t.amount }}</th><th class="num">{{ t.share }}</th><th class="num">{{ t.previous }}</th></tr></thead>
+      <tbody>
+      {% for row in c.categories %}
+        <tr>
+          <td>{{ row.name }}<div class="bar"><span style="width: {{ row.width }}%"></span></div></td>
+          <td class="num"><bdi class="n">{{ row.amount }}</bdi></td>
+          <td class="num"><bdi class="n">{{ row.share }}%</bdi></td>
+          <td class="num muted"><bdi class="n">{{ row.previous }}</bdi></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if c.series %}
+    <h3>{{ t.over_time }}</h3>
+    <table>
+      <thead><tr><th>{{ c.series_label }}</th><th class="num">{{ t.income }}</th><th class="num">{{ t.expenses }}</th></tr></thead>
+      <tbody>
+      {% for p in c.series %}
+        <tr><td><bdi class="n">{{ p.label }}</bdi></td><td class="num"><bdi class="n">{{ p.income }}</bdi></td><td class="num"><bdi class="n">{{ p.expenses }}</bdi></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+  <h2>{{ t.details }}</h2>
+  {% if not complete %}<p class="note"><strong>{{ t.partial_title }}</strong> · {{ completeness }}</p>{% endif %}
+  {% if rows %}
+  <table>
+    <thead>
+      <tr>
+        <th>{{ t.date }}</th><th>{{ t.description }}</th><th>{{ t.category }}</th><th>{{ t.account }}</th>
+        <th class="num">{{ t.amount }}</th><th class="num">{{ t.original }}</th><th>{{ t.conversion }}</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="{{ 'voided' if r.voided else '' }}">
+        <td class="nowrap"><bdi class="n">{{ r.date }}</bdi></td>
+        <td dir="auto">{{ r.description }}</td>
+        <td dir="auto">{{ r.category }}</td>
+        <td dir="auto">{{ r.account }}</td>
+        <td class="num {{ 'pos' if r.incoming else '' }}"><bdi class="n">{{ r.amount }}</bdi></td>
+        <td class="num"><bdi class="n">{{ r.original }}</bdi></td>
+        <td class="muted"><bdi>{{ r.conversion }}</bdi></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">{{ t.none }}</p>{% endif %}
+
+  <h2>{{ t.recurring }}</h2>
+  <p class="note">{{ t.recurring_note }}</p>
+  {% if recurring %}
+  <table>
+    <thead><tr><th>{{ t.description }}</th><th>{{ t.window }}</th><th>{{ t.status }}</th><th class="num">{{ t.expected }}</th><th class="num">{{ t.actual }}</th></tr></thead>
+    <tbody>
+    {% for o in recurring %}
+      <tr><td dir="auto">{{ o.name }}</td><td><bdi class="n">{{ o.window }}</bdi></td><td><span class="tag {{ o.state }}">{{ o.state_label }}</span></td>
+          <td class="num muted"><bdi class="n">{{ o.expected }}</bdi></td><td class="num"><bdi class="n">{{ o.actual }}</bdi></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">{{ t.none }}</p>{% endif %}
+
+  <h2>{{ t.debts }}</h2>
+  <p class="note">{{ t.debts_note }}</p>
+  {% if debts %}
+  <table>
+    <thead><tr><th>{{ t.who }}</th><th>{{ t.direction }}</th><th class="num">{{ t.original_debt }}</th><th class="num">{{ t.repaid }}</th><th class="num">{{ t.remaining }}</th></tr></thead>
+    <tbody>
+    {% for d in debts %}
+      <tr><td dir="auto">{{ d.who }}</td><td>{{ d.direction }}</td><td class="num"><bdi class="n">{{ d.original }}</bdi></td>
+          <td class="num"><bdi class="n">{{ d.repaid }}</bdi></td><td class="num"><bdi class="n">{{ d.remaining }}</bdi></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">{{ t.none }}</p>{% endif %}
+</body>
+</html>

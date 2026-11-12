@@ -1,0 +1,1134 @@
+/* Trips: Waypoint tokens from app.module.css; logical properties only, so Arabic mirrors. */
+
+.page {
+  display: grid;
+  gap: 16px;
+  min-inline-size: 0;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.headActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+/* --- Trip list */
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.list > li + li {
+  border-block-start: 1px solid var(--hair);
+}
+.tripRow {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 14px 16px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+.tripRow:hover {
+  background: color-mix(in oklab, var(--surface-2) 70%, transparent);
+}
+.tripRow:focus-visible {
+  outline: 2px solid var(--tang);
+  outline-offset: -2px;
+}
+.tripMark {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 42px;
+  block-size: 42px;
+  border-radius: 12px;
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+.tripMark svg {
+  inline-size: 20px;
+  block-size: 20px;
+}
+.tripName {
+  display: block;
+  font-size: 15px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.tripSub {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.tripEnd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tag svg {
+  inline-size: 13px;
+  block-size: 13px;
+}
+.tag[data-tone="accent"] {
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+.tag[data-tone="positive"] {
+  background: var(--pos-wash);
+  color: var(--pos);
+}
+.tag[data-tone="negative"] {
+  background: var(--neg-wash);
+  color: var(--neg);
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 32px 16px;
+  border: 1px dashed var(--hair);
+  border-radius: 16px;
+  text-align: center;
+}
+.empty svg {
+  inline-size: 28px;
+  block-size: 28px;
+  color: var(--tang-text);
+}
+.emptyTitle {
+  margin: 0;
+  font-weight: 650;
+}
+
+/* --- Trip page */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.main,
+.side {
+  display: grid;
+  gap: 16px;
+  min-inline-size: 0;
+}
+.card {
+  min-inline-size: 0;
+  border: 1px solid var(--hair);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+  padding: 14px 16px 0;
+}
+.cardTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+.cardBody {
+  padding: 10px 16px 16px;
+}
+.note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+/* Waiting for you: the first thing on the page when something needs the person. */
+.waiting {
+  border-color: var(--tang);
+  background: var(--tang-wash);
+}
+.waitingList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.waitingItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+
+/* Expense rows */
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rows > li + li {
+  border-block-start: 1px solid var(--hair);
+}
+.expenseRow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 12px;
+  inline-size: 100%;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.expenseRow:hover {
+  background: color-mix(in oklab, var(--surface-2) 70%, transparent);
+}
+.expenseRow:focus-visible {
+  outline: 2px solid var(--tang);
+  outline-offset: -2px;
+}
+.expenseRow[data-status="cancelled"] .rowTitle,
+.expenseRow[data-status="rejected"] .rowTitle {
+  text-decoration: line-through;
+  color: var(--ink-2);
+}
+.rowText {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+.rowTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.rowTitle > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-inline-size: 0;
+}
+.rowSub {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowAmount {
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.rowAmount strong {
+  font-size: 14px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.rowAmount span {
+  font-size: 12px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* Balances */
+.balances {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.balance {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 10px;
+}
+.balanceName {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.balanceSub {
+  grid-column: 2 / -1;
+  font-size: 12px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.net {
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: end;
+}
+.net[data-sign="pos"] {
+  color: var(--pos);
+}
+.net[data-sign="neg"] {
+  color: var(--neg);
+}
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 50%;
+  background: var(--sky);
+  color: var(--sky-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--pos);
+}
+.check svg {
+  inline-size: 14px;
+  block-size: 14px;
+}
+.suggestions {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-block-start: 1px dashed var(--hair);
+  list-style: none;
+  font-size: 13px;
+}
+.suggestions li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 10px;
+}
+.figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.figures div {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.figures dt {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.figures dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.memberList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.memberItem {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.memberActions {
+  display: flex;
+  gap: 4px;
+}
+.linkBox {
+  display: grid;
+  gap: 6px;
+  margin-block-start: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+}
+.linkBox code {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  direction: ltr;
+  text-align: start;
+}
+
+.activity {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.activity li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 10px;
+}
+.activity time {
+  color: var(--ink-2);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* --- Expense form */
+.choices {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+.choiceRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(90px, 130px) auto;
+  align-items: center;
+  gap: 6px 10px;
+  min-block-size: 40px;
+}
+.choiceRow input[type="checkbox"] {
+  inline-size: 18px;
+  block-size: 18px;
+  accent-color: var(--tang);
+}
+.choiceName {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.choiceShare {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+.smallInput {
+  min-inline-size: 0;
+}
+.notice {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in oklab, var(--tang) 35%, transparent);
+  border-radius: 8px;
+  background: var(--tang-wash);
+  font-size: 13px;
+}
+.rateBox {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  font-size: 13px;
+}
+.totalsLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 10px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* --- Expense detail */
+.detailAmount {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.facts {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+.facts div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  font-size: 13.5px;
+}
+.facts dt {
+  color: var(--ink-2);
+}
+.facts dd {
+  margin: 0;
+  text-align: end;
+}
+.subhead {
+  margin: 16px 0 6px;
+  font-size: 13.5px;
+  font-weight: 650;
+}
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.table th,
+.table td {
+  padding: 6px 4px;
+  border-block-end: 1px solid var(--hair);
+  text-align: start;
+}
+.table th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.table .num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.proposal {
+  display: grid;
+  gap: 8px;
+  margin-block-start: 12px;
+  padding: 12px;
+  border: 1px solid var(--tang);
+  border-radius: 12px;
+  background: var(--tang-wash);
+}
+.history {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 12px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .tripRow {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+  .tripEnd {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+  .choiceRow {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .choiceRow .smallInput {
+    grid-column: 2 / -1;
+  }
+  .figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tang-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.back:hover {
+  text-decoration: underline;
+}
+.back svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+/* --- Payments between members (B4) */
+.payments {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.payment {
+  display: grid;
+  gap: 4px;
+  padding-block-end: 10px;
+  border-block-end: 1px solid var(--hair);
+}
+.payment:last-child {
+  padding-block-end: 0;
+  border-block-end: 0;
+}
+.paymentTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 10px;
+}
+.paymentLine {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.paymentActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 4px;
+}
+.paymentActions input {
+  flex: 1 1 160px;
+  min-inline-size: 0;
+}
+.suggestionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 10px;
+}
+.disputeBox {
+  display: grid;
+  gap: 6px;
+  margin-block-start: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+}
+.disputeItem {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+/* --- Your money in this trip (B5). Private to the person; never part of a trip response. */
+.mine {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin: 0 0 8px;
+}
+.mine div {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.mine dt {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.mine dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.mine dd.mineSmall {
+  font-size: 13px;
+  font-weight: 550;
+}
+/* Settled and waiting amounts: one full-width line each, label at the start, amounts at the end. */
+.mine div.mineLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+  grid-column: 1 / -1;
+  padding-block-start: 8px;
+  border-block-start: 1px solid var(--hair);
+}
+.mine div.mineLine + div.mineLine {
+  padding-block-start: 6px;
+  border-block-start: 0;
+}
+.mineNet[data-sign="pos"] {
+  color: var(--pos);
+}
+.mineNet[data-sign="neg"] {
+  color: var(--neg);
+}
+.mineBox {
+  display: grid;
+  gap: 8px;
+  margin-block-start: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 13px;
+}
+.mineBox[data-tone="attention"] {
+  border-color: var(--tang);
+  background: var(--tang-wash);
+}
+.mineBoxTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+}
+.mineBoxTitle svg,
+.inlineIcon {
+  inline-size: 15px;
+  block-size: 15px;
+  flex: none;
+  vertical-align: -2px;
+}
+.option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  min-block-size: 32px;
+  font-size: 13.5px;
+}
+.option input {
+  inline-size: 18px;
+  block-size: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--tang);
+}
+.reportLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.reportLink:hover {
+  border-color: var(--tang);
+}
+.reportLink:focus-visible {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+}
+.reportLink svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+/* --- Trip report (B5) */
+.eyebrow {
+  margin: 0 0 2px;
+  color: var(--tang-text);
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: end;
+  gap: 10px 12px;
+  padding: 14px 16px;
+}
+.filterActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.scrollX {
+  overflow-x: auto;
+}
+.reportTable {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.reportTable th {
+  padding: 6px 8px;
+  border-block-end: 1px solid var(--hair);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: start;
+}
+.reportTable td {
+  padding: 8px;
+  border-block-end: 1px solid var(--hair);
+  vertical-align: top;
+}
+.reportTable tr:last-child td {
+  border-block-end: 0;
+}
+.reportTable .num {
+  text-align: end;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.catCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cellSub {
+  display: block;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.bar {
+  display: block;
+  block-size: 4px;
+  margin-block-start: 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.bar > span {
+  display: block;
+  block-size: 100%;
+  border-radius: 4px;
+  background: var(--tang);
+}
+.reportMember {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  padding-block: 8px;
+  border-block-end: 1px solid var(--hair);
+}
+.reportMember:last-child {
+  border-block-end: 0;
+}
+.reportMember .balanceSub {
+  grid-column: 1 / -1;
+}
+/* Net as a bar from the middle: owed to the right of centre, owing to the left (mirrored in RTL). */
+.netBar {
+  position: relative;
+  grid-column: 1 / -1;
+  block-size: 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+.netBar > span {
+  position: absolute;
+  inset-block: 0;
+  border-radius: 4px;
+}
+.netBar[data-sign="pos"] > span {
+  inset-inline-start: 50%;
+  background: var(--pos);
+}
+.netBar[data-sign="neg"] > span {
+  inset-inline-end: 50%;
+  background: var(--neg);
+}
+@media print {
+  .noPrint {
+    display: none !important;
+  }
+}
+/* On a phone the expense table scrolls inside its card, never the page. */
+.scrollX > .reportTable {
+  min-inline-size: 600px;
+}
+/* One-step: record my own cash for an expense I paid (private) */
+.recordBox {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+/* =========================================================== Planning, budgets, trip numbers */
+.planItems {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.planItem {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto auto;
+  align-items: start;
+  gap: 4px 12px;
+  padding: 10px 0;
+  border-block-end: 1px solid var(--hair);
+  font-size: 14px;
+}
+.planItem:last-child {
+  border-block-end: 0;
+}
+.planItem[data-cancelled] .planTitle {
+  text-decoration: line-through;
+  color: var(--ink-3);
+}
+.planIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.planIcon svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+.planText {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.planTitle {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.planMeta,
+.planNotes {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.planLink {
+  justify-self: start;
+  max-inline-size: 100%;
+  overflow: hidden;
+  font-size: 12.5px;
+  color: var(--tang-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.planAmounts {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.planActions {
+  display: flex;
+  gap: 2px;
+}
+.iconAction {
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.iconAction svg {
+  inline-size: 16px;
+  block-size: 16px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iconAction:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+}
+
+.budgetBlock {
+  display: grid;
+  gap: 6px;
+  padding-block: 10px;
+  border-block-end: 1px solid var(--hair);
+}
+.budgetBlock:first-child {
+  padding-block-start: 0;
+}
+.budgetBlock:last-child {
+  padding-block-end: 0;
+  border-block-end: 0;
+}
+.budgetHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+}
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tang-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.budgetLine {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.budgetTrack,
+.dailyTrack {
+  display: block;
+  block-size: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+.budgetFill,
+.dailyFill {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--tang);
+}
+.budgetFill[data-over] {
+  background: var(--neg);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+}
+.statGrid > div {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.statGrid dt {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.statGrid dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.kindList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.kindList li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.dailyBars {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dailyBars li {
+  display: grid;
+  grid-template-columns: minmax(90px, auto) minmax(40px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.dailyDay {
+  color: var(--ink-2);
+}
+@media (max-width: 599px) {
+  .planItem {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+  }
+  .planAmounts {
+    grid-column: 2;
+    justify-items: start;
+  }
+}
+/* Cards whose body stacks several blocks (plan, budgets, trip numbers). */
+.cardStack {
+  display: grid;
+  gap: 10px;
+}
+.cardStack > .subhead {
+  margin: 6px 0 0;
+}

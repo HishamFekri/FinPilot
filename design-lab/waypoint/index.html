@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Waypoint · FinPilot concept C</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400..800&family=Rubik:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared/lab.css">
+<style>
+:root {
+  --bg: #f3f6f6; --surface: #ffffff; --ink: #0d2a30; --ink-2: #4c6468; --hair: #d3dfe0;
+  --field: #0b3b45; --field-2: #0f4a56; --on-field: #effaf9; --on-field-2: #a9cfd0;
+  --tang: #ff6a2b; --tang-text: #b6410d; --sky: #8fd0ff; --pos: #1d7a57;
+  --ease: cubic-bezier(.23, 1, .32, 1); --ease-io: cubic-bezier(.77, 0, .175, 1);
+  --display: "Unbounded", "Rubik", system-ui, sans-serif; --font: "Rubik", system-ui, sans-serif;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #061c21; --surface: #0b2a31; --ink: #e8f6f5; --ink-2: #9cb9bb; --hair: #1c434b;
+  --field: #0d3a44; --field-2: #124955; --on-field: #effaf9; --on-field-2: #a3c9cb;
+  --tang: #ff8752; --tang-text: #ff9a6c; --sky: #7cc4f5; --pos: #6fd0a6; color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] { --bg: #061c21; --surface: #0b2a31; --ink: #e8f6f5; --ink-2: #9cb9bb; --hair: #1c434b;
+    --field: #0d3a44; --field-2: #124955; --on-field: #effaf9; --on-field-2: #a3c9cb;
+    --tang: #ff8752; --tang-text: #ff9a6c; --sky: #7cc4f5; --pos: #6fd0a6; color-scheme: dark; }
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16.5px/1.55 var(--font); }
+:lang(ar) body { line-height: 1.7; }
+:root:lang(ar) { --display: "Rubik", system-ui, sans-serif; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02em; line-height: 1.02; }
+:lang(ar) :is(h1, h2, h3) { letter-spacing: 0; line-height: 1.25; font-weight: 700; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--tang); outline-offset: 3px; border-radius: 6px; }
+[tabindex="-1"]:focus { outline: none; }
+.num { font-variant-numeric: tabular-nums; }
+bdi { unicode-bidi: isolate; }
+svg.i { width: 22px; height: 22px; stroke-width: 2.25; flex: none; }
+[hidden] { display: none !important; }
+
+.btn { display: inline-flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 24px; border-radius: 16px; border: 0; cursor: pointer; font-weight: 600; text-decoration: none;
+  transition: transform 150ms var(--ease), background-color 180ms ease; }
+.btn:active { transform: scale(.97); }
+.btn-tang { background: var(--tang); color: #1a0d05; }
+.btn-ghost { box-shadow: inset 0 0 0 2px currentColor; background: transparent; }
+.g-btn { background: #fff; color: #1f1f1f; padding-inline: 14px 24px; }
+.g-btn .g { display: grid; place-items: center; width: 24px; height: 24px; }
+.g-btn .g svg { width: 22px; height: 22px; }
+.g-btn .spin { display: none; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #e2e2e2; border-top-color: #ff6a2b; animation: spin 650ms linear infinite; }
+[data-auth="redirecting"] .g-btn .g svg { display: none; }
+[data-auth="redirecting"] .g-btn .spin { display: block; }
+@keyframes spin { to { transform: rotate(1turn); } }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 18px; text-decoration: none; view-transition-name: brand; }
+.brand-mark { width: 30px; height: 30px; }
+.cta-share { view-transition-name: cta; }
+
+/* ---------- Landing: hero field */
+.field { background: var(--field); color: var(--on-field); }
+.lhead { display: flex; justify-content: space-between; align-items: center; padding: 20px clamp(16px, 4vw, 56px); }
+.lhead .btn-ghost { min-height: 44px; border-radius: 12px; color: var(--on-field); }
+.hero { position: relative; min-height: min(86vh, 860px); display: grid; align-content: center; padding: 24px clamp(16px, 4vw, 56px) 96px; overflow: hidden; }
+.hero h1 { font-size: clamp(44px, 8.6vw, 148px); font-weight: 800; max-width: 11ch; position: relative; z-index: 1; }
+:lang(ar) .hero h1 { font-size: clamp(42px, 7vw, 112px); }
+.hero p { max-width: 44ch; margin-top: 26px; font-size: clamp(17px, 1.4vw, 21px); color: var(--on-field-2); position: relative; z-index: 1; }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; position: relative; z-index: 1; }
+.hero-route { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hero-route path { fill: none; stroke: var(--tang); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: var(--draw, 1); }
+.hero-route .ghost { stroke: var(--field-2); stroke-dasharray: 0.006 0.012; stroke-dashoffset: 0; stroke-width: 4; }
+.hero-route circle { fill: var(--sky); }
+
+/* ---------- Landing: the story, told in four stops */
+.story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 80px); padding: 0 clamp(16px, 4vw, 56px); max-width: 1320px; margin: 0 auto; }
+.story .steps { padding-block: 18vh 30vh; display: grid; gap: 34vh; }
+.step h2 { font-size: clamp(28px, 3.2vw, 46px); }
+.step p { margin-top: 14px; max-width: 38ch; color: var(--ink-2); font-size: 18px; }
+.step .stop { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 16px; font-weight: 600; color: var(--tang-text); }
+.step .stop::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 3px solid var(--tang); }
+.stage { position: sticky; top: 64px; height: calc(100vh - 96px); display: grid; place-items: center; }
+.ticket { width: min(100%, 420px); background: var(--surface); border-radius: 26px; padding: 28px; box-shadow: 0 30px 60px -30px rgb(11 59 69 / .45), 0 0 0 1px var(--hair); position: relative; }
+.ticket::after { content: ""; position: absolute; inset-inline: 22px; top: 96px; border-top: 2px dashed var(--hair); }
+.ticket .t-head { display: flex; justify-content: space-between; align-items: center; height: 44px; margin-bottom: 40px; font-weight: 600; }
+.ticket .t-head .trip { color: var(--tang-text); }
+.scene { display: grid; }
+.scene > div { grid-area: 1 / 1; transition: opacity 260ms ease, filter 260ms ease, transform 260ms var(--ease); }
+.scene > div:not(.on) { opacity: 0; filter: blur(6px); transform: translateY(8px); pointer-events: none; }
+.scene .big { font-family: var(--display); font-weight: 700; font-size: clamp(44px, 4.6vw, 64px); letter-spacing: -.03em; line-height: 1.05; }
+.scene .lab { color: var(--ink-2); font-weight: 500; margin-bottom: 6px; }
+.people { display: flex; gap: 10px; margin-top: 18px; }
+.people span { flex: 1; border-radius: 14px; padding: 12px; background: var(--bg); text-align: center; font-weight: 600; }
+.people span.you { background: var(--tang); color: #1a0d05; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pair .big { font-size: clamp(34px, 3.4vw, 48px); }
+.settle { margin-top: 16px; display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: color-mix(in oklab, var(--pos) 12%, var(--surface)); font-weight: 600; }
+.settle i { width: 26px; height: 26px; border-radius: 50%; background: var(--pos); display: grid; place-items: center; color: #fff; font-style: normal; }
+.end-band { background: var(--tang); color: #1a0d05; padding: clamp(48px, 8vw, 112px) clamp(16px, 4vw, 56px); display: grid; gap: 26px; justify-items: start; }
+.end-band h2 { font-size: clamp(34px, 5vw, 72px); max-width: 16ch; }
+.end-band small { max-width: 60ch; font-size: 15px; }
+
+/* ---------- Sign in: a boarding pass on the field */
+.sgn { min-height: calc(100vh - 40px); display: grid; place-items: center; padding: 40px 16px; background: var(--field); color: var(--on-field); }
+.pass { width: min(100%, 560px); background: var(--surface); color: var(--ink); border-radius: 28px; display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; }
+.pass .top { padding: 28px 30px 24px; display: grid; gap: 6px; }
+.pass .route { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; margin-top: 18px; }
+.pass .route b { font-family: var(--display); font-size: 22px; }
+.pass .route small { display: block; color: var(--ink-2); font-size: 13px; font-weight: 500; }
+.pass .route .line { height: 3px; border-radius: 3px; background: linear-gradient(to right, var(--tang) 50%, transparent 0) 0 0 / 14px 3px repeat-x; position: relative; }
+:root[dir="rtl"] .pass .route .line { background-position: 100% 0; }
+.pass .route .line::after { content: ""; position: absolute; top: -6px; inset-inline-end: -2px; width: 15px; height: 15px; border-radius: 50%; background: var(--tang); }
+.pass .perf { position: relative; height: 0; border-top: 2px dashed var(--hair); margin-inline: 22px; }
+.pass .perf::before, .pass .perf::after { content: ""; position: absolute; top: -15px; width: 28px; height: 28px; border-radius: 50%; background: var(--field); }
+.pass .perf::before { inset-inline-start: -38px; } .pass .perf::after { inset-inline-end: -38px; }
+.pass .bot { padding: 24px 30px 28px; display: grid; gap: 16px; }
+.pass h1 { font-size: clamp(28px, 4vw, 38px); }
+.pass .g-btn { width: 100%; justify-content: center; min-height: 58px; font-size: 17px; box-shadow: inset 0 0 0 2px var(--ink); }
+.pass small { color: var(--ink-2); font-size: 13.5px; }
+.alert { display: none; padding: 12px 14px; border-radius: 12px; font-weight: 600; background: color-mix(in oklab, var(--tang) 16%, var(--surface)); color: var(--tang-text); }
+[data-auth="cancelled"] .alert-cancelled, [data-auth="expired"] .alert-expired { display: block; }
+.proto { font-size: 13px; color: var(--ink-2); }
+
+/* ---------- App shell */
+.app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: calc(100vh - 40px); }
+.band { background: var(--field); color: var(--on-field); padding: 22px 14px; display: flex; flex-direction: column; gap: 2px; position: sticky; top: 40px; height: calc(100vh - 40px); }
+.band .brand { margin: 0 10px 28px; }
+.band a.nav { display: flex; align-items: center; gap: 14px; padding: 11px 12px; border-radius: 14px; color: var(--on-field-2); text-decoration: none; font-weight: 500; font-size: 16.5px; position: relative;
+  transition: background-color 160ms ease, color 160ms ease; }
+.band a.nav[aria-current="page"] { color: var(--on-field); background: var(--field-2); }
+.band a.nav[aria-current="page"]::after { content: ""; margin-inline-start: auto; width: 10px; height: 10px; border-radius: 50%; background: var(--tang); }
+@media (hover: hover) and (pointer: fine) { .band a.nav:hover { color: var(--on-field); } }
+.main { min-width: 0; }
+.journey { background: var(--field); color: var(--on-field); padding: 22px clamp(16px, 3vw, 44px) 26px; border-end-end-radius: 40px; }
+.jtop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.jtop h1 { font-size: clamp(30px, 4vw, 56px); font-weight: 800; }
+.chip { font-size: 13px; padding: 4px 11px; border-radius: 999px; background: var(--field-2); color: var(--on-field-2); }
+.jtop .end { margin-inline-start: auto; display: flex; gap: 10px; align-items: center; position: relative; }
+.avatar { width: 46px; height: 46px; border-radius: 14px; border: 0; cursor: pointer; background: var(--sky); color: #06222a; font-family: var(--display); font-weight: 700; transition: transform 150ms var(--ease); }
+.avatar:active { transform: scale(.95); }
+.pop { position: absolute; top: calc(100% + 10px); inset-inline-end: 0; z-index: 30; min-width: 270px; background: var(--surface); color: var(--ink); border-radius: 20px; padding: 8px;
+  box-shadow: 0 0 0 1px var(--hair), 0 30px 60px -24px rgb(0 0 0 / .45); transform-origin: top right; transition: opacity 150ms ease, transform 180ms var(--ease); }
+:root[dir="rtl"] .pop { transform-origin: top left; }
+@starting-style { .pop { opacity: 0; transform: scale(.96) translateY(-4px); } }
+.pop .who { padding: 10px 12px 12px; border-bottom: 1px solid var(--hair); margin-bottom: 6px; font-size: 14px; color: var(--ink-2); }
+.pop .who strong { display: block; color: var(--ink); font-size: 16px; }
+.pop button { display: flex; width: 100%; gap: 10px; align-items: center; padding: 10px 12px; border: 0; background: none; border-radius: 12px; cursor: pointer; text-align: start; font-weight: 500; }
+@media (hover: hover) and (pointer: fine) { .pop button:hover { background: var(--bg); } }
+.pop label { display: grid; gap: 6px; padding: 8px 12px; font-weight: 600; }
+.pop input { font: 700 26px var(--display); padding: 10px 12px; border-radius: 12px; border: 2px solid var(--hair); background: var(--bg); color: var(--ink); width: 100%; }
+.pop .echo { padding: 0 12px 4px; color: var(--ink-2); }
+.pop .echo bdi { color: var(--ink); font-weight: 600; }
+.pop .soon { padding: 4px 12px 10px; font-size: 13.5px; color: var(--ink-2); }
+
+.route-wrap { margin-top: 18px; position: relative; }
+#c-route { display: block; width: 100%; height: 220px; touch-action: pan-y; cursor: pointer; }
+#c-route .road { fill: none; stroke: var(--field-2); stroke-width: 14; stroke-linecap: round; }
+#c-route .line { fill: none; stroke: var(--on-field); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+#c-route.drawn .line { stroke-dashoffset: 0; transition: stroke-dashoffset 1100ms var(--ease-io); }
+#c-route .stop { fill: var(--field); stroke: var(--on-field); stroke-width: 2.5; transform-box: fill-box; transform-origin: center; transition: transform 200ms var(--ease), fill 160ms ease; }
+#c-route .stop.big { fill: var(--sky); stroke: var(--sky); }
+#c-route .stop.cur { fill: var(--tang); stroke: var(--tang); transform: scale(1.35); }
+#c-route .flag { fill: var(--tang); }
+#c-route .flagpole { stroke: var(--tang); stroke-width: 2.5; }
+#c-route .lbl { fill: var(--on-field-2); font: 500 12px var(--font); }
+#c-route .stops-in .stop { opacity: 0; }
+#c-route.drawn .stop { opacity: 1; transition: opacity 200ms ease var(--dl, 0ms), transform 200ms var(--ease), fill 160ms ease; }
+.rcap { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; min-height: 30px; margin-top: 6px; color: var(--on-field-2); }
+.rcap strong { color: var(--on-field); font-size: 18px; font-weight: 600; }
+.rkey { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13.5px; color: var(--on-field-2); margin-top: 6px; }
+.rkey span { display: inline-flex; align-items: center; gap: 7px; }
+.rkey i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+
+.body { padding: 34px clamp(16px, 3vw, 44px) 80px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px clamp(24px, 4vw, 64px); }
+.body h2 { font-size: 22px; margin-bottom: 18px; }
+.lanes { grid-column: 1 / -1; display: grid; gap: 14px; }
+.lane { display: grid; grid-template-columns: minmax(110px, 180px) minmax(0, 1fr) auto; gap: 16px; align-items: center; }
+.lane .k { font-weight: 600; }
+.lane .k small { display: block; font-weight: 400; color: var(--ink-2); font-size: 13.5px; }
+.lane .bar { height: 26px; border-radius: 9px; background: var(--hair); overflow: hidden; }
+.lane .bar i { display: block; height: 100%; border-radius: 9px; transform-origin: var(--from, left); transform: scaleX(0); transition: transform 900ms var(--ease) var(--dl, 0ms); }
+:root[dir="rtl"] .lane .bar i { --from: right; }
+.lanes.on .bar i { transform: scaleX(var(--p)); }
+.lane .v { font-family: var(--display); font-weight: 700; font-size: clamp(20px, 2vw, 28px); min-width: 9ch; text-align: end; }
+.lane.inc .bar i { background: var(--sky); } .lane.spent .bar i { background: var(--tang); } .lane.cash .bar i { background: var(--ink); }
+.whybox { grid-column: 1 / -1; margin-top: -10px; color: var(--ink-2); font-size: 15px; }
+.cat { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 10px 0; }
+.cat .bar { grid-column: 1 / -1; height: 12px; border-radius: 6px; background: var(--hair); position: relative; }
+.cat .bar i { position: absolute; inset-block: 0; inset-inline-start: 0; width: calc(var(--p) * 100%); border-radius: 6px; background: var(--field); }
+.cat.over .bar i { background: var(--tang); }
+.cat .bar b { position: absolute; top: -4px; bottom: -4px; width: 3px; border-radius: 3px; background: var(--ink); inset-inline-start: calc(var(--l) * 100%); }
+.cat .s { grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-2); }
+.cat.over .s { color: var(--tang-text); font-weight: 600; }
+.rec { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 12px 0; border-bottom: 1px solid var(--hair); }
+.rec .d { font-size: 13.5px; color: var(--ink-2); }
+.rec .a { font-weight: 600; }
+.rec .a.pos { color: var(--pos); }
+.rec .n { grid-column: 1 / -1; font-size: 13.5px; color: var(--tang-text); }
+.stub { margin-top: 20px; border-radius: 20px; background: var(--field); color: var(--on-field); padding: 18px 20px; display: grid; gap: 4px; position: relative; overflow: hidden; }
+.stub strong { font-family: var(--display); font-size: 30px; }
+.stub small { color: var(--on-field-2); }
+.stub::after { content: ""; position: absolute; inset-inline-end: 18px; top: 18px; width: 14px; height: 14px; border-radius: 50%; background: var(--tang); }
+.cur2 { margin-top: 14px; font-size: 14px; color: var(--ink-2); }
+
+.bottom { display: none; }
+@media (max-width: 1023px) {
+  .app { grid-template-columns: 84px minmax(0, 1fr); }
+  .band { align-items: center; padding-inline: 10px; }
+  .band .brand span, .band a.nav span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .band a.nav { justify-content: center; width: 56px; }
+  .band a.nav[aria-current="page"]::after { position: absolute; inset-inline-end: 4px; top: 6px; width: 8px; height: 8px; }
+  .story { grid-template-columns: minmax(0, 1fr); }
+  .stage { position: sticky; top: 40px; height: auto; padding-block: 16px; z-index: 2; background: var(--bg); }
+  .story .steps { padding-block: 8vh 20vh; gap: 50vh; }
+  .ticket { padding: 20px; } .ticket .t-head { margin-bottom: 26px; } .ticket::after { top: 76px; }
+}
+@media (max-width: 767px) {
+  .app { display: block; }
+  .band { display: none; }
+  .journey { border-end-end-radius: 28px; }
+  .jtop .qa-desk { display: none; }
+  .body { grid-template-columns: minmax(0, 1fr); padding-bottom: 120px; }
+  .lane { grid-template-columns: minmax(0, 1fr) auto; }
+  .lane .bar { grid-column: 1 / -1; grid-row: 2; height: 18px; }
+  #c-route { height: 180px; }
+  .bottom { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; inset-inline: 10px; bottom: 10px; z-index: 20; background: var(--field); color: var(--on-field-2); border-radius: 22px; padding: 6px; box-shadow: 0 14px 30px -12px rgb(0 0 0 / .45); margin-bottom: env(safe-area-inset-bottom); }
+  .bottom a, .bottom button { display: grid; justify-items: center; gap: 2px; font-size: 11px; color: inherit; text-decoration: none; background: none; border: 0; min-height: 50px; padding: 4px 0; cursor: pointer; }
+  .bottom [aria-current="page"] { color: var(--on-field); font-weight: 600; }
+  .bottom .qa { width: 56px; height: 50px; margin: 0 auto; border-radius: 16px; background: var(--tang); color: #1a0d05; display: grid; place-items: center; transition: transform 150ms var(--ease); }
+  .bottom .qa:active { transform: scale(.94); }
+  .pass .route b { font-size: 18px; }
+}
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; transition-delay: 0ms !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; transition-delay: 0ms !important; } }
+::view-transition-group(*) { animation-duration: 400ms; animation-timing-function: cubic-bezier(.23, 1, .32, 1); }
+</style>
+</head>
+<body>
+
+<!-- ============ LANDING ============ -->
+<main id="view-landing" data-view="landing">
+  <div class="field">
+    <header class="lhead">
+      <a class="brand" href="#landing" data-go="landing"><svg class="brand-mark" viewBox="0 0 30 30" aria-hidden="true"><path d="M5 23 C 9 10, 15 22, 25 7" fill="none" stroke="var(--tang)" stroke-width="3.2" stroke-linecap="round"/><circle cx="5" cy="23" r="3.6" fill="var(--sky)"/><circle cx="25" cy="7" r="3.6" fill="currentColor"/></svg><span>FinPilot</span></a>
+      <a class="btn btn-ghost" href="#signin" data-go="signin" data-i18n="signin">Sign in</a>
+    </header>
+    <section class="hero" aria-labelledby="c-hero">
+      <svg class="hero-route" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <path class="ghost" pathLength="1" d="M-40 690 C 260 640, 360 420, 640 470 S 980 700, 1140 430 S 1330 150, 1500 120"/>
+        <path id="c-hero-path" pathLength="1" d="M-40 690 C 260 640, 360 420, 640 470 S 980 700, 1140 430 S 1330 150, 1500 120"/>
+        <circle id="c-hero-dot" r="11" cx="-40" cy="690"/>
+      </svg>
+      <h1 id="c-hero" tabindex="-1" data-i18n="c.hero">Every month is a route.</h1>
+      <p data-i18n="c.lede">Record the stops: salary in, rent out, a dinner with friends. FinPilot draws where your money went, and who still owes whom.</p>
+      <div class="ctas">
+        <a class="btn g-btn cta-share" href="#signin" data-go="signin"><span class="g"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span><span data-i18n="google">Continue with Google</span></a>
+      </div>
+    </section>
+  </div>
+
+  <section class="story" aria-label="How a shared dinner is recorded">
+    <div class="steps">
+      <article class="step" data-step="0"><span class="stop" data-i18n="c.s1.k">Stop 1</span><h2 data-i18n="c.s1.h">You pay for dinner.</h2><p data-i18n="c.s1.p">€300 at a restaurant in Göreme, on your card. Record it in seconds with Quick Add.</p></article>
+      <article class="step" data-step="1"><span class="stop" data-i18n="c.s2.k">Stop 2</span><h2 data-i18n="c.s2.h">Three of you shared it.</h2><p data-i18n="c.s2.p">Add it to the Cappadocia trip and split it three ways. Your share is €100.</p></article>
+      <article class="step" data-step="2"><span class="stop" data-i18n="c.s3.k">Stop 3</span><h2 data-i18n="c.s3.h">Two honest numbers.</h2><p data-i18n="c.s3.p">You spent €100. €300 left your account. FinPilot never blurs the two.</p></article>
+      <article class="step" data-step="3"><span class="stop" data-i18n="c.s4.k">Stop 4</span><h2 data-i18n="c.s4.h">Square up later.</h2><p data-i18n="c.s4.p">FinPilot tracks the €200 you're owed and records repayments when they're confirmed. It never moves the money itself.</p></article>
+    </div>
+    <div class="stage">
+      <div class="ticket" aria-live="polite">
+        <div class="t-head"><span data-i18n="c.trip">Cappadocia trip</span><span class="trip" data-i18n="illustrative.short">Illustrative</span></div>
+        <div class="scene" id="c-scene">
+          <div class="on"><p class="lab" data-i18n="c.paid">You paid</p><p class="big num"><bdi data-money="300" data-whole></bdi></p><p class="lab" style="margin-top:10px" data-i18n="cat.eating">Eating out</p></div>
+          <div><p class="lab" data-i18n="c.split">Split three ways</p><div class="people"><span class="you" data-i18n="c.you">You</span><span>Deniz</span><span>Lina</span></div><p class="big num" style="margin-top:18px"><bdi data-money="100" data-whole></bdi></p><p class="lab" data-i18n="c.each">each</p></div>
+          <div class="pair"><div><p class="lab" data-i18n="spent">Spent</p><p class="big num"><bdi data-money="100" data-whole></bdi></p></div><div><p class="lab" data-i18n="cashout">Cash out</p><p class="big num"><bdi data-money="300" data-whole></bdi></p></div></div>
+          <div><p class="lab" data-i18n="trip.owed">You're owed</p><p class="big num"><bdi data-money="200" data-whole></bdi></p><p class="settle"><i aria-hidden="true">✓</i><span data-i18n="c.settled">Deniz paid you back €100. Confirmed.</span></p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="end-band">
+    <h2 data-i18n="c.end">Start your route.</h2>
+    <a class="btn g-btn" href="#signin" data-go="signin"><span class="g"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span><span data-i18n="google">Continue with Google</span></a>
+    <small data-i18n="c.foot">FinPilot records money you tell it about. It never holds or moves money, and never connects to a bank.</small>
+  </section>
+</main>
+
+<!-- ============ SIGN IN ============ -->
+<main id="view-signin" data-view="signin" hidden>
+  <div class="sgn">
+    <div class="pass">
+      <div class="top">
+        <a class="brand" href="#landing" data-go="landing" style="color:var(--ink)"><svg class="brand-mark" viewBox="0 0 30 30" aria-hidden="true"><path d="M5 23 C 9 10, 15 22, 25 7" fill="none" stroke="var(--tang)" stroke-width="3.2" stroke-linecap="round"/><circle cx="5" cy="23" r="3.6" fill="var(--sky)"/><circle cx="25" cy="7" r="3.6" fill="currentColor"/></svg><span>FinPilot</span></a>
+        <div class="route"><b><small data-i18n="c.from">From</small><span data-i18n="c.guest">Guest</span></b><span class="line" aria-hidden="true"></span><b style="text-align:end"><small data-i18n="c.to">To</small><span data-i18n="c.yourmonth">Your month</span></b></div>
+      </div>
+      <div class="perf" aria-hidden="true"></div>
+      <div class="bot">
+        <h1 tabindex="-1" data-i18n="signin.title">Sign in to FinPilot</h1>
+        <p class="alert alert-cancelled" role="alert" data-i18n="signin.err.cancelled">Sign-in was cancelled.</p>
+        <p class="alert alert-expired" role="alert" data-i18n="signin.err.expired">You were signed out.</p>
+        <p style="color:var(--ink-2)" data-i18n="signin.body">Use your Google account.</p>
+        <button class="btn g-btn cta-share" type="button" data-google aria-describedby="c-proto"><span class="g"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span class="spin"></span></span><span data-i18n="google">Continue with Google</span></button>
+        <small data-i18n="signin.note">No bank connections. You record everything yourself.</small>
+        <small data-i18n="signin.legal">By continuing you agree to the Terms and Privacy notice.</small>
+        <p class="proto" id="c-proto" data-i18n="proto.noauth">Prototype: this button only switches the preview.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ============ APP SHELL ============ -->
+<div id="view-app" data-view="app" hidden>
+  <div class="app">
+    <nav class="band" aria-label="Main">
+      <a class="brand" href="#app"><svg class="brand-mark" viewBox="0 0 30 30" aria-hidden="true"><path d="M5 23 C 9 10, 15 22, 25 7" fill="none" stroke="var(--tang)" stroke-width="3.2" stroke-linecap="round"/><circle cx="5" cy="23" r="3.6" fill="var(--sky)"/><circle cx="25" cy="7" r="3.6" fill="currentColor"/></svg><span>FinPilot</span></a>
+      <a class="nav" href="#app" aria-current="page"><svg class="i"><use href="#i-home"/></svg><span data-i18n="nav.home">Home</span></a>
+      <a class="nav" href="#app"><svg class="i"><use href="#i-accounts"/></svg><span data-i18n="nav.accounts">Accounts</span></a>
+      <a class="nav" href="#app"><svg class="i"><use href="#i-transactions"/></svg><span data-i18n="nav.transactions">Transactions</span></a>
+      <a class="nav" href="#app"><svg class="i"><use href="#i-budgets"/></svg><span data-i18n="nav.budgets">Budgets</span></a>
+      <a class="nav" href="#app"><svg class="i"><use href="#i-insights"/></svg><span data-i18n="nav.insights">Insights</span></a>
+      <a class="nav" href="#app"><svg class="i"><use href="#i-reports"/></svg><span data-i18n="nav.reports">Reports</span></a>
+      <a class="nav" href="#app"><svg class="i"><use href="#i-trips"/></svg><span data-i18n="nav.trips">Trips</span></a>
+      <a class="nav" href="#app" style="margin-top:auto"><svg class="i"><use href="#i-settings"/></svg><span data-i18n="nav.settings">Settings</span></a>
+    </nav>
+    <main class="main" aria-labelledby="c-month">
+      <section class="journey">
+        <div class="jtop">
+          <h1 id="c-month" tabindex="-1" data-month>October 2026</h1>
+          <span class="chip" data-i18n="illustrative">Illustrative data</span>
+          <div class="end">
+            <button class="btn btn-tang qa-desk" type="button" aria-haspopup="dialog" aria-controls="c-qa" aria-expanded="false"><svg class="i"><use href="#i-plus"/></svg><span data-i18n="quickadd">Quick Add</span></button>
+            <button class="avatar" type="button" aria-haspopup="menu" aria-controls="c-menu" aria-expanded="false" aria-label="Account: Alex Demir">A</button>
+            <div class="pop" id="c-qa" data-popover hidden role="dialog" aria-label="Quick Add">
+              <label><span data-i18n="qa.amount">Amount</span><input inputmode="decimal" autocomplete="off" data-qa-input="#c-echo" placeholder="0"></label>
+              <p class="echo"><span data-i18n="qa.reads">Reads as</span> <bdi id="c-echo">—</bdi></p>
+              <p class="soon" data-i18n="qa.soon">Recording arrives with transactions (A3).</p>
+            </div>
+            <div class="pop" id="c-menu" data-popover hidden role="menu">
+              <p class="who"><span data-i18n="menu.signedin">Signed in as</span><strong>Alex Demir</strong>alex@example.com</p>
+              <button role="menuitem" type="button"><svg class="i"><use href="#i-user"/></svg><span data-i18n="menu.profile">Profile</span></button>
+              <button role="menuitem" type="button"><svg class="i"><use href="#i-sessions"/></svg><span data-i18n="menu.sessions">Sessions</span></button>
+              <button role="menuitem" type="button"><svg class="i"><use href="#i-globe"/></svg><span data-i18n="menu.language">Language</span></button>
+              <button role="menuitem" type="button" data-go="landing"><svg class="i"><use href="#i-signout"/></svg><span data-i18n="menu.signout">Sign out</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="route-wrap">
+          <svg id="c-route" role="slider" tabindex="0" aria-valuemin="1" aria-valuemax="31" aria-label="October as a route"></svg>
+          <p class="rcap" id="c-cap" aria-live="polite"></p>
+          <div class="rkey"><span><i style="background:var(--sky)"></i><span data-i18n="c.key.big">Bigger stop, bigger spend</span></span><span><i style="background:var(--tang)"></i><span data-i18n="c.key.flag">Flags are income</span></span></div>
+        </div>
+      </section>
+
+      <div class="body">
+        <section class="lanes" id="c-lanes" aria-label="Money in and out">
+          <div class="lane inc"><span class="k" data-i18n="income">Income</span><span class="bar"><i style="--p:1"></i></span><span class="v num"><bdi data-money="3200" data-whole></bdi></span></div>
+          <div class="lane spent"><span class="k"><span data-i18n="spent">Spent</span><small data-i18n="spent.hint">Your share, trips included</small></span><span class="bar"><i style="--p:.577;--dl:120ms"></i></span><span class="v num"><bdi data-money="1846.4" data-whole></bdi></span></div>
+          <div class="lane cash"><span class="k"><span data-i18n="cashout">Cash out</span><small data-i18n="cashout.hint">What left your accounts</small></span><span class="bar"><i style="--p:.6395;--dl:240ms"></i></span><span class="v num"><bdi data-money="2046.4" data-whole></bdi></span></div>
+        </section>
+        <p class="whybox" data-i18n="c.why">The €200 gap is what you paid for friends on the Cappadocia dinner. It comes back to you; it was never your spending.</p>
+        <section aria-labelledby="c-cats-h"><h2 id="c-cats-h" data-i18n="c.cats">Where it went</h2><div id="c-cats"></div></section>
+        <section aria-labelledby="c-rec-h"><h2 id="c-rec-h" data-i18n="recent">Recent</h2><div id="c-rec"></div>
+          <div class="stub"><span data-i18n="trip.owed">Cappadocia trip: you're owed</span><strong class="num"><bdi data-money="200"></bdi></strong><small data-i18n="c.stub">Not part of your balance until it's paid back.</small></div>
+          <p class="cur2"><span data-i18n="try.spent">Turkish lira spending:</span> <bdi class="num" data-money="4120" data-currency="TRY"></bdi>. <span data-i18n="c.sep">A separate route, never added to euros.</span></p>
+        </section>
+      </div>
+    </main>
+  </div>
+  <nav class="bottom" aria-label="Main">
+    <a href="#app" aria-current="page"><svg class="i"><use href="#i-home"/></svg><span data-i18n="nav.home">Home</span></a>
+    <a href="#app"><svg class="i"><use href="#i-transactions"/></svg><span data-i18n="nav.transactions">Transactions</span></a>
+    <button class="qa" type="button" aria-haspopup="dialog" aria-controls="c-qa" aria-expanded="false" data-i18n-label="quickadd"><svg class="i"><use href="#i-plus"/></svg></button>
+    <a href="#app"><svg class="i"><use href="#i-trips"/></svg><span data-i18n="nav.trips">Trips</span></a>
+    <a href="#app"><svg class="i"><use href="#i-more"/></svg><span data-i18n="nav.more">More</span></a>
+  </nav>
+</div>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+  const S = {
+    en: { "c.hero": "Every month is a route.", "c.lede": "Record the stops: salary in, rent out, a dinner with friends. FinPilot draws where your money went, and who still owes whom.",
+      "c.s1.k": "Stop 1", "c.s1.h": "You pay for dinner.", "c.s1.p": "€300 at a restaurant in Göreme, on your card. Record it in seconds with Quick Add.",
+      "c.s2.k": "Stop 2", "c.s2.h": "Three of you shared it.", "c.s2.p": "Add it to the Cappadocia trip and split it three ways. Your share is €100.",
+      "c.s3.k": "Stop 3", "c.s3.h": "Two honest numbers.", "c.s3.p": "You spent €100. €300 left your account. FinPilot never blurs the two.",
+      "c.s4.k": "Stop 4", "c.s4.h": "Square up later.", "c.s4.p": "FinPilot tracks the €200 you're owed and records repayments when they're confirmed. It never moves the money itself.",
+      "c.trip": "Cappadocia trip", "illustrative.short": "Illustrative", "c.paid": "You paid", "c.split": "Split three ways", "c.you": "You", "c.each": "each",
+      "c.settled": "Deniz paid you back €100. Confirmed.", "c.end": "Start your route.", "c.foot": "FinPilot records money you tell it about. It never holds or moves money, and never connects to a bank.",
+      "c.from": "From", "c.to": "To", "c.guest": "Guest", "c.yourmonth": "Your month",
+      "c.key.big": "Bigger stop, bigger spend", "c.key.flag": "Flags are income", "c.cats": "Where it went", "c.stub": "Not part of your balance until it's paid back.",
+      "c.sep": "A separate route, never added to euros.", "c.why": "The €200 gap is what you paid for friends on the Cappadocia dinner. It comes back to you; it was never your spending.",
+      "c.cap.spent": "spent {v}", "c.cap.cash": "cash out {v}", "c.cap.inc": "income {v}", "c.plan": "plan {v}" },
+    ar: { "c.hero": "كل شهر رحلة.", "c.lede": "سجّل المحطات: راتب يدخل، وإيجار يخرج، وعشاء مع الأصدقاء. يرسم FinPilot أين ذهب مالك، ومن لا يزال مديناً لمن.",
+      "c.s1.k": "المحطة 1", "c.s1.h": "تدفع ثمن العشاء.", "c.s1.p": "300 € في مطعم في غوريمه، ببطاقتك. سجّلها في ثوانٍ عبر الإضافة السريعة.",
+      "c.s2.k": "المحطة 2", "c.s2.h": "تقاسمتموه ثلاثتكم.", "c.s2.p": "أضفه إلى رحلة كابادوكيا وقسّمه على ثلاثة. حصتك 100 €.",
+      "c.s3.k": "المحطة 3", "c.s3.h": "رقمان صادقان.", "c.s3.p": "أنفقت 100 €، وخرج من حسابك 300 €. لا يخلط FinPilot بينهما أبداً.",
+      "c.s4.k": "المحطة 4", "c.s4.h": "سوّوا الحساب لاحقاً.", "c.s4.p": "يتابع FinPilot مبلغ 200 € المستحق لك، ويسجّل السداد عند تأكيده. ولا ينقل المال بنفسه أبداً.",
+      "c.trip": "رحلة كابادوكيا", "illustrative.short": "توضيحي", "c.paid": "دفعت", "c.split": "مقسّم على ثلاثة", "c.you": "أنت", "c.each": "لكلٍّ منكم",
+      "c.settled": "سدّد لك دنيز 100 €. تم التأكيد.", "c.end": "ابدأ رحلتك.", "c.foot": "يسجّل FinPilot الأموال التي تخبره بها فقط. لا يحتفظ بالأموال ولا ينقلها، ولا يرتبط بأي بنك.",
+      "c.from": "من", "c.to": "إلى", "c.guest": "زائر", "c.yourmonth": "شهرك",
+      "c.key.big": "محطة أكبر، إنفاق أكبر", "c.key.flag": "الأعلام للدخل", "c.cats": "أين ذهب المال", "c.stub": "لا يدخل رصيدك حتى يُسدَّد.",
+      "c.sep": "مسار منفصل، لا يُجمع مع اليورو.", "c.why": "فرق 200 € هو ما دفعته عن أصدقائك في عشاء كابادوكيا. سيعود إليك، ولم يكن إنفاقاً لك.",
+      "c.cap.spent": "إنفاق {v}", "c.cap.cash": "مدفوع {v}", "c.cap.inc": "دخل {v}", "c.plan": "الخطة {v}" },
+    tr: { "c.hero": "Her ay bir rota.", "c.lede": "Durakları kaydedin: gelen maaş, giden kira, arkadaşlarla bir akşam yemeği. FinPilot paranızın nereye gittiğini ve kimin kime borçlu olduğunu çizer.",
+      "c.s1.k": "1. durak", "c.s1.h": "Yemeği siz ödüyorsunuz.", "c.s1.p": "Göreme'de bir restoranda kartınızla 300 €. Hızlı ekle ile saniyeler içinde kaydedin.",
+      "c.s2.k": "2. durak", "c.s2.h": "Üçünüz paylaştınız.", "c.s2.p": "Kapadokya gezisine ekleyin ve üçe bölün. Payınız 100 €.",
+      "c.s3.k": "3. durak", "c.s3.h": "İki dürüst rakam.", "c.s3.p": "100 € harcadınız. Hesabınızdan 300 € çıktı. FinPilot bu ikisini asla karıştırmaz.",
+      "c.s4.k": "4. durak", "c.s4.h": "Sonra hesaplaşın.", "c.s4.p": "FinPilot alacağınız 200 €'yu takip eder ve geri ödemeler onaylandığında kaydeder. Parayı kendisi asla aktarmaz.",
+      "c.trip": "Kapadokya gezisi", "illustrative.short": "Örnek", "c.paid": "Ödediğiniz", "c.split": "Üçe bölündü", "c.you": "Siz", "c.each": "kişi başı",
+      "c.settled": "Deniz size 100 € geri ödedi. Onaylandı.", "c.end": "Rotanıza başlayın.", "c.foot": "FinPilot yalnızca bildirdiğiniz parayı kaydeder. Para tutmaz, aktarmaz ve hiçbir bankaya bağlanmaz.",
+      "c.from": "Nereden", "c.to": "Nereye", "c.guest": "Misafir", "c.yourmonth": "Ayınız",
+      "c.key.big": "Büyük durak, büyük harcama", "c.key.flag": "Bayraklar gelirdir", "c.cats": "Nereye gitti", "c.stub": "Geri ödenene kadar bakiyenizde değildir.",
+      "c.sep": "Ayrı bir rota, asla euroya eklenmez.", "c.why": "Aradaki 200 €, Kapadokya yemeğinde arkadaşlarınız için ödediğinizdir. Size geri döner; hiçbir zaman sizin harcamanız değildi.",
+      "c.cap.spent": "harcama {v}", "c.cap.cash": "çıkan nakit {v}", "c.cap.inc": "gelir {v}", "c.plan": "plan {v}" },
+  };
+  const $ = (s) => document.querySelector(s);
+  const D = LAB.DAYS;
+
+  // ---------- Landing: the hero route draws with scroll; the ticket changes scene per stop.
+  const heroPath = $("#c-hero-path"), heroDot = $("#c-hero-dot");
+  function heroProgress() {
+    if (LAB.view !== "landing") return;
+    const story = document.querySelector(".story");
+    const total = story.offsetTop + story.offsetHeight - innerHeight;
+    const p = LAB.reduced() ? 1 : Math.min(1, Math.max(0.12, scrollY / Math.max(1, total) + 0.12));
+    heroPath.style.setProperty("--draw", String(1 - p));
+    const pt = heroPath.getPointAtLength(heroPath.getTotalLength() * p);
+    heroDot.setAttribute("cx", pt.x); heroDot.setAttribute("cy", pt.y);
+  }
+  let ticking = false;
+  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { heroProgress(); pickScene(); ticking = false; }); } }, { passive: true });
+  const scenes = [...document.querySelectorAll("#c-scene > div")], steps = [...document.querySelectorAll(".step")];
+  let scene = 0;
+  function pickScene() {
+    if (LAB.view !== "landing") return;
+    const mid = innerHeight / 2; let best = 0, bd = Infinity;
+    steps.forEach((st, i) => { const r = st.getBoundingClientRect(); const dd = Math.abs(r.top + r.height / 2 - mid); if (dd < bd) { bd = dd; best = i; } });
+    if (best !== scene) { scene = best; scenes.forEach((sc, i) => sc.classList.toggle("on", i === best)); }
+  }
+
+  // ---------- App: the month as a route of stops.
+  let cur = 31, drawn = false;
+  function route() {
+    const svg = $("#c-route"), rtl = document.dir === "rtl";
+    const W = Math.max(300, Math.round(svg.getBoundingClientRect().width || 900)), H = Math.round(svg.getBoundingClientRect().height || 220);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const narrow = W < 600, pad = narrow ? 16 : 22, mid = H * 0.55, amp = H * (narrow ? 0.18 : 0.22), waves = narrow ? 1.25 : 3;
+    const pts = D.map((d, i) => { const t = i / 30; const x = pad + (rtl ? 1 - t : t) * (W - pad * 2); return [x, mid + Math.sin(t * Math.PI * waves + 0.4) * amp]; });
+    let dPath = `M${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; const cx = (x0 + x1) / 2; dPath += ` C ${cx} ${y0}, ${cx} ${y1}, ${x1} ${y1}`; }
+    const max = Math.max(...D.slice(1).map((d) => d.spent));
+    let html = `<path class="road" d="${dPath}"/><path class="line" pathLength="1" d="${dPath}"/><g class="stops-in">`;
+    D.forEach((d, i) => {
+      const [x, y] = pts[i];
+      if (d.income) html += `<line class="flagpole" x1="${x}" y1="${y}" x2="${x}" y2="${y - 46}"/><path class="flag" d="M${x} ${y - 46} l${rtl ? -18 : 18} 6 l${rtl ? 18 : -18} 6 z"/>`;
+      const r = (d.day === 1 ? 13 : 4 + Math.sqrt(d.spent / max) * 7) * (narrow ? 0.62 : 1);
+      html += `<circle class="stop${d.spent > max * 0.6 || d.day === 1 ? " big" : ""}" data-d="${d.day}" cx="${x}" cy="${y}" r="${r}" style="--dl:${600 + i * 14}ms"/>`;
+      if ([1, 15, 31].includes(d.day)) html += `<text class="lbl" x="${x}" y="${H - 4}" text-anchor="middle">${LAB.date(d.day)}</text>`;
+    });
+    svg.innerHTML = html + "</g>";
+    svg._pts = pts;
+    if (drawn) svg.classList.add("drawn");
+    pick(cur);
+  }
+  function caption(d) {
+    const parts = [`<strong>${LAB.date(d.day, { weekday: "long", day: "numeric", month: "long" })}</strong>`, LAB.t("c.cap.spent", { v: `<bdi>${LAB.money(d.spent)}</bdi>` })];
+    if (d.cashout !== d.spent) parts.push(LAB.t("c.cap.cash", { v: `<bdi>${LAB.money(d.cashout)}</bdi>` }));
+    if (d.income) parts.push(LAB.t("c.cap.inc", { v: `<bdi>${LAB.money(d.income)}</bdi>` }));
+    return parts.join(" <span aria-hidden='true'>/</span> ");
+  }
+  function pick(day) {
+    cur = Math.min(31, Math.max(1, day)); const svg = $("#c-route"), d = D[cur - 1];
+    svg.querySelectorAll(".stop").forEach((s) => s.classList.toggle("cur", +s.dataset.d === cur));
+    $("#c-cap").innerHTML = caption(d);
+    svg.setAttribute("aria-valuenow", cur); svg.setAttribute("aria-valuetext", $("#c-cap").textContent);
+  }
+  const svg = $("#c-route");
+  svg.addEventListener("pointermove", (e) => {
+    if (!svg._pts) return; const r = svg.getBoundingClientRect(); const vb = svg.viewBox.baseVal; const x = ((e.clientX - r.left) / r.width) * vb.width;
+    let best = 0, bd = Infinity; svg._pts.forEach(([px], i) => { const dd = Math.abs(px - x); if (dd < bd) { bd = dd; best = i; } }); pick(best + 1);
+  });
+  svg.addEventListener("keydown", (e) => {
+    const rtl = document.dir === "rtl";
+    const delta = { ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1, ArrowUp: 1, ArrowDown: -1, Home: -99, End: 99 }[e.key];
+    if (delta === undefined) return; e.preventDefault(); pick(cur + delta);
+  });
+  function arriveApp() {
+    route();
+    if (!drawn) { drawn = true; requestAnimationFrame(() => requestAnimationFrame(() => { $("#c-route").classList.add("drawn"); $("#c-lanes").classList.add("on"); })); }
+    else $("#c-lanes").classList.add("on");
+  }
+
+  function lists() {
+    const budget = Object.fromEntries(LAB.BUDGETS.map((b) => [b.key, b]));
+    const max = Math.max(...LAB.CATEGORIES.map((c) => c.amount));
+    $("#c-cats").innerHTML = LAB.CATEGORIES.map((c) => {
+      const b = budget[c.key], over = b && b.spent > b.limit;
+      return `<div class="cat${over ? " over" : ""}"><span>${LAB.t("cat." + c.key)}</span><span class="num" style="font-weight:600"><bdi>${LAB.money(c.amount)}</bdi></span>
+        <span class="bar" aria-hidden="true"><i style="--p:${c.amount / max}"></i>${b ? `<b style="--l:${b.limit / max}"></b>` : ""}</span>
+        ${b ? `<span class="s">${over ? LAB.t("budget.over", { amount: LAB.money(b.spent - b.limit) }) : LAB.t("budget.left", { amount: LAB.money(b.limit - b.spent) })}, ${LAB.t("c.plan", { v: LAB.money(b.limit, { whole: true }) })}</span>` : ""}</div>`;
+    }).join("");
+    $("#c-rec").innerHTML = LAB.RECENT.map((r) => `<div class="rec"><span>${LAB.t(r.key)}</span><span class="a num${r.amount > 0 ? " pos" : ""}"><bdi>${LAB.money(r.amount, { sign: true })}</bdi></span>
+      <span class="d">${LAB.date(r.day)}, ${r.cat === "income" ? LAB.t("income") : LAB.t("cat." + r.cat)}</span>
+      ${r.trip ? `<span class="n">${LAB.t("tx.dinner.note", { paid: LAB.money(r.paid), share: LAB.money(-r.amount) })}</span>` : ""}</div>`).join("");
+  }
+  let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (LAB.view === "app") route(); heroProgress(); }, 120); });
+
+  LAB.init({
+    name: "C · Waypoint", strings: S,
+    onLocale: () => { lists(); if (LAB.view === "app") route(); heroProgress(); },
+    onView: (v) => { if (v === "app") requestAnimationFrame(arriveApp); if (v === "landing") requestAnimationFrame(heroProgress); },
+  });
+})();
+</script>
+</body>
+</html>

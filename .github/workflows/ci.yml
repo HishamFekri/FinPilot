@@ -1,0 +1,69 @@
+# Checks only. There are deliberately no deployment steps and no secrets here.
+# Everything runs on GitHub-hosted runners, so pull request code never reaches a self-hosted machine.
+# `pull_request_target` must not be used. Actions are pinned to full commit SHAs.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          # Throwaway credentials for a container that only exists during this job.
+          POSTGRES_USER: finpilot
+          POSTGRES_PASSWORD: ci_only_not_a_secret
+          POSTGRES_DB: finpilot_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U finpilot -d finpilot_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://finpilot:ci_only_not_a_secret@localhost:5433/finpilot_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run lint-imports
+      - run: uv run pytest
+      - run: uv export --frozen --no-hashes --no-emit-project -o requirements-audit.txt
+      - run: uvx pip-audit==2.9.0 -r requirements-audit.txt --no-deps --disable-pip
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

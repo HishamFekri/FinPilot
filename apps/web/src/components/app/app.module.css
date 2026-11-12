@@ -1,0 +1,1551 @@
+/* FinPilot app, Waypoint direction with Calibre's restraint.
+   Same palette as the landing page: deep teal, tangerine, sky in light; Midnight Indigo in dark.
+   Logical properties only, so Arabic mirrors by construction. */
+
+.theme {
+  --bg: #faf6ef;
+  --surface: #fffdf8;
+  --surface-2: #f1ebe0;
+  --ink: #141b33;
+  --ink-2: #4f566e;
+  --ink-3: #5f667d;
+  --hair: #e8e0d3;
+  --hair-2: #d6ccba;
+  --rail: #f4eee3;
+  --rail-2: #ebe3d5;
+  --rail-3: #e3d9c7;
+  --rail-ink: #141b33;
+  --rail-ink-2: #4f566e;
+  /* Navigation only. Bluer than --pos, which means money coming in. */
+  --nav-accent: #006b58;
+  --nav-accent-wash: rgb(0 107 88 / 0.1);
+  --nav-accent-glow: transparent;
+  --tang: #ff6a2b;
+  --tang-ink: #1a0d05;
+  --tang-text: #b13f0c;
+  --tang-wash: #fff0e4;
+  --sky: #8fd0ff;
+  --sky-ink: #06222a;
+  --pos: #1b7553;
+  --pos-wash: #e3f3ec;
+  --neg: #b42318;
+  --neg-wash: #fdecea;
+  --shadow-pop: 0 18px 40px -18px rgb(20 27 51 / 0.32);
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --display: var(--font-serif-stack);
+  --radius: 12px;
+
+  background: var(--bg);
+  color: var(--ink);
+  caret-color: var(--tang);
+  scrollbar-color: var(--hair-2) transparent;
+  font-family: var(--font-stack);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.theme ::selection {
+  background: color-mix(in oklab, var(--tang) 28%, transparent);
+}
+/* Midnight navy, warm ink. On --bg: ink 17:1, ink-2 8.5:1, ink-3 6:1; tang-text 7:1. */
+:global(.dark) .theme {
+  --bg: #0a0d1a;
+  --surface: #12162a;
+  --surface-2: #1a1f38;
+  --ink: #f5f1e8;
+  --ink-2: #a8adc6;
+  --ink-3: #9096b6;
+  --hair: #20263f;
+  --hair-2: #2f3654;
+  --rail: #070a14;
+  --rail-2: #12162a;
+  --rail-3: #1a2038;
+  --rail-ink: #f5f1e8;
+  --rail-ink-2: #9aa0bc;
+  --nav-accent: #3ddbb0;
+  --nav-accent-wash: rgb(61 219 176 / 0.1);
+  --nav-accent-glow: rgb(61 219 176 / 0.4);
+  --tang-text: #ff8a52;
+  --tang-wash: rgb(255 106 43 / 0.12);
+  --pos: #8ce0b4;
+  --pos-wash: rgb(140 224 180 / 0.12);
+  --neg: #ff8a80;
+  --neg-wash: rgb(255 138 128 / 0.12);
+  --shadow-pop: 0 22px 48px -18px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
+}
+.theme :lang(ar) {
+  line-height: 1.7;
+}
+.theme :focus-visible {
+  outline: 2px solid var(--tang);
+  outline-offset: 2px;
+}
+/* Zero specificity, so component classes can set their own spacing. */
+:where(.theme) :where(h1, h2, h3, p) {
+  margin: 0;
+}
+.srOnly {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Each page settles in quickly; it never holds up navigation. */
+.pageIn {
+  animation: pageIn 180ms var(--ease) both;
+}
+@keyframes pageIn {
+  from {
+    opacity: 0.55;
+    transform: translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pageIn {
+    animation: none;
+  }
+}
+
+/* ---------- Brand: the FinPilot wordmark, text only */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 32px;
+  font-family: var(--font-display-stack);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.015em;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+/* ---------- Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 40px;
+  padding-inline: 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 500;
+  font-size: 14.5px;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 140ms var(--ease);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.btn svg {
+  inline-size: 17px;
+  block-size: 17px;
+  flex: none;
+}
+.btnPrimary {
+  background: var(--tang);
+  color: var(--tang-ink);
+}
+.btnSecondary {
+  background: var(--surface);
+  border-color: var(--hair-2);
+  color: var(--ink);
+}
+.btnGhost {
+  background: transparent;
+  color: var(--ink);
+}
+.btnDanger {
+  background: var(--surface);
+  border-color: color-mix(in oklab, var(--neg) 45%, var(--hair));
+  color: var(--neg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btnPrimary:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--tang) 88%, black);
+  }
+  .btnSecondary:hover:not(:disabled),
+  .btnGhost:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .btnDanger:hover:not(:disabled) {
+    background: var(--neg-wash);
+  }
+}
+.btnSm {
+  min-block-size: 34px;
+  padding-inline: 12px;
+  font-size: 13.5px;
+}
+.spinner {
+  inline-size: 16px;
+  block-size: 16px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  animation: spin 700ms linear infinite;
+}
+
+/* ---------- Notices */
+.notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--hair);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 14px;
+}
+.notice svg {
+  inline-size: 18px;
+  block-size: 18px;
+  flex: none;
+  margin-block-start: 1px;
+}
+.noticeError {
+  background: var(--neg-wash);
+  border-color: color-mix(in oklab, var(--neg) 35%, transparent);
+}
+.noticeError svg {
+  color: var(--neg);
+}
+.noticeSuccess {
+  background: var(--pos-wash);
+  border-color: color-mix(in oklab, var(--pos) 35%, transparent);
+}
+.noticeSuccess svg {
+  color: var(--pos);
+}
+.noticeInfo svg {
+  color: var(--ink-2);
+}
+
+/* ---------- Tags */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.tagAccent {
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+.tagPos {
+  background: var(--pos-wash);
+  color: var(--pos);
+}
+
+/* =========================================================== App shell */
+.shell {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr);
+  min-block-size: 100dvh;
+}
+.sidebar {
+  position: sticky;
+  inset-block-start: 0;
+  display: flex;
+  flex-direction: column;
+  block-size: 100dvh;
+  padding: 20px 12px 14px;
+  border-inline-end: 1px solid var(--hair);
+  background: var(--rail);
+  color: var(--rail-ink);
+  overflow-y: auto;
+}
+.sidebar .brand {
+  padding: 4px 10px 14px;
+}
+/* The global Add lives at the top of the sidebar on tablets and desktops. */
+.sidebarAdd {
+  padding: 0 2px 16px;
+}
+.sidebarAddButton {
+  inline-size: 100%;
+  justify-content: center;
+  min-block-size: 42px;
+}
+.sidebarAddButton > kbd {
+  margin-inline-start: auto;
+}
+.nav {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.navLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-block-size: 38px;
+  padding-inline: 10px;
+  border-radius: 9px;
+  color: var(--rail-ink-2);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+.navLink svg {
+  inline-size: 19px;
+  block-size: 19px;
+  flex: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .navLink:hover {
+    background: var(--rail-2);
+    color: var(--rail-ink);
+  }
+}
+.navLink svg {
+  transition:
+    color 150ms ease,
+    transform 160ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .navLink:hover svg {
+    color: var(--nav-accent);
+  }
+}
+/* Active is never color alone: the bar, the tint, the bolder label, and aria-current. */
+.navLink[aria-current="page"] {
+  background: var(--nav-accent-wash);
+  color: var(--rail-ink);
+  font-weight: 600;
+}
+.navLink[aria-current="page"] svg {
+  color: var(--nav-accent);
+}
+.navLink[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -12px;
+  inset-block: 9px;
+  inline-size: 3px;
+  border-start-end-radius: 3px;
+  border-end-end-radius: 3px;
+  background: var(--nav-accent);
+  box-shadow: 0 1px 8px var(--nav-accent-glow);
+  animation: navBar 200ms var(--ease) both;
+}
+@keyframes navBar {
+  from {
+    transform: scaleY(0.4);
+    opacity: 0.4;
+  }
+}
+.sidebar :focus-visible {
+  outline-color: var(--nav-accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .navLink svg {
+    transition: none;
+  }
+  .navLink[aria-current="page"]::before {
+    animation: none;
+  }
+}
+.navLabel {
+  flex: 1;
+  min-inline-size: 0;
+}
+.navSoon {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--rail-ink-2);
+  opacity: 0.8;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+.topbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-block-size: 60px;
+  padding-inline: clamp(16px, 3vw, 32px);
+  border-block-end: 1px solid var(--hair);
+  background: color-mix(in oklab, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+.topbar .brand {
+  display: none;
+}
+.topbarEnd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-inline-start: auto;
+}
+/* The phone's profile button; on wider screens the profile sits in the sidebar. */
+.topbarProfile {
+  display: none;
+}
+/* From tablets up there's no top bar: navigation, Add and the profile are all in the sidebar. */
+@media (min-width: 768px) {
+  .topbar {
+    display: none;
+  }
+}
+
+/* Page content, centred, as wide as the page needs (nav.ts pageWidth). The padding is outside
+   the width, so the text column itself is the stated size. */
+.content {
+  --page-max: 1140px;
+  box-sizing: content-box;
+  inline-size: calc(100% - 2 * var(--page-pad));
+  max-inline-size: var(--page-max);
+  margin-inline: auto;
+  --page-pad: clamp(16px, 3vw, 40px);
+  padding: clamp(18px, 3vw, 32px) var(--page-pad) 48px;
+}
+.content[data-width="reading"] {
+  --page-max: 960px;
+}
+.content[data-width="wide"] {
+  --page-max: 1360px;
+}
+.content[data-width="trip"] {
+  --page-max: 1280px;
+}
+
+/* Profile entry at the foot of the sidebar; one short accent on its rule */
+.sidebarProfile::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: 0;
+  inline-size: 26px;
+  block-size: 1px;
+  background: var(--nav-accent);
+}
+.sidebarProfile {
+  position: relative;
+  margin-block-start: auto;
+  padding-block-start: 12px;
+  border-block-start: 1px solid color-mix(in oklab, var(--rail-ink) 12%, transparent);
+}
+.profileBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  min-block-size: 52px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--rail-ink);
+  font: inherit;
+  font-weight: 600;
+  font-size: 14.5px;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .profileBtn:hover {
+    background: var(--rail-2);
+  }
+}
+.profileBtn[data-popup-open] {
+  background: var(--rail-3);
+}
+.profileBtn:active {
+  transform: scale(0.98);
+}
+.profileName {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profileChevron {
+  inline-size: 16px;
+  block-size: 16px;
+  flex: none;
+  color: var(--rail-ink-2);
+}
+
+/* User menu */
+.userBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 44px;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+:global([dir="rtl"]) .userBtn {
+  padding: 4px 4px 4px 8px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .userBtn:hover {
+    background: var(--surface-2);
+  }
+}
+.userBtn[data-popup-open] {
+  background: var(--surface-2);
+}
+.userName {
+  max-inline-size: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.userBtn > svg {
+  inline-size: 16px;
+  block-size: 16px;
+  color: var(--ink-3);
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--sky);
+  color: var(--sky-ink);
+  font-weight: 600;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+}
+.avatarLg {
+  inline-size: 44px;
+  block-size: 44px;
+  font-size: 16px;
+}
+.avatar:has(.avatarImg) {
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.avatarImg {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* Menus (Base UI) */
+.menuPositioner {
+  z-index: 60;
+  outline: none;
+}
+.menuPopup {
+  min-inline-size: 240px;
+  max-inline-size: calc(100vw - 24px);
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 1px var(--hair),
+    var(--shadow-pop);
+  outline: none;
+  transform-origin: var(--transform-origin);
+  transition:
+    opacity 140ms ease,
+    transform 160ms var(--ease);
+}
+.menuPopup[data-starting-style],
+.menuPopup[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.97);
+}
+.menuHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px 12px;
+  margin-block-end: 4px;
+  border-block-end: 1px solid var(--hair);
+}
+.menuHeadText {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+.menuHeadName {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.menuHeadEmail {
+  font-size: 13px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-block-size: 40px;
+  padding-inline: 10px;
+  border-radius: 9px;
+  color: inherit;
+  font-size: 14.5px;
+  text-decoration: none;
+  cursor: default;
+  outline: none;
+  user-select: none;
+}
+.menuItem[data-highlighted],
+.menuItem[data-popup-open] {
+  background: var(--surface-2);
+}
+.menuItem[data-checked] {
+  color: var(--tang-text);
+  font-weight: 600;
+}
+.menuLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.menuLabel svg,
+.menuCheck svg,
+.menuChevron {
+  inline-size: 16px;
+  block-size: 16px;
+  flex: none;
+}
+.menuValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+:global([dir="rtl"]) .menuChevron {
+  transform: scaleX(-1);
+}
+.menuCheck {
+  display: grid;
+  color: var(--tang-text);
+}
+.menuSep {
+  block-size: 1px;
+  margin: 4px 6px;
+  background: var(--hair);
+}
+.menuDanger {
+  color: var(--neg);
+}
+
+/* Icon-only button. */
+.iconBtn {
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.iconBtn svg {
+  inline-size: 20px;
+  block-size: 20px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iconBtn:hover {
+    background: color-mix(in oklab, currentColor 12%, transparent);
+  }
+}
+.iconBtn[data-popup-open] {
+  background: color-mix(in oklab, currentColor 14%, transparent);
+}
+
+/* Phone navigation */
+.tabbar {
+  display: none;
+}
+.sheetBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgb(5 10 20 / 0.45);
+  transition: opacity 180ms ease;
+}
+.sheetBackdrop[data-starting-style],
+.sheetBackdrop[data-ending-style] {
+  opacity: 0;
+}
+.sheet {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 71;
+  max-block-size: 85dvh;
+  overflow-y: auto;
+  padding: 10px 12px calc(16px + env(safe-area-inset-bottom));
+  border-start-start-radius: 20px;
+  border-start-end-radius: 20px;
+  background: var(--rail);
+  color: var(--rail-ink);
+  transition: transform 260ms var(--ease);
+  outline: none;
+}
+.sheet[data-starting-style],
+.sheet[data-ending-style] {
+  transform: translateY(100%);
+}
+.sheetGrip {
+  inline-size: 40px;
+  block-size: 4px;
+  margin: 2px auto 10px;
+  border-radius: 4px;
+  background: var(--rail-3);
+}
+.sheetTitle {
+  padding: 4px 12px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rail-ink-2);
+}
+.sheetProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--rail-2);
+  color: var(--rail-ink);
+  text-decoration: none;
+}
+.sheetProfileText {
+  display: grid;
+  gap: 1px;
+  min-inline-size: 0;
+}
+.sheetProfileHint {
+  font-size: 13px;
+  color: var(--rail-ink-2);
+}
+
+/* =========================================================== Pages */
+.pageHead {
+  display: grid;
+  gap: 6px;
+  margin-block-end: 24px;
+}
+.pageTitle {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(22px, 2.4vw, 26px);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.pageLead {
+  max-inline-size: 62ch;
+  color: var(--ink-2);
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.panel {
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-block-end: 1px solid var(--hair);
+}
+.panelTitle {
+  font-size: 15.5px;
+  font-weight: 600;
+}
+.panelBody {
+  padding: 18px 20px 20px;
+}
+.panelFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-block-start: 1px solid var(--hair);
+}
+.stack {
+  display: grid;
+  gap: 20px;
+}
+/* Settings-style pages: forms and lists read best at a measured width, not the full screen. */
+.narrow {
+  max-inline-size: 860px;
+}
+.muted {
+  color: var(--ink-2);
+}
+.small {
+  font-size: 13.5px;
+}
+
+/* Definition rows: label, value, action */
+.rows {
+  margin: 0;
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 16px;
+  padding-block: 12px;
+  border-block-end: 1px solid var(--hair);
+}
+.row:first-child {
+  padding-block-start: 0;
+}
+.row:last-child {
+  border-block-end: 0;
+  padding-block-end: 0;
+}
+.row dt {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.row dd {
+  margin: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.rowText {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+/* Home */
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-block-end: 28px;
+}
+.greetingTitle {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(22px, 2.6vw, 28px);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.theme:lang(ar) .greetingTitle {
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+.steps {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding-block: 12px;
+  border-block-end: 1px solid var(--hair);
+}
+.step:first-child {
+  padding-block-start: 0;
+}
+.step:last-child {
+  border-block-end: 0;
+  padding-block-end: 0;
+}
+.stepDot {
+  display: grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--hair-2);
+  color: var(--ink-3);
+}
+.stepDot svg {
+  inline-size: 15px;
+  block-size: 15px;
+}
+.stepDone {
+  border: 0;
+  background: var(--pos-wash);
+  color: var(--pos);
+}
+.stepTitle {
+  font-weight: 500;
+}
+.stepNote {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  overflow-wrap: break-word;
+}
+.roadmap {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.roadmapItem {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding-block: 11px;
+  border-block-end: 1px solid var(--hair);
+}
+.roadmapItem:first-child {
+  padding-block-start: 0;
+}
+.roadmapItem:last-child {
+  border-block-end: 0;
+  padding-block-end: 0;
+}
+.roadmapIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.roadmapIcon svg {
+  inline-size: 17px;
+  block-size: 17px;
+}
+
+/* Placeholder */
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  max-inline-size: 560px;
+  padding: clamp(24px, 4vw, 36px);
+}
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: 14px;
+  background: var(--tang-wash);
+  color: var(--tang-text);
+}
+.emptyIcon svg {
+  inline-size: 22px;
+  block-size: 22px;
+}
+.emptyList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-inline-start: 18px;
+  color: var(--ink-2);
+}
+
+/* Forms */
+.form {
+  display: grid;
+  gap: 18px;
+}
+.field {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+.label {
+  font-weight: 500;
+  font-size: 14px;
+}
+.hint {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.error {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--neg);
+}
+.error svg {
+  inline-size: 14px;
+  block-size: 14px;
+  flex: none;
+}
+.input {
+  inline-size: 100%;
+  min-block-size: 42px;
+  padding-inline: 12px;
+  border: 1px solid var(--hair-2);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+.input:focus-visible {
+  outline: none;
+  border-color: var(--tang);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--tang) 24%, transparent);
+}
+.input[aria-invalid="true"] {
+  border-color: var(--neg);
+}
+.input:disabled,
+.input[readonly] {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.fieldRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.linkBtn {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tang-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.status {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+/* Sessions */
+.sessions {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.session {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-block-end: 1px solid var(--hair);
+}
+.session:last-child {
+  border-block-end: 0;
+}
+.sessionIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.sessionIcon svg {
+  inline-size: 19px;
+  block-size: 19px;
+}
+.sessionName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.sessionMeta {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* Dialog (Base UI AlertDialog) */
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgb(5 10 20 / 0.5);
+  transition: opacity 160ms ease;
+}
+.dialogBackdrop[data-starting-style],
+.dialogBackdrop[data-ending-style] {
+  opacity: 0;
+}
+.dialog {
+  position: fixed;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  z-index: 81;
+  inline-size: min(calc(100vw - 32px), 420px);
+  padding: 22px;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-pop);
+  translate: -50% -50%;
+  transition:
+    opacity 160ms ease,
+    transform 180ms var(--ease);
+  outline: none;
+}
+:global([dir="rtl"]) .dialog {
+  translate: 50% -50%;
+}
+.dialog[data-starting-style],
+.dialog[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.97);
+}
+.dialogTitle {
+  font-size: 17px;
+  font-weight: 600;
+}
+.dialogBody {
+  margin-block-start: 8px;
+  color: var(--ink-2);
+}
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-block-start: 20px;
+}
+
+/* Full-page states: checking, unavailable */
+.gate {
+  display: grid;
+  place-items: center;
+  min-block-size: 100dvh;
+  padding: 24px;
+}
+.gateCard {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  max-inline-size: 420px;
+  text-align: center;
+}
+.gateCard .brand {
+  margin-block-end: 8px;
+}
+.gateIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 52px;
+  block-size: 52px;
+  border-radius: 16px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.gateIcon svg {
+  inline-size: 24px;
+  block-size: 24px;
+}
+.gateTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+.skeleton {
+  display: grid;
+  gap: 14px;
+}
+.skel {
+  block-size: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2), var(--hair), var(--surface-2));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* =========================================================== Responsive */
+/* Tablet: the sidebar becomes an icon rail. */
+@media (max-width: 1099px) {
+  .shell {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+  .sidebar {
+    align-items: center;
+    padding-inline: 10px;
+  }
+  /* The wordmark, smaller, so it fits the rail. */
+  .sidebar .brand {
+    padding-inline: 0;
+    font-size: 13px;
+    letter-spacing: -0.02em;
+  }
+  .sidebar .navLabel,
+  .sidebar .navSoon,
+  .profileName,
+  .profileChevron {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .sidebar .nav {
+    justify-items: center;
+  }
+  .sidebar .navLink {
+    justify-content: center;
+    inline-size: 48px;
+    min-block-size: 48px;
+    padding: 0;
+  }
+  .sidebar .navLink[aria-current="page"]::before {
+    inset-inline-start: -10px;
+  }
+  .sidebarProfile {
+    inline-size: 100%;
+  }
+  .sidebarAdd {
+    padding-inline: 0;
+  }
+  .sidebarAddButton {
+    inline-size: 48px;
+    min-block-size: 44px;
+    padding: 0;
+  }
+  .sidebarAddButton > kbd {
+    display: none;
+  }
+  /* The label stays for screen readers; the tooltip-free icon is enough to see. */
+  .sidebarAddButton > span {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .profileBtn {
+    justify-content: center;
+    padding: 6px 0;
+  }
+  .grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.tooltip {
+  z-index: 90;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity 120ms ease;
+}
+.tooltip[data-starting-style],
+.tooltip[data-ending-style] {
+  opacity: 0;
+}
+.tooltip[data-instant] {
+  transition-duration: 0ms;
+}
+@media (min-width: 1100px) {
+  .tooltip {
+    display: none;
+  }
+}
+
+/* Phone: a bottom tab bar, and the rest of the navigation in a sheet. */
+@media (max-width: 767px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sidebar {
+    display: none;
+  }
+  .topbar .brand {
+    display: inline-flex;
+  }
+  .topbarProfile {
+    display: contents;
+  }
+  .userName,
+  .userBtn > svg {
+    display: none;
+  }
+  .userBtn {
+    padding: 4px;
+  }
+  .content {
+    padding-block-end: calc(96px + env(safe-area-inset-bottom));
+  }
+  .tabbar {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 6px 2px calc(6px + env(safe-area-inset-bottom));
+    border-block-start: 1px solid var(--hair);
+    background: color-mix(in oklab, var(--surface) 94%, transparent);
+    backdrop-filter: blur(12px);
+  }
+  .tab {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    min-block-size: 54px;
+    padding: 4px 2px;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    color: var(--ink-2);
+    font: inherit;
+    font-size: clamp(10.5px, 2.9vw, 12px);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .tab svg {
+    inline-size: 21px;
+    block-size: 21px;
+  }
+  .tab[aria-current="page"] {
+    color: var(--rail-ink);
+    font-weight: 600;
+  }
+  .tab[aria-current="page"] svg {
+    color: var(--nav-accent);
+  }
+  .tabLabel {
+    max-inline-size: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fieldRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .panelHead,
+  .panelBody,
+  .panelFoot,
+  .session {
+    padding-inline: 16px;
+  }
+  .session {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+  .session > :last-child {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .sessionIcon {
+    inline-size: 36px;
+    block-size: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1.6s;
+  }
+  .skel {
+    animation: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* Overscroll and safe areas show the page's own background, not the default one. */
+:global(body):has(.shell),
+:global(body):has(.gate) {
+  background: #f3f6f6;
+}
+:global(.dark) :global(body):has(.shell),
+:global(.dark) :global(body):has(.gate) {
+  background: #0a0d1a;
+}
+.skip {
+  position: fixed;
+  inset-block-start: 8px;
+  inset-inline-start: 8px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: var(--shadow-pop);
+  transform: translateY(-160%);
+}
+.skip:focus-visible {
+  transform: none;
+}
+.sideNav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  inline-size: 100%;
+}
+.pageNotice {
+  margin-block-end: 20px;
+}
+.panelLead {
+  margin-block-end: 14px;
+}
+.flushTop {
+  padding-block-start: 0;
+}
+.noteTop {
+  margin-block-start: 16px;
+}
+/* The skip link focuses <main> itself; it needs no ring of its own. */
+.content:focus {
+  outline: none;
+}
+
+/* Why a keystroke or paste in a money field was refused. It takes its own line, even in a row. */
+.moneyHint {
+  flex-basis: 100%;
+  font-size: 12.5px;
+  color: var(--tang-text);
+}
+
+/* =========================================================== Print
+   Only the page's content: navigation, the top bar, the phone tabs and dialogs are left out. */
+@media print {
+  .shell {
+    display: block;
+    min-block-size: 0;
+  }
+  .sidebar,
+  .topbar,
+  .tabbar,
+  .sheet,
+  .sheetBackdrop,
+  .skip,
+  .dialogBackdrop {
+    display: none !important;
+  }
+  .theme :global([role="dialog"]),
+  .theme :global([role="alertdialog"]) {
+    display: none !important;
+  }
+  .theme {
+    background: #fff;
+  }
+  .content {
+    max-inline-size: none;
+    padding: 0;
+  }
+}
+
+/* Settings: privacy and your data */
+.privacyHeading {
+  margin-block-start: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.privacyList {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: grid;
+  gap: 6px;
+  list-style: disc;
+}
+
+.privacyCheck {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.privacyCheck input {
+  margin-block-start: 3px;
+}

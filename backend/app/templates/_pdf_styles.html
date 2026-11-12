@@ -1,0 +1,69 @@
+<style>
+  @page { size: A4; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0;
+    color: #14202b;
+    font-family: "Segoe UI", "Noto Sans", "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.45;
+  }
+  bdi.n { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+  .masthead {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+    padding-bottom: 10px; border-bottom: 2px solid #0e3b43; margin-bottom: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13pt; color: #0e3b43; }
+  .brand .mark { width: 22px; height: 22px; border-radius: 6px; background: #ff6a1f; position: relative; }
+  .brand .mark::after {
+    content: ""; position: absolute; inset: 6px; border-radius: 50%; background: #fff;
+  }
+  h1 { margin: 2px 0 0; font-size: 18pt; letter-spacing: -0.01em; color: #0e3b43; }
+  .meta { text-align: end; font-size: 8.5pt; color: #4b5b66; }
+  .meta div { white-space: nowrap; }
+  .filters { margin: 0 0 14px; padding: 8px 10px; background: #f3f6f7; border-radius: 6px; font-size: 8.5pt; }
+  .filters span + span::before { content: " · "; color: #9aa7af; }
+  h2 {
+    margin: 18px 0 8px; font-size: 11.5pt; color: #0e3b43;
+    border-inline-start: 3px solid #ff6a1f; padding-inline-start: 7px;
+    break-after: avoid;
+  }
+  h3 { margin: 12px 0 6px; font-size: 10pt; color: #2b3a44; break-after: avoid; }
+  .tiles, .currency > table:first-of-type { break-inside: avoid; }
+  .tiles { display: flex; gap: 8px; margin-bottom: 6px; }
+  .tile { flex: 1; padding: 8px 10px; border: 1px solid #dde4e7; border-radius: 6px; }
+  .tile .label { font-size: 8pt; color: #4b5b66; }
+  .tile .value { font-size: 12.5pt; font-weight: 700; }
+  .tile .prev { font-size: 7.5pt; color: #6b7a84; }
+  .pos { color: #13734f; }
+  .neg { color: #b4321f; }
+  .note { font-size: 8pt; color: #5c6b74; margin: 4px 0 0; }
+  .completeness { margin: -6px 0 12px; font-size: 8.5pt; }
+  .completeness.ok { color: #13734f; }
+  .completeness.partial {
+    padding: 8px 10px; border: 1.5px solid #b4321f; border-radius: 6px;
+    background: #fde7e3; color: #7a1f12;
+  }
+  .completeness.partial strong { display: block; letter-spacing: 0.04em; }
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th {
+    text-align: start; font-size: 7.8pt; font-weight: 600; color: #4b5b66; text-transform: none;
+    padding: 5px 6px; border-bottom: 1px solid #b9c6cc; background: #f3f6f7;
+  }
+  td { padding: 4.5px 6px; border-bottom: 1px solid #e6ecee; vertical-align: top; }
+  td.num, th.num { text-align: end; white-space: nowrap; }
+  td.nowrap { white-space: nowrap; }
+  td[dir="auto"] { text-align: match-parent; }
+  tr.total td { font-weight: 700; border-top: 1px solid #b9c6cc; }
+  .bar { height: 5px; background: #eef2f3; border-radius: 3px; overflow: hidden; margin-top: 3px; }
+  .bar span { display: block; height: 100%; background: #ff6a1f; }
+  .muted { color: #6b7a84; }
+  .voided { color: #8a969d; text-decoration: line-through; }
+  .tag { font-size: 7pt; padding: 1px 5px; border-radius: 8px; background: #eef2f3; color: #4b5b66; }
+  .tag.overdue { background: #fde7e3; color: #b4321f; }
+  .tag.confirmed { background: #e2f3ea; color: #13734f; }
+  .tag.pending { background: #fff0e6; color: #b14d0f; }
+</style>

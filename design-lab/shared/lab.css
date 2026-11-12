@@ -1,0 +1,20 @@
+/* Prototype controls only. Deliberately neutral so it never reads as part of a concept. */
+#lab-bar {
+  position: sticky; top: 0; z-index: 1000;
+  display: flex; align-items: center; gap: 14px;
+  padding: 6px 12px; overflow-x: auto; scrollbar-width: thin;
+  background: #2b2b2b; color: #f0f0f0;
+  font: 500 12px/1.2 system-ui, sans-serif; white-space: nowrap;
+}
+#lab-bar fieldset { display: flex; align-items: center; gap: 2px; margin: 0; padding: 0; border: 0; }
+#lab-bar legend { float: left; margin-inline-end: 6px; color: #a8a8a8; padding: 0; }
+#lab-bar button {
+  font: inherit; color: inherit; background: transparent; border: 1px solid #555;
+  border-radius: 4px; padding: 3px 7px; cursor: pointer;
+}
+#lab-bar button[aria-pressed="true"] { background: #f0f0f0; color: #1d1d1d; border-color: #f0f0f0; }
+#lab-bar button:focus-visible, #lab-bar a:focus-visible { outline: 2px solid #7fb2ff; outline-offset: 2px; }
+#lab-bar a { color: #cfe0ff; }
+#lab-bar .lab-name { color: #fff; }
+#lab-bar .lab-tag { margin-inline-start: auto; color: #ffd27a; }
+#lab-bar [hidden] { display: none; }

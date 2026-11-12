@@ -1,0 +1,66 @@
+# The FinPilot site, shared by both proxy modes (Caddyfile.direct and Caddyfile.behind).
+#
+# - /api/v1/* goes straight to the API, everything else to the web server.
+# - Each upstream gets exactly one X-Forwarded-For address: the client as this proxy determined
+#   it. In direct mode that's the connecting address (nothing upstream is trusted). In behind
+#   mode it's what the trusted edge proxy reported. Whatever a visitor sends is never passed on.
+# - Bodies over 1 MB are refused here, including chunked ones the API can't measure in advance.
+# - Access logs keep method, route, status and timing. Query strings (the Google callback carries
+#   `code` and `state`), headers and cookies are removed, and addresses are shortened.
+#
+# Values come from deploy/finpilot.env through compose. Nothing here is secret.
+
+(finpilot_site) {
+	request_body {
+		max_size 1MB
+	}
+
+	header {
+		-Server
+		-Via
+	}
+
+	log {
+		output stdout
+		format filter {
+			wrap json
+			fields {
+				request>uri regexp \?.*$ ""
+				request>headers delete
+				request>tls delete
+				request>remote_port delete
+				request>remote_ip ip_mask {
+					ipv4 24
+					ipv6 48
+				}
+				request>client_ip ip_mask {
+					ipv4 24
+					ipv6 48
+				}
+				resp_headers delete
+			}
+		}
+	}
+
+	handle /api/v1/* {
+		reverse_proxy {$FINPILOT_API_UPSTREAM:api:8000} {
+			header_up X-Forwarded-For {client_ip}
+			header_up X-Forwarded-Proto https
+			transport http {
+				dial_timeout 5s
+				response_header_timeout 45s
+			}
+		}
+	}
+
+	handle {
+		reverse_proxy {$FINPILOT_WEB_UPSTREAM:web:3000} {
+			header_up X-Forwarded-For {client_ip}
+			header_up X-Forwarded-Proto https
+			transport http {
+				dial_timeout 5s
+				response_header_timeout 30s
+			}
+		}
+	}
+}
