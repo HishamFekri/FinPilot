@@ -15,12 +15,19 @@ in_place=0
 [ "${1:-}" = "--in-place" ] && in_place=1
 
 PROJECT="finpilot-stacktest"
-PORTS="18443 18080"
+PORTS="18443 18080 18085"
 SUBNETS="172.30.250.0/24 172.30.251.0/24 172.30.252.0/24 172.30.253.0/29"
 TEST_UIDS="10201 10202"
 TEST_IMAGES="finpilot-api:stacktest finpilot-api-stack-test:local finpilot-web:stacktest"
+# FINPILOT_PREFLIGHT_PROFILE=ci: a throwaway GitHub-hosted runner (less memory and disk, and no
+# existing applications or external disk to protect). Default: the home server.
+PROFILE="${FINPILOT_PREFLIGHT_PROFILE:-server}"
 MIN_MEM_MIB=6144
 MIN_DOCKER_FREE_GIB=20
+if [ "$PROFILE" = ci ]; then
+  MIN_MEM_MIB=4096
+  MIN_DOCKER_FREE_GIB=10
+fi
 TEST_DIR="${HOME}/finpilot-stacktest"
 
 failures=0
@@ -62,7 +69,9 @@ awk -v m="$io_some" 'BEGIN{exit !(m < 15)}' && pass "I/O pressure avg60: $io_som
 info "load: $(cut -d' ' -f1-3 /proc/loadavg)"
 free_gib="$(df -P / | awk 'NR==2{print int($4/1048576)}')"
 [ "$free_gib" -ge "$MIN_DOCKER_FREE_GIB" ] && pass "free on / (Docker's root): ${free_gib} GiB" || fail "free on /: ${free_gib} GiB (need ${MIN_DOCKER_FREE_GIB})"
-if mountpoint -q /srv/storage; then
+if [ "$PROFILE" = ci ]; then
+  info "CI runner: no external disk to check"
+elif mountpoint -q /srv/storage; then
   pass "/srv/storage is mounted ($(df -hP /srv/storage | awk 'NR==2{print $4}') free)"
 else
   fail "/srv/storage isn't mounted (Docker and the existing apps depend on it)"
@@ -76,9 +85,11 @@ unhealthy="$(docker ps --filter health=unhealthy --format '{{.Names}}')"
 [ -z "$unhealthy" ] && pass "no running container is unhealthy" || fail "unhealthy containers: $unhealthy"
 starting="$(docker ps --filter health=starting --format '{{.Names}}')"
 [ -z "$starting" ] && pass "no container is still starting" || fail "containers still starting: $starting (wait, then rerun)"
-for name in caddy ai-frontend ai-backend hesham-postgres hesham-redis; do
-  echo "$running" | grep -qx "$name" && pass "existing service running: $name" || fail "existing service not running: $name"
-done
+if [ "$PROFILE" != ci ]; then
+  for name in caddy ai-frontend ai-backend hesham-postgres hesham-redis; do
+    echo "$running" | grep -qx "$name" && pass "existing service running: $name" || fail "existing service not running: $name"
+  done
+fi
 
 # --- The test's names, ports, subnets and IDs are unused
 if [ -z "$(docker ps -aq --filter "label=com.docker.compose.project=$PROJECT")" ] \

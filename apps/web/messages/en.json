@@ -233,7 +233,8 @@
       "creator": "Hisham Jouda",
       "rights": "© {year} FinPilot",
       "linkedin": "Hisham Jouda on LinkedIn",
-      "github": "Hisham Jouda on GitHub"
+      "github": "Hisham Jouda on GitHub",
+      "privacy": "Privacy (draft)"
     },
     "example": "Example data",
     "journey": {
@@ -281,7 +282,8 @@
       "account_unavailable": "This account can't be used to sign in right now.",
       "google_unavailable": "Google isn't responding right now. Please try again in a few minutes.",
       "failed": "Sign-in didn't complete. Please try again.",
-      "unreachable": "FinPilot can't be reached right now. Check your connection and try again."
+      "unreachable": "FinPilot can't be reached right now. Check your connection and try again.",
+      "not_invited": "FinPilot is in a private beta, and this Google account isn't on the invitation list yet."
     },
     "notices": {
       "expired": "Your session has ended. Sign in again to continue."
@@ -3313,6 +3315,51 @@
         "deletion_not_requested": "There's no deletion to cancel.",
         "rate_limited": "Too many attempts. Try again later.",
         "server": "That didn't work. Try again in a moment."
+      }
+    }
+  },
+  "legal": {
+    "title": "Privacy notice and beta terms (draft)",
+    "metaDescription": "How FinPilot's private beta handles your information. A working draft.",
+    "draft": "This is a working draft for FinPilot's private beta. It hasn't been reviewed by a lawyer, and it doesn't claim compliance with any law. Until a reviewed version is published, FinPilot accepts new accounts only by invitation.",
+    "updated": "Last updated: 13 November 2026",
+    "back": "Back to FinPilot",
+    "sections": {
+      "operator": {
+        "heading": "Who runs FinPilot",
+        "body": "FinPilot is a personal project by Hisham Jouda, run on a private server. It isn't a bank or a payment service, and it never moves money."
+      },
+      "collected": {
+        "heading": "What is collected",
+        "body": "From Google, when you sign in: your name, email address, profile picture and Google account ID. What you enter: accounts, transactions, budgets, trips and the other records you create. To keep your account safe: session records with your browser's description and when it was used, and a security log of sign-ins and important changes."
+      },
+      "notCollected": {
+        "heading": "What isn't collected",
+        "body": "No passwords (Google handles sign-in), no bank logins, no card details, and no advertising or analytics trackers."
+      },
+      "use": {
+        "heading": "How it's used",
+        "body": "Only to run FinPilot for you: showing, calculating and exporting your own records, keeping your account secure, and fixing faults. Your information isn't sold, shared for advertising, or used to train models."
+      },
+      "others": {
+        "heading": "Who else is involved",
+        "body": "Google, for sign-in. Cloudflare, which carries the site's traffic to the server. Public exchange-rate services, which receive only currency codes and dates, never your records."
+      },
+      "storage": {
+        "heading": "Where it's kept, and for how long",
+        "body": "Your records are stored on the operator's server, in a database that keeps each person's records apart. Encrypted backups are kept for up to six months. When you delete your account, your records are removed from the live database; copies in backups disappear as those backups expire."
+      },
+      "choices": {
+        "heading": "Your choices",
+        "body": "You can export your records as CSV or PDF, and delete your account at any time in Settings, under Privacy."
+      },
+      "beta": {
+        "heading": "Beta terms",
+        "body": "The beta is offered as it is, without guarantees, and it may change or stop. Don't rely on FinPilot as your only record of anything important. Nothing in FinPilot is financial advice."
+      },
+      "contact": {
+        "heading": "Questions",
+        "body": "Send questions or requests to the person who invited you, or to the operator through the profiles linked at the bottom of the home page."
       }
     }
   }

@@ -25,7 +25,7 @@
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 [ "${1:-}" = "--run" ] || die "nothing done: pass --run to build and test a throwaway stack"
-require_tools docker timeout ss python3 restic comm
+require_tools docker timeout ss python3 restic comm curl
 SCRIPTS="$DEPLOY_DIR/scripts"
 REPO="$(cd "$DEPLOY_DIR/.." && pwd)"
 REPORT="${FINPILOT_STACKTEST_REPORT:-$REPO/stacktest-report}"
@@ -61,6 +61,9 @@ SITE_ENV="$FINPILOT_SITE_ENV"
 STATE_DIR="$FINPILOT_STATE_DIR"
 RELEASE_ENV="$work/release.env"
 TEST_IMAGES=(finpilot-api:stacktest finpilot-api-stack-test:local finpilot-web:stacktest)
+# The watchdog's memory floor. CI runners have less memory than the server, and nothing else.
+MIN_MEM_MIB="${FINPILOT_STACKTEST_MIN_MEM_MIB:-3072}"
+[[ "$MIN_MEM_MIB" =~ ^[0-9]+$ ]] || die "FINPILOT_STACKTEST_MIN_MEM_MIB must be a number"
 BASE_IMAGES=(postgres:18.1-trixie caddy:2.10.2-alpine python:3.14.6-slim-trixie
              ghcr.io/astral-sh/uv:0.11.21 node:24.12.0-trixie-slim)
 failures=0
@@ -150,8 +153,8 @@ watchdog() {
     elif [ "$now" != "$baseline" ]; then
       reason="an existing container changed state, health, restarts, ports or mounts"
       diff <(echo "$baseline") <(echo "$now") > "$REPORT/EMERGENCY-diff.txt" || true
-    elif [ "$(awk '/^MemAvailable:/{print int($2/1024)}' /proc/meminfo)" -lt 3072 ]; then
-      reason="host memory available fell below 3 GiB"
+    elif [ "$(awk '/^MemAvailable:/{print int($2/1024)}' /proc/meminfo)" -lt "$MIN_MEM_MIB" ]; then
+      reason="host memory available fell below $MIN_MEM_MIB MiB"
     elif [ "$(df -P / | awk 'NR==2{print int($4/1048576)}')" -lt 8 ]; then
       reason="free disk on / fell below 8 GiB"
     elif [ $(( $(date +%s) - started_at )) -gt 5400 ]; then
@@ -172,7 +175,9 @@ cleanup() {
   [ -n "$watchdog_pid" ] && kill "$watchdog_pid" 2>/dev/null
   say "Cleanup: removing only what this run created"
   { (compose down --volumes --remove-orphans) > /dev/null 2>&1
-    FINPILOT_STACKTEST_REPORT="$REPORT" "$SCRIPTS/stack-test-stop.sh" --confirm --sweep-only
+    keep=()
+    [ "${FINPILOT_STACKTEST_KEEP_IMAGES:-}" = 1 ] && keep=(--keep-images)
+    FINPILOT_STACKTEST_REPORT="$REPORT" "$SCRIPTS/stack-test-stop.sh" --confirm --sweep-only "${keep[@]}"
     for image in "${BASE_IMAGES[@]}"; do
       if ! grep -qx "$image" "$REPORT/images-before.txt" 2>/dev/null \
          && docker image inspect "$image" > /dev/null 2>&1; then
@@ -291,6 +296,8 @@ FINPILOT_EDGE_SUBNET=172.30.253.0/29
 FINPILOT_EDGE_PROXY_IP=172.30.253.2
 FINPILOT_EDGE_IP=172.30.253.3
 FINPILOT_STACK_TESTER_EDGE_IP=172.30.253.4
+FINPILOT_TUNNEL_PORT=18085
+FINPILOT_EGRESS_GATEWAY=172.30.252.1
 FINPILOT_SECRETS_PATH=$work/secrets
 FINPILOT_STACK_TEST_IMAGE=finpilot-api-stack-test:local
 EOF
@@ -301,6 +308,7 @@ EOF
 
 FINPILOT_SECRETS_PATH="$work/secrets" "$SCRIPTS/init-secrets.sh" --generate --local-test-permissions
 printf 'stack-test-only-not-a-real-secret' > "$work/secrets/google_client_secret"
+echo "stack-owner@example.test" > "$work/secrets/beta_allowlist"
 
 say "Provisioning a disposable database and deploying (direct mode)"
 before_step="$failures"
@@ -324,6 +332,7 @@ check "refuses a catch-all trusted proxy" fails compose run --rm --no-deps -e TR
 check "refuses an http Google redirect" fails compose run --rm --no-deps \
   -e GOOGLE_REDIRECT_URI=http://finpilot.test/api/v1/auth/google/callback api "${probe_cmd[@]}"
 check "refuses a missing Google client" fails compose run --rm --no-deps -e GOOGLE_CLIENT_ID= api "${probe_cmd[@]}"
+check "refuses open registration in production" fails compose run --rm --no-deps -e REGISTRATION_MODE=open api "${probe_cmd[@]}"
 check "refuses an http origin" fails compose run --rm --no-deps -e WEB_ORIGIN=http://finpilot.test api "${probe_cmd[@]}"
 check "migrations refuse to run without separate migration credentials" fails compose run --rm --no-deps \
   -e MIGRATION_DATABASE_URL_FILE= migrate
@@ -413,6 +422,36 @@ check "the proxy publishes nothing in behind mode" test -z \
 check "the stand-in edge proxy starts" compose up -d --no-deps edge
 check "the stand-in edge proxy is healthy" wait_healthy edge
 check "stack tests (behind the stand-in edge proxy)" compose run --rm stack-test-behind
+
+say "Tunnel mode: cloudflared's view, from this host's loopback"
+sed -i 's/^FINPILOT_PROXY_MODE=.*/FINPILOT_PROXY_MODE=tunnel/' "$SITE_ENV"
+check "the proxy restarts in tunnel mode" compose up -d --no-deps proxy
+check "the proxy is healthy in tunnel mode" wait_healthy proxy
+tunnel() {  # tunnel PATH [HEADER...]: the response code, as cloudflared would get it
+  local path="$1" args=() header
+  shift
+  for header in "$@"; do args+=(-H "$header"); done
+  curl -s -o /dev/null -w '%{http_code}' --max-time 20 -H "Host: finpilot.test" "${args[@]}" \
+    "http://127.0.0.1:18085$path"
+}
+sign_in_start='/api/v1/auth/google/start?return_to=https://elsewhere.example'
+tunnel_limited() {  # 20 attempts are allowed per client address; the 21st is refused
+  local n code=""
+  for n in $(seq 1 21); do code="$(tunnel "$sign_in_start" "$@")"; done
+  [ "$code" = 303 ]
+}
+check "tunnel mode publishes only 127.0.0.1:18085" test \
+  "$(docker ps --filter label=com.docker.compose.project=$PROJECT --filter label=com.docker.compose.service=proxy --format '{{.Ports}}' | grep -o '[0-9.]*:[0-9]*->' | sort -u | tr '\n' ' ')" \
+  = "127.0.0.1:18085-> "
+check "tunnel mode serves the site" test "$(tunnel /api/v1/readyz)" = 200
+check "tunnel mode serves only its own host" test \
+  "$(curl -s --max-time 20 -H 'Host: other.example' http://127.0.0.1:18085/api/v1/healthz)" != '{"status":"ok"}'
+check "Cloudflare's client address is used: its 21st sign-in attempt is refused" \
+  tunnel_limited "Cf-Connecting-Ip: 203.0.113.50"
+check "another Cloudflare client still gets in (the gateway alone is trusted, per address)" \
+  test "$(tunnel "$sign_in_start" "Cf-Connecting-Ip: 203.0.113.51")" = 422
+check "a forged X-Forwarded-For buys nothing in tunnel mode" test \
+  "$(tunnel "$sign_in_start" "Cf-Connecting-Ip: 203.0.113.50" "X-Forwarded-For: 198.51.100.9")" = 303
 
 say "Logs keep no query strings, cookies or credentials"
 logs="$(compose logs --no-color proxy edge api web 2>&1)"

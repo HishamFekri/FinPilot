@@ -29,7 +29,7 @@ done
 [ "$generate" -eq 1 ] || die "nothing done: pass --generate to create new secrets in $dir"
 
 names=(postgres_password owner_role_password runtime_role_password admin_database_url
-       owner_database_url database_url google_client_secret)
+       owner_database_url database_url google_client_secret beta_allowlist)
 for name in "${names[@]}"; do
   [ ! -e "$dir/$name" ] || die "$dir/$name already exists. Existing secrets are never replaced."
 done
@@ -57,6 +57,7 @@ write admin_database_url "postgresql+psycopg://postgres:${postgres}@db:5432/post
 write owner_database_url "postgresql+psycopg://finpilot_owner:${owner}@db:5432/${db}"
 write database_url "postgresql+psycopg://finpilot_app:${runtime}@db:5432/${db}"
 : > "$dir/google_client_secret"
+: > "$dir/beta_allowlist"
 unset postgres owner runtime
 
 if [ "$local_test" -eq 1 ]; then
@@ -74,4 +75,5 @@ else
 fi
 
 say "Created ${#names[@]} secret files in $dir. No value was printed."
-say "Next: put the production Google client secret into $dir/google_client_secret."
+say "Next: put the production Google client secret into $dir/google_client_secret,"
+say "and your own address (one per line) into $dir/beta_allowlist."

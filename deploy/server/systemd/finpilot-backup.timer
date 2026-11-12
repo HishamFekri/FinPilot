@@ -1,0 +1,10 @@
+[Unit]
+Description=FinPilot: nightly encrypted backup, after the server's own 03:00 backup
+
+[Timer]
+OnCalendar=*-*-* 03:40:00
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

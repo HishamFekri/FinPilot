@@ -146,6 +146,7 @@ class Stack:
             "GOOGLE_CLIENT_SECRET": "local-stack-only-not-a-real-secret",
             "GOOGLE_REDIRECT_URI": f"{ORIGIN}/api/v1/auth/google/callback",
             "TRUSTED_PROXIES": "127.0.0.1",
+            "BETA_ALLOWLIST": "stack-owner@example.test",
             "PDF_BROWSER_CHANNEL": os.environ.get("PDF_BROWSER_CHANNEL", "chrome"),
             **overrides,
         }
@@ -164,6 +165,8 @@ class Stack:
             "catch-all proxy": {"TRUSTED_PROXIES": "0.0.0.0/0"},
             "no proxy": {"TRUSTED_PROXIES": ""},
             "http origin": {"WEB_ORIGIN": f"http://{HOST}:{HTTPS}"},
+            "open registration": {"REGISTRATION_MODE": "open"},
+            "empty allowlist": {"BETA_ALLOWLIST": ""},
         }
         refused = []
         for name, change in cases.items():

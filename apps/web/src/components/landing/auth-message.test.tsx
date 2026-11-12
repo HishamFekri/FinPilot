@@ -31,6 +31,7 @@ describe("sign-in messages on the landing page", () => {
     "cancelled",
     "email_not_verified",
     "account_unavailable",
+    "not_invited",
     "google_unavailable",
     "failed",
     "unreachable",

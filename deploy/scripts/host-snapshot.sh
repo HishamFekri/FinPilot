@@ -14,7 +14,8 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-EXCLUDE_PROJECT="finpilot-stacktest"
+# FINPILOT_SNAPSHOT_EXCLUDE=finpilot when checking that the production deployment touched nothing else.
+EXCLUDE_PROJECT="${FINPILOT_SNAPSHOT_EXCLUDE:-finpilot-stacktest}"
 
 others() {
   # Container IDs that aren't the stack test's.

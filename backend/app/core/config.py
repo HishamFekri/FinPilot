@@ -104,6 +104,16 @@ class Settings(BaseSettings):
     # visitor rather than the proxy. Required in production; never a catch-all.
     trusted_proxies: str | None = None
 
+    # Who may create a NEW account (existing accounts always sign in, subject to their status):
+    #   closed     nobody
+    #   allowlist  only the addresses in BETA_ALLOWLIST (comma or newline separated; in production
+    #              a secrets file, `beta_allowlist`, so addresses never appear in the environment)
+    #   open       anyone with a verified Google address. Refused in production until a legally
+    #              reviewed privacy notice and retention policy exist (PRODUCTION_READINESS PB-1)
+    # Unset: "allowlist" in production and demo, "open" in development and tests.
+    registration_mode: Literal["closed", "allowlist", "open"] | None = None
+    beta_allowlist: str | None = None
+
     @field_validator("database_url")
     @classmethod
     def require_psycopg_driver(cls, value: PostgresDsn) -> PostgresDsn:
@@ -118,6 +128,8 @@ class Settings(BaseSettings):
         "pdf_browser_channel",
         "pdf_browser_path",
         "trusted_proxies",
+        "registration_mode",
+        "beta_allowlist",
         mode="before",
     )
     @classmethod
@@ -145,7 +157,49 @@ class Settings(BaseSettings):
         if self.session_idle_hours > self.session_absolute_hours:
             raise ValueError("SESSION_IDLE_HOURS can't exceed SESSION_ABSOLUTE_HOURS")
         self._check_trusted_proxies()
+        self._check_registration()
         return self
+
+    def _check_registration(self) -> None:
+        for address in self.beta_allowlist_addresses:
+            if address.count("@") != 1 or address.startswith("@") or address.endswith("@"):
+                raise ValueError("BETA_ALLOWLIST must list email addresses")
+        if self.app_env is not Environment.PRODUCTION:
+            return
+        if self.effective_registration_mode == "open":
+            raise ValueError(
+                "REGISTRATION_MODE=open isn't allowed in production: public sign-up needs a "
+                "reviewed privacy notice and retention policy first"
+            )
+        if self.effective_registration_mode == "allowlist" and not self.beta_allowlist_addresses:
+            raise ValueError(
+                "REGISTRATION_MODE=allowlist needs BETA_ALLOWLIST (the owner's address at least); "
+                "use REGISTRATION_MODE=closed to admit no new accounts"
+            )
+
+    @property
+    def effective_registration_mode(self) -> str:
+        if self.registration_mode is not None:
+            return self.registration_mode
+        return (
+            "open" if self.app_env in (Environment.DEVELOPMENT, Environment.TEST) else "allowlist"
+        )
+
+    @property
+    def beta_allowlist_addresses(self) -> frozenset[str]:
+        if not self.beta_allowlist:
+            return frozenset()
+        parts = self.beta_allowlist.replace("\n", ",").split(",")
+        return frozenset(p.strip().lower() for p in parts if p.strip())
+
+    def admits_new_account(self, email: str) -> bool:
+        """Whether a verified Google address with no FinPilot account may create one now."""
+        mode = self.effective_registration_mode
+        if mode == "open":
+            return True
+        if mode == "allowlist":
+            return email.strip().lower() in self.beta_allowlist_addresses
+        return False
 
     def _check_trusted_proxies(self) -> None:
         for entry in self.trusted_proxy_list:

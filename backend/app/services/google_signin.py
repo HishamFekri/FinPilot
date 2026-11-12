@@ -14,6 +14,7 @@ import logging
 import re
 import secrets
 import unicodedata
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
@@ -182,8 +183,13 @@ def complete_sign_in(
     state: str | None,
     binding: str | None,
     code: str | None,
+    admit: Callable[[str], bool],
 ) -> SignedIn:
-    """Leaves the user and identity flushed but uncommitted, for the caller to add a session."""
+    """Leaves the user and identity flushed but uncommitted, for the caller to add a session.
+
+    `admit` decides whether a verified address with no account yet may create one (closed beta:
+    Settings.admits_new_account). Existing accounts never depend on it.
+    """
     flow = _consume_state(db, state, binding)
     if not code:
         raise SignInRejectedError("missing_code", flow.locale)
@@ -194,7 +200,7 @@ def complete_sign_in(
         raise _reject(db, exc.reason, flow.locale) from None
     except GoogleUnavailableError:
         raise SignInRejectedError("google_unavailable", flow.locale) from None
-    user, created = resolve_user(db, claims, locale=flow.locale)
+    user, created = resolve_user(db, claims, locale=flow.locale, admit=admit)
     return SignedIn(user=user, created=created, locale=flow.locale, return_path=flow.return_path)
 
 
@@ -215,7 +221,9 @@ def _find_identity(db: Session, subject: str) -> UserIdentity | None:
     ).one_or_none()
 
 
-def resolve_user(db: Session, claims: GoogleClaims, *, locale: str) -> tuple[User, bool]:
+def resolve_user(
+    db: Session, claims: GoogleClaims, *, locale: str, admit: Callable[[str], bool]
+) -> tuple[User, bool]:
     """Google's subject ID decides who this is. The email address never does.
 
     A new `sub` always gets a new account, even if another account has the same address: the
@@ -227,6 +235,10 @@ def resolve_user(db: Session, claims: GoogleClaims, *, locale: str) -> tuple[Use
 
     if not claims.email_verified or claims.email is None:
         raise _reject(db, "email_not_verified", locale)
+    # Closed beta: a verified address alone doesn't create an account. Nothing is stored for a
+    # refused address, and the audit records only the reason.
+    if not admit(claims.email):
+        raise _reject(db, "registration_closed", locale)
     now = datetime.now(UTC)
     try:
         with db.begin_nested():

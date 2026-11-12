@@ -233,7 +233,8 @@
       "creator": "Hisham Jouda",
       "rights": "© {year} FinPilot",
       "linkedin": "LinkedIn'de Hisham Jouda",
-      "github": "GitHub'da Hisham Jouda"
+      "github": "GitHub'da Hisham Jouda",
+      "privacy": "Gizlilik (taslak)"
     },
     "example": "Örnek veriler",
     "journey": {
@@ -281,7 +282,8 @@
       "account_unavailable": "Bu hesapla şu anda giriş yapılamıyor.",
       "google_unavailable": "Google şu anda yanıt vermiyor. Lütfen birkaç dakika sonra tekrar deneyin.",
       "failed": "Giriş tamamlanamadı. Lütfen tekrar deneyin.",
-      "unreachable": "FinPilot'a şu anda ulaşılamıyor. Bağlantınızı kontrol edip tekrar deneyin."
+      "unreachable": "FinPilot'a şu anda ulaşılamıyor. Bağlantınızı kontrol edip tekrar deneyin.",
+      "not_invited": "FinPilot özel beta aşamasında ve bu Google hesabı henüz davet listesinde değil."
     },
     "notices": {
       "expired": "Oturumunuz sona erdi. Devam etmek için tekrar giriş yapın."
@@ -3313,6 +3315,51 @@
         "deletion_not_requested": "İptal edilecek bir silme talebi yok.",
         "rate_limited": "Çok fazla deneme. Daha sonra tekrar dene.",
         "server": "Olmadı. Biraz sonra tekrar dene."
+      }
+    }
+  },
+  "legal": {
+    "title": "Gizlilik bildirimi ve beta koşulları (taslak)",
+    "metaDescription": "FinPilot'un özel betasının bilgilerinizi nasıl ele aldığı. Çalışma taslağı.",
+    "draft": "Bu, FinPilot'un özel betası için bir çalışma taslağıdır. Henüz bir avukat tarafından incelenmedi ve herhangi bir yasaya uygunluk iddiası taşımıyor. İncelenmiş bir sürüm yayımlanana kadar FinPilot yeni hesapları yalnızca davetle kabul ediyor.",
+    "updated": "Son güncelleme: 13 Kasım 2026",
+    "back": "FinPilot'a dön",
+    "sections": {
+      "operator": {
+        "heading": "FinPilot'u kim işletiyor",
+        "body": "FinPilot, Hisham Jouda'nın kişisel bir projesidir ve özel bir sunucuda çalışır. Bir banka ya da ödeme hizmeti değildir ve asla para aktarmaz."
+      },
+      "collected": {
+        "heading": "Neler toplanıyor",
+        "body": "Oturum açtığınızda Google'dan: adınız, e-posta adresiniz, profil fotoğrafınız ve Google hesap kimliğiniz. Sizin girdikleriniz: hesaplar, işlemler, bütçeler, seyahatler ve oluşturduğunuz diğer kayıtlar. Hesabınızı korumak için: tarayıcınızın tanımı ve kullanım zamanıyla oturum kayıtları ile oturum açma ve önemli değişikliklerin güvenlik günlüğü."
+      },
+      "notCollected": {
+        "heading": "Neler toplanmıyor",
+        "body": "Parola yok (oturum açmayı Google yürütür), banka girişi yok, kart bilgisi yok, reklam ya da analiz izleyicisi yok."
+      },
+      "use": {
+        "heading": "Nasıl kullanılıyor",
+        "body": "Yalnızca FinPilot'u sizin için çalıştırmak için: kendi kayıtlarınızı göstermek, hesaplamak ve dışa aktarmak, hesabınızı güvende tutmak ve arızaları gidermek. Bilgileriniz satılmaz, reklam için paylaşılmaz ve model eğitiminde kullanılmaz."
+      },
+      "others": {
+        "heading": "Başka kimler dahil",
+        "body": "Oturum açma için Google. Sitenin trafiğini sunucuya taşıyan Cloudflare. Yalnızca para birimi kodlarını ve tarihleri alan, kayıtlarınızı asla almayan herkese açık döviz kuru hizmetleri."
+      },
+      "storage": {
+        "heading": "Nerede ve ne kadar süre tutuluyor",
+        "body": "Kayıtlarınız işletmecinin sunucusunda, her kişinin kayıtlarını ayrı tutan bir veritabanında saklanır. Şifreli yedekler altı aya kadar tutulur. Hesabınızı sildiğinizde kayıtlarınız canlı veritabanından kaldırılır; yedeklerdeki kopyalar o yedeklerin süresi doldukça yok olur."
+      },
+      "choices": {
+        "heading": "Seçenekleriniz",
+        "body": "Kayıtlarınızı CSV veya PDF olarak dışa aktarabilir, hesabınızı istediğiniz zaman Ayarlar'da Gizlilik bölümünden silebilirsiniz."
+      },
+      "beta": {
+        "heading": "Beta koşulları",
+        "body": "Beta olduğu gibi, garanti olmadan sunulur; değişebilir ya da sona erebilir. Önemli hiçbir şey için tek kaydınız olarak FinPilot'a güvenmeyin. FinPilot'taki hiçbir şey finansal tavsiye değildir."
+      },
+      "contact": {
+        "heading": "Sorular",
+        "body": "Sorularınızı veya taleplerinizi sizi davet eden kişiye ya da ana sayfanın altındaki profiller üzerinden işletmeciye iletin."
       }
     }
   }

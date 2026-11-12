@@ -121,8 +121,8 @@ Database tests run when `TEST_DATABASE_URL` is set in the environment or in `bac
 
 ## Roadmap
 
-| Phase | Delivers                                                             | Status      |
-| ----- | -------------------------------------------------------------------- | ----------- |
+| Phase | Delivers                                                             | Status              |
+| ----- | -------------------------------------------------------------------- | ------------------- |
 | A     | Personal finance demo with synthetic data                            | Built, under review |
 | B     | Trip Mode demo with synthetic data                                   | Built, under review |
 | C     | Complete web product: reports, exports, budgets, all three languages | Mostly built        |

@@ -26,6 +26,7 @@ PRODUCTION = {
     "google_client_secret": CLIENT_SECRET,
     "google_redirect_uri": "https://finpilot.example/api/v1/auth/google/callback",
     "web_origin": "https://finpilot.example",
+    "beta_allowlist": "owner@example.com",
 }
 
 

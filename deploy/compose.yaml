@@ -115,7 +115,10 @@ services:
       DB_POOL_SIZE: "5"
       DB_MAX_OVERFLOW: "5"
       PDF_MAX_CONCURRENT: "2"
-    secrets: [database_url, google_client_secret]
+      # Closed beta: only addresses in the beta_allowlist secret may create an account.
+      # "open" is refused in production (docs/PRODUCTION_READINESS.md PB-1).
+      REGISTRATION_MODE: ${FINPILOT_REGISTRATION_MODE:-allowlist}
+    secrets: [database_url, google_client_secret, beta_allowlist]
     tmpfs:
       - /tmp:size=256m
       # Chromium needs a writable home for its profile while rendering.
@@ -166,11 +169,13 @@ services:
     image: ${FINPILOT_CADDY_IMAGE:-caddy:2.10.2-alpine}
     # direct: TLS here, ports published by compose.direct.yaml.
     # behind: plain HTTP on the edge network only, behind the server's existing proxy.
+    # tunnel: plain HTTP on one loopback port for cloudflared (compose.tunnel.yaml).
+    # scripts/lib.sh sets FINPILOT_CADDY_CONFIG from the mode (tunnel uses the behind file).
     command:
       - caddy
       - run
       - --config
-      - /etc/caddy/Caddyfile.${FINPILOT_PROXY_MODE:-direct}
+      - /etc/caddy/Caddyfile.${FINPILOT_CADDY_CONFIG:-direct}
       - --adapter
       - caddyfile
     environment:
@@ -179,6 +184,7 @@ services:
       FINPILOT_TLS: ${FINPILOT_TLS:-internal}
       # Behind mode: the one address whose X-Forwarded-For this proxy believes.
       FINPILOT_EDGE_IP: ${FINPILOT_EDGE_IP:-172.30.13.3}
+      FINPILOT_CLIENT_IP_HEADER: ${FINPILOT_CLIENT_IP_HEADER:-X-Forwarded-For}
     volumes:
       - ./caddy:/etc/caddy:ro
       - caddy_data:/data
@@ -340,3 +346,6 @@ secrets:
     file: ${FINPILOT_SECRETS_PATH:-./secrets}/database_url
   google_client_secret:
     file: ${FINPILOT_SECRETS_PATH:-./secrets}/google_client_secret
+  # Not a password, but private: who may join the closed beta, one address per line.
+  beta_allowlist:
+    file: ${FINPILOT_SECRETS_PATH:-./secrets}/beta_allowlist

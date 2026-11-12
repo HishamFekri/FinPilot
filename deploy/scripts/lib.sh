@@ -44,12 +44,15 @@ database_name() {
 
 # "direct": the FinPilot proxy terminates TLS and publishes loopback ports (compose.direct.yaml).
 # "behind": it sits behind the server's existing proxy on the internal edge network, and nothing
-# is published. The site file decides; an exported FINPILOT_PROXY_MODE wins, so compose and this
-# script always agree.
+# is published.
+# "tunnel": plain HTTP on one loopback port for cloudflared, trusting only the egress gateway
+# (where cloudflared's connections arrive from) for Cf-Connecting-Ip (compose.tunnel.yaml).
+# The site file decides; an exported FINPILOT_PROXY_MODE wins, so compose and this script agree.
 proxy_mode() {
   local mode="${FINPILOT_PROXY_MODE:-$(site_value FINPILOT_PROXY_MODE)}"
   mode="${mode:-direct}"
-  [[ "$mode" == direct || "$mode" == behind ]] || die "FINPILOT_PROXY_MODE must be direct or behind"
+  [[ "$mode" == direct || "$mode" == behind || "$mode" == tunnel ]] \
+    || die "FINPILOT_PROXY_MODE must be direct, behind or tunnel"
   echo "$mode"
 }
 
@@ -60,9 +63,11 @@ compose() {
   mode="$(proxy_mode)"
   files=(--file "$DEPLOY_DIR/compose.yaml")
   [ "$mode" = direct ] && files+=(--file "$DEPLOY_DIR/compose.direct.yaml")
+  [ "$mode" = tunnel ] && files+=(--file "$DEPLOY_DIR/compose.tunnel.yaml")
   # Only stack-test.sh sets this: the test runners and the stand-in edge proxy.
   [ "${FINPILOT_COMPOSE_TEST:-}" = 1 ] && files+=(--file "$DEPLOY_DIR/compose.stacktest.yaml")
   FINPILOT_PROXY_MODE="$mode" \
+  FINPILOT_CADDY_CONFIG="$([ "$mode" = direct ] && echo direct || echo behind)" \
   FINPILOT_API_SECCOMP_PROFILE="${FINPILOT_API_SECCOMP_PROFILE:-$DEPLOY_DIR/seccomp/api-chromium.json}" \
   docker compose \
     --project-directory "$DEPLOY_DIR" \

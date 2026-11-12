@@ -11,15 +11,18 @@
 #   images      exactly finpilot-api:stacktest, finpilot-api-stack-test:local, finpilot-web:stacktest
 # Never touches another project, never prunes, never restarts Docker. Prints what is left over.
 # --sweep-only skips stopping the running script (stack-test.sh's own cleanup uses it).
+# --keep-images keeps the three images: CI publishes exactly the images that passed.
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 confirmed=0
 sweep_only=0
+keep_images=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --confirm) confirmed=1 ;;
     --sweep-only) sweep_only=1 ;;
+    --keep-images) keep_images=1 ;;
     *) die "unknown option $1" ;;
   esac
   shift
@@ -51,17 +54,21 @@ ids="$(docker network ls -q --filter "$label")"
 [ -z "$ids" ] || docker network rm $ids > /dev/null
 ids="$(docker volume ls -q --filter "$label")"
 [ -z "$ids" ] || docker volume rm $ids > /dev/null
-say "Removing its images (by exact name only)"
-for image in "${TEST_IMAGES[@]}"; do
-  docker image inspect "$image" > /dev/null 2>&1 && docker image rm "$image" > /dev/null || true
-done
+if [ "$keep_images" -eq 0 ]; then
+  say "Removing its images (by exact name only)"
+  for image in "${TEST_IMAGES[@]}"; do
+    docker image inspect "$image" > /dev/null 2>&1 && docker image rm "$image" > /dev/null || true
+  done
+fi
 
 say "Left over (should be empty):"
 docker ps -a --filter "$label" --format '  container {{.Names}}'
 docker ps -a --filter "label=finpilot.stacktest" --format '  container {{.Names}}'
 docker network ls --filter "$label" --format '  network {{.Name}}'
 docker volume ls --filter "$label" --format '  volume {{.Name}}'
-for image in "${TEST_IMAGES[@]}"; do
-  docker image inspect "$image" > /dev/null 2>&1 && echo "  image $image" || true
-done
+if [ "$keep_images" -eq 0 ]; then
+  for image in "${TEST_IMAGES[@]}"; do
+    docker image inspect "$image" > /dev/null 2>&1 && echo "  image $image" || true
+  done
+fi
 say "Done. Nothing outside the $TEST_PROJECT project was touched."

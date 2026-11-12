@@ -1,0 +1,10 @@
+[Unit]
+Description=FinPilot: look for a new tested release every two minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=2min
+RandomizedDelaySec=15s
+
+[Install]
+WantedBy=timers.target

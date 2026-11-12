@@ -2,7 +2,7 @@
 
 The production packaging: two images, one compose project, a reverse proxy with two modes, and scripts that do nothing without an explicit flag. The design and its reasons are in [`docs/PRODUCTION_READINESS.md`](../docs/PRODUCTION_READINESS.md). The home server's facts are in [`docs/SERVER_READINESS.md`](../docs/SERVER_READINESS.md).
 
-**Status (2026-11-13):** P4 prepared the isolated integration test for the home server. Everything below is statically checked, and the no-Docker local stack passes. **The container run itself happens only when the owner runs the commands in "Isolated integration test on the server"**. Until its report says otherwise, nothing here counts as verified in containers. Nothing has been deployed.
+**Status (2026-11-13):** production deployment and automatic CI/CD are built (P5). The home server uses **tunnel mode**, and the exact procedure is in [`server/README.md`](server/README.md). Nothing is live until that runbook's verification checklist passes. The integration test below now also runs on GitHub-hosted runners for every release.
 
 ## What runs
 
@@ -61,6 +61,7 @@ This is behind mode, the planned production topology on the home server (SERVER_
 |---|---|
 | `compose.yaml` | The production project. Publishes nothing |
 | `compose.direct.yaml` | Direct mode only: the proxy's two loopback ports |
+| `compose.tunnel.yaml` | Tunnel mode (the home server): one loopback port for cloudflared, trusting only the egress gateway for `Cf-Connecting-Ip` |
 | `compose.stacktest.yaml` | The stack test only: the test runners and a stand-in for the existing proxy |
 | `caddy/site.caddy` | The site, shared by both modes: routing, 1 MB limit, log filter, one `X-Forwarded-For` |
 | `caddy/Caddyfile.direct`, `caddy/Caddyfile.behind` | The two modes |
@@ -69,6 +70,7 @@ This is behind mode, the planned production topology on the home server (SERVER_
 | `scripts/` | Provision, deploy, back up, restore, roll back, stack test, emergency stop, host snapshot |
 | `inspection/` | Read-only server inspection and the stack-test preflight |
 | `tools/make_bundle.py` | Packs the minimum source for the server test |
+| `server/` | Production on the home server: installer, pull-based deployer, nightly restic backup, systemd units, and the runbook ([`server/README.md`](server/README.md)) |
 
 ## Production configuration
 

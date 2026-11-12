@@ -1,0 +1,18 @@
+# Overlay for FINPILOT_PROXY_MODE=tunnel (scripts/lib.sh adds it): the production topology on the
+# home server. Cloudflare terminates TLS; cloudflared (a host service) sends this site's hostname
+# to http://127.0.0.1:FINPILOT_TUNNEL_PORT. The server's existing Caddy and other sites are
+# untouched.
+#
+# - One port, on loopback only: not reachable from the LAN, Tailscale or the internet.
+# - Docker hands loopback connections to the container from the egress network's gateway, so
+#   that one address (and nothing else) is trusted, and only for Cf-Connecting-Ip, which
+#   Cloudflare sets on every request and overwrites if a visitor sends it.
+# - Host validation: Caddyfile.behind serves only FINPILOT_HOST.
+
+services:
+  proxy:
+    ports:
+      - "127.0.0.1:${FINPILOT_TUNNEL_PORT:-18085}:8080"
+    environment:
+      FINPILOT_EDGE_IP: ${FINPILOT_EGRESS_GATEWAY:-172.30.12.1}
+      FINPILOT_CLIENT_IP_HEADER: Cf-Connecting-Ip

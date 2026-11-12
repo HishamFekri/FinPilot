@@ -471,3 +471,15 @@ Built locally:
 - a read-only preflight, host snapshots, a watchdog, label-only cleanup, an emergency stop, and a secret-refusing source bundle.
 
 The owner runs the test on the server ([`deploy/README.md`](../deploy/README.md)), and its results go into [`SERVER_READINESS.md`](SERVER_READINESS.md) §21. Public launch stays NO-GO.
+
+## Production deployment and CI/CD (2026-11-13): P5 built, deployment pending
+
+Built and tested locally:
+- a closed-beta admission gate: an allowlist, with `open` refused in production;
+- a draft privacy notice and beta terms, labelled as not legally reviewed;
+- tunnel mode for the proxy;
+- the Release workflow: a container stack test, then the tested images pushed to private GHCR;
+- a pull-based server deployer that holds destructive migrations;
+- restic backup timers and the monitoring hooks.
+
+The deployment steps that need the owner's accounts and `sudo` are in [`deploy/server/README.md`](../deploy/server/README.md). Production isn't live until the verification checklist there passes.

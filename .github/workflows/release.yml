@@ -1,0 +1,108 @@
+# Builds, tests and publishes one release: the exact images the server will run.
+#
+# Trigger: CI finished successfully for a PUSH to main in THIS repository. Pull requests, forks and
+# other branches never reach this workflow's jobs, so they never get its package-write token.
+# Runs on GitHub-hosted runners only. Nothing here can reach the server: the server pulls releases
+# itself (deploy/server/finpilot-deployer.sh), and only the images this run tested.
+#
+# Steps: check out the commit CI verified -> full container stack test (deploy/scripts/stack-test.sh:
+# provisioning, RLS, the Chromium sandbox, all three proxy modes, backup and restore, rollback) ->
+# push the very images that passed, tagged with the commit SHA -> push a small release manifest
+# (finpilot-release:latest) naming their digests. The manifest is pushed last, so the server never
+# sees a half-published release.
+name: Release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions: {}
+
+# One release at a time, in order. A newer push waits; nothing is cancelled half-way.
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io/hishamfekri
+
+jobs:
+  release:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Check the commit is the one CI verified
+        run: |
+          test "$(git rev-parse HEAD)" = "$SHA"
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]
+
+      - name: Tools the stack test needs
+        run: sudo apt-get update -q && sudo apt-get install -y -q restic
+
+      - name: Container stack test (throwaway project; keeps the images it tested)
+        env:
+          FINPILOT_PREFLIGHT_PROFILE: ci
+          FINPILOT_STACKTEST_MIN_MEM_MIB: "1024"
+          FINPILOT_STACKTEST_KEEP_IMAGES: "1"
+        run: bash deploy/scripts/stack-test.sh --run
+
+      - name: Keep the stack-test report
+        if: always()
+        run: tar -czf stacktest-report.tar.gz stacktest-report || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: stacktest-report-${{ github.event.workflow_run.head_sha }}
+          path: stacktest-report.tar.gz
+          retention-days: 30
+
+      - name: Publish the tested images, by commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker tag finpilot-api:stacktest "$REGISTRY/finpilot-api:sha-$SHA"
+          docker tag finpilot-web:stacktest "$REGISTRY/finpilot-web:sha-$SHA"
+          docker push -q "$REGISTRY/finpilot-api:sha-$SHA"
+          docker push -q "$REGISTRY/finpilot-web:sha-$SHA"
+          api="$(docker image inspect --format '{{index .RepoDigests 0}}' "$REGISTRY/finpilot-api:sha-$SHA")"
+          web="$(docker image inspect --format '{{index .RepoDigests 0}}' "$REGISTRY/finpilot-web:sha-$SHA")"
+          [[ "$api" =~ ^ghcr\.io/hishamfekri/finpilot-api@sha256:[0-9a-f]{64}$ ]]
+          [[ "$web" =~ ^ghcr\.io/hishamfekri/finpilot-web@sha256:[0-9a-f]{64}$ ]]
+          mkdir -p manifest
+          {
+            echo "FINPILOT_RELEASE_SHA=$SHA"
+            echo "FINPILOT_API_IMAGE=$api"
+            echo "FINPILOT_WEB_IMAGE=$web"
+            echo "FINPILOT_STACK_TEST=passed"
+            echo "FINPILOT_RELEASE_RUN=${{ github.run_id }}"
+          } > manifest/release.env
+          cat manifest/release.env
+
+      - name: Publish the release manifest (last)
+        run: |
+          set -euo pipefail
+          printf 'FROM scratch\nCOPY release.env /release.env\nLABEL org.opencontainers.image.revision=%s\n' "$SHA" \
+            > manifest/Dockerfile
+          docker build -q -t "$REGISTRY/finpilot-release:sha-$SHA" -t "$REGISTRY/finpilot-release:latest" manifest
+          docker push -q "$REGISTRY/finpilot-release:sha-$SHA"
+          docker push -q "$REGISTRY/finpilot-release:latest"
+          docker logout ghcr.io

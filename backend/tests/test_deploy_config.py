@@ -33,6 +33,7 @@ def _yaml(name: str) -> dict[str, Any]:
 
 COMPOSE = _yaml("compose.yaml")
 DIRECT = _yaml("compose.direct.yaml")
+TUNNEL = _yaml("compose.tunnel.yaml")
 STACKTEST = _yaml("compose.stacktest.yaml")
 SERVICES: dict[str, dict[str, Any]] = COMPOSE["services"]
 TEST_SERVICES: dict[str, dict[str, Any]] = STACKTEST["services"]
@@ -151,7 +152,7 @@ def test_jobs_never_run_on_start() -> None:
 def test_each_container_gets_only_the_secrets_it_needs() -> None:
     expected = {
         "db": {"postgres_password"},
-        "api": {"database_url", "google_client_secret"},
+        "api": {"database_url", "google_client_secret", "beta_allowlist"},
         "web": set(),
         "proxy": set(),
         "migrate": {"owner_database_url"},
@@ -244,7 +245,7 @@ EDGE_CADDYFILE = _text(DEPLOY / "testing" / "edge.Caddyfile")
 
 def test_the_proxy_picks_its_mode_file_and_mounts_the_folder_read_only() -> None:
     proxy = SERVICES["proxy"]
-    assert "/etc/caddy/Caddyfile.${FINPILOT_PROXY_MODE:-direct}" in proxy["command"]
+    assert "/etc/caddy/Caddyfile.${FINPILOT_CADDY_CONFIG:-direct}" in proxy["command"]
     assert "./caddy:/etc/caddy:ro" in proxy["volumes"]
     assert {p.name for p in CADDY.iterdir()} == {
         "site.caddy",
@@ -308,7 +309,7 @@ def test_behind_mode_trusts_exactly_the_edge_and_reads_right_to_left() -> None:
     trusted = re.findall(r"trusted_proxies static (\S+)", BEHIND_CADDYFILE)
     assert trusted == ["{$FINPILOT_EDGE_IP}/32"]
     assert "trusted_proxies_strict" in BEHIND_CADDYFILE
-    assert "client_ip_headers X-Forwarded-For" in BEHIND_CADDYFILE
+    assert "client_ip_headers {$FINPILOT_CLIENT_IP_HEADER:X-Forwarded-For}" in BEHIND_CADDYFILE
     assert "auto_https off" in BEHIND_CADDYFILE
     assert "http://{$FINPILOT_HOST}:8080 {" in BEHIND_CADDYFILE
     assert "\ttls " not in BEHIND_CADDYFILE and "redir " not in BEHIND_CADDYFILE
@@ -341,7 +342,8 @@ def test_the_stand_in_edge_trusts_only_the_test_runner_for_cloudflares_header() 
     "path", sorted(DEPLOY.rglob("*")), ids=lambda p: p.relative_to(DEPLOY).as_posix()
 )
 def test_server_side_files_use_unix_line_endings(path: Path) -> None:
-    if path.is_file() and re.search(r"(\.sh|\.ya?ml|\.caddy|Caddyfile(\.\w+)?|\.json)$", path.name):
+    pattern = r"(\.sh|\.ya?ml|\.caddy|Caddyfile(\.\w+)?|\.json|\.service|\.timer|\.example)$"
+    if path.is_file() and re.search(pattern, path.name):
         assert b"\r" not in path.read_bytes()
 
 
@@ -435,7 +437,7 @@ def test_the_shared_library_fails_closed() -> None:
     lib = _text(DEPLOY / "scripts" / "lib.sh")
     assert "set -euo pipefail" in lib and "umask 077" in lib
     assert "*@sha256:*" in lib  # releases are pinned by digest
-    assert "FINPILOT_PROXY_MODE must be direct or behind" in lib
+    assert "FINPILOT_PROXY_MODE must be direct, behind or tunnel" in lib
     test_overlay = '"$DEPLOY_DIR/compose.stacktest.yaml"'
     assert f'[ "${{FINPILOT_COMPOSE_TEST:-}}" = 1 ] && files+=(--file {test_overlay})' in lib
     assert '[ "$mode" = direct ] && files+=(--file "$DEPLOY_DIR/compose.direct.yaml")' in lib
@@ -608,7 +610,7 @@ def test_an_unknown_proxy_mode_is_refused(tmp_path: Path) -> None:
         env={**keep, "FINPILOT_SITE_ENV": str(site)},
         capture_output=True, text=True, timeout=60, check=False,
     )  # fmt: skip
-    assert result.returncode != 0 and "must be direct or behind" in result.stderr
+    assert result.returncode != 0 and "must be direct, behind or tunnel" in result.stderr
     site.write_text("FINPILOT_PROXY_MODE=behind\n", encoding="utf-8")
     result = subprocess.run(  # noqa: S603 - a fixed script
         [_bash(), str(probe)],
@@ -630,6 +632,7 @@ def test_init_secrets_creates_strong_secrets_once_and_prints_none(tmp_path: Path
     assert set(read) == {
         "postgres_password", "owner_role_password", "runtime_role_password",
         "admin_database_url", "owner_database_url", "database_url", "google_client_secret",
+        "beta_allowlist",
     }  # fmt: skip
     passwords = [read[k] for k in ("postgres_password", "owner_role_password")]
     passwords.append(read["runtime_role_password"])
@@ -642,6 +645,7 @@ def test_init_secrets_creates_strong_secrets_once_and_prints_none(tmp_path: Path
     )
     assert read["owner_database_url"].startswith("postgresql+psycopg://finpilot_owner:")
     assert read["google_client_secret"] == ""  # the owner supplies it; empty refuses to start
+    assert read["beta_allowlist"] == ""  # likewise: production refuses an empty allowlist
 
     again = _script("init-secrets.sh", *args, FINPILOT_SITE_ENV=str(site))
     assert again.returncode != 0 and "never replaced" in again.stderr
@@ -702,3 +706,186 @@ def test_the_bundle_refuses_secret_looking_files(tmp_path: Path) -> None:
     assert len(found) == 4, found
     assert not any(".env.example" in issue for issue in found)
     assert not any("fine.txt" in issue for issue in found)
+
+
+# --- Tunnel mode: the home server's production topology
+
+
+def test_tunnel_mode_publishes_one_loopback_port_and_trusts_only_the_gateway() -> None:
+    proxy = TUNNEL["services"]["proxy"]
+    assert set(TUNNEL["services"]) == {"proxy"}
+    assert proxy["ports"] == ["127.0.0.1:${FINPILOT_TUNNEL_PORT:-18085}:8080"]
+    assert proxy["environment"] == {
+        "FINPILOT_EDGE_IP": "${FINPILOT_EGRESS_GATEWAY:-172.30.12.1}",
+        "FINPILOT_CLIENT_IP_HEADER": "Cf-Connecting-Ip",
+    }
+    # The gateway of the egress network, whose default subnet is 172.30.12.0/24.
+    assert COMPOSE["networks"]["egress"]["ipam"]["config"][0]["subnet"].endswith("172.30.12.0/24}")
+    lib = _text(DEPLOY / "scripts" / "lib.sh")
+    assert '[ "$mode" = tunnel ] && files+=(--file "$DEPLOY_DIR/compose.tunnel.yaml")' in lib
+    assert 'FINPILOT_CADDY_CONFIG="$([ "$mode" = direct ] && echo direct || echo behind)"' in lib
+
+
+def test_the_stack_test_checks_tunnel_mode_the_way_cloudflared_connects() -> None:
+    test = _text(DEPLOY / "scripts" / "stack-test.sh")
+    for check in (
+        "tunnel mode publishes only 127.0.0.1:18085",
+        "Cloudflare's client address is used: its 21st sign-in attempt is refused",
+        "another Cloudflare client still gets in",
+        "a forged X-Forwarded-For buys nothing in tunnel mode",
+        "refuses open registration in production",
+    ):
+        assert check in test, check
+    assert "18085" in _text(DEPLOY / "inspection" / "stack-test-preflight.sh")
+
+
+# --- Release workflow: GitHub-hosted, after CI, for pushes to main only
+
+
+RELEASE = _text(REPO / ".github" / "workflows" / "release.yml")
+CI = _text(REPO / ".github" / "workflows" / "ci.yml")
+
+
+def test_release_runs_only_after_ci_passes_for_a_push_to_main_here() -> None:
+    workflow = yaml.safe_load(RELEASE)
+    triggers = workflow[True]  # YAML 1.1 reads the key `on` as True
+    assert set(triggers) == {"workflow_run"}
+    assert triggers["workflow_run"] == {
+        "workflows": ["CI"],
+        "types": ["completed"],
+        "branches": ["main"],
+    }
+    job = workflow["jobs"]["release"]
+    for condition in (
+        "github.event.workflow_run.conclusion == 'success'",
+        "github.event.workflow_run.event == 'push'",
+        "github.event.workflow_run.head_branch == 'main'",
+        "github.event.workflow_run.head_repository.full_name == github.repository",
+    ):
+        assert condition in job["if"]
+    assert workflow["permissions"] == {}
+    assert job["permissions"] == {"contents": "read", "packages": "write"}
+    assert job["runs-on"] == "ubuntu-latest"
+    assert workflow["concurrency"] == {"group": "release-main", "cancel-in-progress": False}
+    for workflow in (yaml.safe_load(RELEASE), yaml.safe_load(CI)):
+        assert {job["runs-on"] for job in workflow["jobs"].values()} == {"ubuntu-latest"}
+    assert "pull_request_target" not in RELEASE.replace("`pull_request_target`", "") + CI.replace(
+        "`pull_request_target`", ""
+    )
+
+
+def test_release_publishes_exactly_the_tested_images_and_the_manifest_last() -> None:
+    assert "FINPILOT_STACKTEST_KEEP_IMAGES" in RELEASE
+    assert RELEASE.index("stack-test.sh --run") < RELEASE.index("docker push")
+    assert RELEASE.rindex("finpilot-release:latest") > RELEASE.rindex("finpilot-web:sha-")
+    assert "docker tag finpilot-api:stacktest" in RELEASE
+    assert "persist-credentials: false" in RELEASE
+    assert set(re.findall(r"secrets\.(\w+)", RELEASE)) == {"GITHUB_TOKEN"}
+
+
+@pytest.mark.parametrize("workflow", [RELEASE, CI], ids=["release", "ci"])
+def test_every_action_is_pinned_to_a_full_commit(workflow: str) -> None:
+    for action in re.findall(r"uses:\s*(\S+)", workflow):
+        assert re.fullmatch(r"[\w.-]+/[\w.-]+@[0-9a-f]{40}", action), action
+
+
+# --- Server: the deployer, backups, units and installer
+
+
+SERVER = DEPLOY / "server"
+DEPLOYER = _text(SERVER / "finpilot-deployer.sh")
+INSTALL = _text(SERVER / "install.sh")
+BACKUP = _text(SERVER / "finpilot-backup.sh")
+
+
+def test_the_deployer_takes_only_validated_digests_from_one_registry() -> None:
+    assert '. "$work/release.env"' not in DEPLOYER and 'source "$work' not in DEPLOYER
+    for pattern in (
+        r"^FINPILOT_RELEASE_SHA=[0-9a-f]{40}$",
+        r"^FINPILOT_API_IMAGE=ghcr\.io/hishamfekri/finpilot-api@sha256:[0-9a-f]{64}$",
+        r"^FINPILOT_WEB_IMAGE=ghcr\.io/hishamfekri/finpilot-web@sha256:[0-9a-f]{64}$",
+    ):
+        assert pattern in DEPLOYER
+    assert "the release manifest has an unexpected line; nothing deployed" in DEPLOYER
+    assert "flock -n 9" in DEPLOYER
+
+
+def test_the_deployer_holds_destructive_migrations_and_never_reprovisions() -> None:
+    assert "awaiting-approval-$sha" in DEPLOYER and '"$APPROVALS/$sha"' in DEPLOYER
+    assert "/^def upgrade/{on=1} /^def downgrade/{on=0} on" in DEPLOYER
+    assert "finpilot_db_data already exists: refusing to provision over it" in DEPLOYER
+    assert "already deployed: --first-deploy is only for the very first time" in DEPLOYER
+    assert 'touch "$STATE/failed-$sha"' in DEPLOYER  # a failed release isn't retried
+    assert "rollback.sh" in DEPLOYER
+
+
+def test_the_migration_gate_flags_destructive_upgrades_only() -> None:
+    gate = re.search(r"grep -Eiq '([^']+)'", DEPLOYER)
+    assert gate is not None
+    destructive = re.compile(gate.group(1), re.IGNORECASE)
+    for body in (
+        'op.drop_table("x")',
+        'op.drop_column("t", "c")',
+        'op.execute("DELETE FROM transactions")',
+        'op.execute("UPDATE transactions SET amount = 0")',
+        'op.alter_column("t", "c", type_=sa.Text())',
+        'op.execute("TRUNCATE journal_lines")',
+    ):
+        assert destructive.search(body), body
+    for body in (
+        'op.add_column("t", sa.Column("c", sa.Text()))',
+        'op.create_index("i", "t", ["c"])',
+    ):
+        assert not destructive.search(body), body
+
+
+@pytest.mark.parametrize("script", ["finpilot-deployer.sh", "finpilot-backup.sh", "install.sh"])
+def test_server_scripts_never_delete_data(script: str) -> None:
+    text = _text(SERVER / script)
+    for forbidden in (
+        "--volumes", "down -v", "volume rm", "system prune", "image prune", "volume prune",
+        "builder prune", "psql ", "docker rm -f", "rm -rf /",
+        "systemctl restart", "systemctl stop", "ufw ", "iptables",
+    ):  # fmt: skip
+        assert forbidden not in text, f"{script}: {forbidden}"
+    assert "set -euo pipefail" in text and "umask 077" in text
+
+
+def test_backups_are_encrypted_scheduled_retained_and_alert_on_failure() -> None:
+    assert "--restic-repo" in BACKUP
+    assert "--keep-daily 7 --keep-weekly 4 --keep-monthly 6" in BACKUP
+    assert "check --quiet" in BACKUP and "trap 'kuma down" in BACKUP
+    assert "flock -w 1800 9" in BACKUP  # never during a deployment
+    timer = _text(SERVER / "systemd" / "finpilot-backup.timer")
+    assert "OnCalendar=*-*-* 03:40:00" in timer and "Persistent=true" in timer
+
+
+def test_the_installer_never_replaces_secrets_or_settings() -> None:
+    for guard in (
+        "[ ! -f /etc/finpilot/deployer.env ]",
+        "[ ! -s /etc/finpilot/restic-password ]",
+        '[ ! -f "$deploy/finpilot.env" ]',
+        '[ ! -e "$deploy/secrets/database_url" ]',
+        "--exclude='deploy/secrets'",
+        "--exclude='deploy/state'",
+    ):
+        assert guard in INSTALL, guard
+    assert "systemctl enable" not in INSTALL.split("Still to do by hand")[0]
+    assert "nothing done" in INSTALL
+
+
+@pytest.mark.parametrize("unit", ["finpilot-deploy.service", "finpilot-backup.service"])
+def test_server_units_need_the_disk_and_are_sandboxed(unit: str) -> None:
+    text = _text(SERVER / "systemd" / unit)
+    assert "Requires=docker.service srv-storage.mount" in text
+    for setting in ("NoNewPrivileges=yes", "ProtectSystem=strict", "ProtectHome=yes"):
+        assert setting in text
+    assert "EnvironmentFile=/etc/finpilot/deployer.env" in text
+
+
+def test_deployer_settings_hold_paths_never_secrets() -> None:
+    for line in _text(SERVER / "deployer.env.example").splitlines():
+        if line and not line.startswith("#"):
+            key, value = line.split("=", 1)
+            if re.search(r"TOKEN|PASSWORD|SECRET|URL_FILE", key):
+                assert value.startswith("/etc/finpilot/"), key

@@ -77,7 +77,11 @@ describe("site footer", () => {
       "href",
       "https://github.com/HishamFekri",
     );
-    expect(screen.getByText("© 2026 FinPilot")).toBeInTheDocument();
+    expect(screen.getByText(/© 2026 FinPilot/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Privacy (draft)" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("/privacy"),
+    );
   });
 });
 

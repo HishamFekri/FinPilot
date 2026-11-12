@@ -49,6 +49,7 @@ ERROR_CODES = {
     "cancelled": "cancelled",
     "email_not_verified": "email_not_verified",
     "account_unavailable": "account_unavailable",
+    "registration_closed": "not_invited",
     "google_unavailable": "google_unavailable",
     "unreachable": "unreachable",
 }
@@ -198,7 +199,14 @@ def callback(
             locale = abandon_sign_in(db, state, binding)
             reason = "cancelled" if error == "access_denied" else "failed"
             return _failure(request, settings, reason, locale)
-        signed_in = complete_sign_in(db, provider, state=state, binding=binding, code=code)
+        signed_in = complete_sign_in(
+            db,
+            provider,
+            state=state,
+            binding=binding,
+            code=code,
+            admit=settings.admits_new_account,
+        )
         issued = issue_session(
             db,
             signed_in.user,

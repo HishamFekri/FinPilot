@@ -588,3 +588,19 @@ Never use `docker system prune`, `docker builder prune`, a daemon restart or a r
 ### Results
 
 Pending the owner's run. Until then, nothing in this section counts as verified in containers.
+
+## 22. P5: production deployment and automatic CI/CD (2026-11-13)
+
+**Status: built and tested locally, pushed to GitHub for the CI and Release runs. Not yet deployed.** The server steps need your SSH passphrase, `sudo`, and your Google, Cloudflare and GitHub accounts. The procedure is [`deploy/server/README.md`](../deploy/server/README.md).
+
+| Decision | Choice and reason |
+|---|---|
+| Public path | **Tunnel mode:** Cloudflare Tunnel → `cloudflared` → `127.0.0.1:18085` → FinPilot's own proxy. The existing Caddy runs with `admin off`, so changing its routes means restarting it, and with it the portfolio and AI app. The tunnel hostname needs no restart in dashboard-managed mode. Only the egress gateway is trusted, and only for `Cf-Connecting-Ip` |
+| Builds and tests | GitHub-hosted runners: CI, then the full container stack test. The very images that passed are published, by commit SHA, to private GHCR |
+| Deployment | Pull-based, on the server: a systemd timer, every 2 minutes, with a `read:packages` token only. No GitHub runner or credential ever reaches the server, and the host scripts change only when you re-run `install.sh` |
+| Migrations | Automatic when additive. Held for your approval when an `upgrade()` drops, truncates, deletes, rewrites or retypes data. Always preceded by a restic backup |
+| Overlaps | `flock` on the server; GitHub concurrency group `release-main`, never cancelled |
+| Database | New, empty `finpilot_db_data` on the NVMe. `--first-deploy` refuses if the volume exists. Nothing is copied from `finpilot_dev` |
+| Beta | `REGISTRATION_MODE=allowlist` in production by default; `open` is refused at startup. Google consent screen in Testing mode as a second gate |
+| Backups | restic nightly at 03:40, with 7 daily, 4 weekly and 6 monthly snapshots, a check, and an Uptime Kuma heartbeat. **No off-site copy:** an open launch risk |
+| Monitoring | Uptime Kuma: two HTTP monitors and two push monitors (deploy and health, backup). Netdata sees the containers |

@@ -19,7 +19,9 @@
 	servers {
 		trusted_proxies static {$FINPILOT_EDGE_IP}/32
 		trusted_proxies_strict
-		client_ip_headers X-Forwarded-For
+		# X-Forwarded-For behind the existing Caddy; Cf-Connecting-Ip in tunnel mode, where
+		# cloudflared (reaching a loopback port, seen from the egress gateway) is the edge.
+		client_ip_headers {$FINPILOT_CLIENT_IP_HEADER:X-Forwarded-For}
 		timeouts {
 			read_body 15s
 			read_header 10s

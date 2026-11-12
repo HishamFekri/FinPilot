@@ -35,6 +35,11 @@ from tests.auth_harness import (
 from tests.conftest import make_settings
 from tests.google_fakes import CLIENT_SECRET, FakeGoogle, make_id_token
 
+
+def ADMIT_ALL(email: str) -> bool:
+    return True
+
+
 pytestmark = pytest.mark.db
 
 
@@ -472,7 +477,12 @@ def test_concurrent_callbacks_with_one_state_have_exactly_one_winner(
                     challenge=flow.challenge, id_token=make_id_token(nonce=flow.nonce)
                 )
                 google_signin.complete_sign_in(
-                    session, client, state=flow.state, binding=flow.binding, code=code
+                    session,
+                    client,
+                    state=flow.state,
+                    binding=flow.binding,
+                    code=code,
+                    admit=ADMIT_ALL,
                 )
                 session.commit()
                 outcomes.append("won")
@@ -505,7 +515,9 @@ def test_concurrent_first_sign_ins_create_one_user_and_one_identity(
         barrier.wait()
         with factory() as session:
             try:
-                user, created = google_signin.resolve_user(session, CLAIMS, locale="en")
+                user, created = google_signin.resolve_user(
+                    session, CLAIMS, locale="en", admit=ADMIT_ALL
+                )
                 session.commit()
                 results.append((user.id, created))
             except Exception as exc:
@@ -583,7 +595,12 @@ def test_no_database_transaction_is_open_while_google_is_called(
     code = google.issue_code(challenge=flow.challenge, id_token=make_id_token(nonce=flow.nonce))
     with factory() as session:
         google_signin.complete_sign_in(
-            session, Watching(session), state=flow.state, binding=flow.binding, code=code
+            session,
+            Watching(session),
+            state=flow.state,
+            binding=flow.binding,
+            code=code,
+            admit=ADMIT_ALL,
         )
         session.rollback()
     assert seen == [False]

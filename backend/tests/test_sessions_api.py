@@ -515,6 +515,7 @@ def test_production_cookies_are_secure_and_host_only() -> None:
         google_redirect_uri="https://finpilot.example/api/v1/auth/google/callback",
         web_origin="https://finpilot.example",
         trusted_proxies="172.30.10.2",
+        beta_allowlist="owner@example.com",
     )
     assert settings.secure_cookies
     names = cookie_names(settings)

@@ -38,6 +38,7 @@ export const SIGN_IN_ERRORS = [
   "cancelled",
   "email_not_verified",
   "account_unavailable",
+  "not_invited",
   "google_unavailable",
   "failed",
   "unreachable",

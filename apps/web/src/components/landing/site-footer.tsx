@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { CreatorCredit } from "./creator";
 import s from "./landing.module.css";
@@ -37,7 +38,13 @@ export function SiteFooter() {
   return (
     <footer className={cn(s.wrap, s.siteFooter)}>
       <CreatorCredit />
-      <p className={s.copyright}>{t("rights", { year: 2026 })}</p>
+      <p className={s.copyright}>
+        {t("rights", { year: 2026 })}
+        {" · "}
+        <Link href="/privacy" className="underline underline-offset-4">
+          {t("privacy")}
+        </Link>
+      </p>
       <div className={s.socials}>
         <a
           className={s.social}
