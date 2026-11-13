@@ -107,6 +107,14 @@ wait_healthy() {
     waited=$((waited + 3))
   done
   echo "$service didn't become healthy (last status: ${status:-unknown})" >&2
+  # What failed: the last health-check result and the container's last log lines.
+  local id
+  id="$(compose ps -aq "$service" 2>/dev/null | head -n 1 || true)"
+  if [ -n "$id" ]; then
+    docker inspect --format '{{if .State.Health}}{{range .State.Health.Log}}health check (exit {{.ExitCode}}): {{.Output}}{{end}}{{end}}' "$id" 2>/dev/null \
+      | tail -n 6 >&2 || true
+    docker logs --tail 40 "$id" 2>&1 | sed "s/^/$service| /" >&2 || true
+  fi
   return 1
 }
 
