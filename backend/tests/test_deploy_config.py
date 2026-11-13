@@ -669,6 +669,33 @@ def test_the_preflight_only_reads() -> None:
         assert checked in text
 
 
+@pytest.mark.parametrize(
+    ("profile", "line"), [("ci", "PASS  CPUs: 2"), ("server", "FAIL  CPUs: 2 (need 4)")]
+)
+def test_the_preflight_needs_4_cpus_on_the_server_and_2_on_a_ci_runner(
+    tmp_path: Path, profile: str, line: str
+) -> None:
+    # Stubs: a 2-CPU machine, and a docker/ip that answer nothing (the real ones are never used).
+    stubs = {"nproc": "echo 2", "docker": "exit 1", "ip": "exit 1"}
+    for name, body in stubs.items():
+        stub = tmp_path / name
+        stub.write_text(f"#!/bin/sh\n{body}\n", encoding="utf-8", newline="\n")
+        stub.chmod(0o755)
+    keep = {k: v for k, v in os.environ.items() if k.upper() in ("PATH", "SYSTEMROOT", "TEMP")}
+    # The stubs go first inside bash: Git Bash's launcher puts its own folders ahead of PATH.
+    first = 'd="$1"; command -v cygpath > /dev/null && d="$(cygpath -u "$d")"; PATH="$d:$PATH"'
+    result = subprocess.run(  # noqa: S603 - a fixed, read-only script
+        [_bash(), "-c", f'{first}; exec bash "$2" --in-place', "preflight", str(tmp_path),
+         str(DEPLOY / "inspection" / "stack-test-preflight.sh")],
+        env={**keep, "FINPILOT_PREFLIGHT_PROFILE": profile},
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )  # fmt: skip
+    assert line in result.stdout.splitlines(), result.stdout
+
+
 def test_the_bundle_takes_only_what_the_images_and_tests_need() -> None:
     bundle = _module(DEPLOY / "tools" / "make_bundle.py")
     chosen = {p.relative_to(REPO).as_posix() for p in bundle.selected()}

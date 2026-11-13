@@ -19,12 +19,14 @@ PORTS="18443 18080 18085"
 SUBNETS="172.30.250.0/24 172.30.251.0/24 172.30.252.0/24 172.30.253.0/29"
 TEST_UIDS="10201 10202"
 TEST_IMAGES="finpilot-api:stacktest finpilot-api-stack-test:local finpilot-web:stacktest"
-# FINPILOT_PREFLIGHT_PROFILE=ci: a throwaway GitHub-hosted runner (less memory and disk, and no
+# FINPILOT_PREFLIGHT_PROFILE=ci: a throwaway GitHub-hosted runner (2 CPUs, less memory and disk, and no
 # existing applications or external disk to protect). Default: the home server.
 PROFILE="${FINPILOT_PREFLIGHT_PROFILE:-server}"
+MIN_CPUS=4
 MIN_MEM_MIB=6144
 MIN_DOCKER_FREE_GIB=20
 if [ "$PROFILE" = ci ]; then
+  MIN_CPUS=2
   MIN_MEM_MIB=4096
   MIN_DOCKER_FREE_GIB=10
 fi
@@ -59,7 +61,7 @@ info "Docker $(docker version --format '{{.Server.Version}}' 2>/dev/null), cgrou
 
 # --- Capacity
 cpus="$(nproc)"
-[ "$cpus" -ge 4 ] && pass "CPUs: $cpus" || fail "CPUs: $cpus (need 4)"
+[ "$cpus" -ge "$MIN_CPUS" ] && pass "CPUs: $cpus" || fail "CPUs: $cpus (need ${MIN_CPUS})"
 avail_mib="$(awk '/^MemAvailable:/{print int($2/1024)}' /proc/meminfo)"
 [ "$avail_mib" -ge "$MIN_MEM_MIB" ] && pass "memory available: ${avail_mib} MiB" || fail "memory available: ${avail_mib} MiB (need ${MIN_MEM_MIB})"
 mem_some="$(awk '/^some/{split($3,a,"=");print a[2]}' /proc/pressure/memory)"
