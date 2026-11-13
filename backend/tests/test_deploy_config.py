@@ -924,3 +924,21 @@ def test_the_configuration_check_never_prints_a_secret() -> None:
     ):
         assert leak not in check
     assert '--password-stdin < "$token"' in check
+
+
+def test_reinstalling_never_resets_secret_ownership() -> None:
+    assert "chown -R root:root" not in INSTALL
+    assert '-path "$deploy/secrets"' in INSTALL and "-prune" in INSTALL
+    # ...and a re-install repairs groups if they were ever reset: owner, group and mode only.
+    assert 'chown root:999 "$file"' in INSTALL and 'chown root:10201 "$file"' in INSTALL
+    assert 'chmod 0640 "$file"' in INSTALL
+
+
+def test_the_registry_check_keeps_the_token_off_the_command_line() -> None:
+    check = _text(SERVER / "check-config.sh")
+    assert "curl -sS --max-time 20 -K -" in check
+    assert not re.search(r"curl[^\n]*(-u |--user )", check)
+    for package in ("finpilot-release", "finpilot-api", "finpilot-web"):
+        assert package in check and package in RELEASE
+    assert "ghcr.io/v2/hishamfekri/$package/tags/list" in check
+    assert "REGISTRY: ghcr.io/hishamfekri" in RELEASE

@@ -21,6 +21,43 @@ info() { echo "INFO  $*"; }
 value() { sed -n "s/^$2=//p" "$1" 2>/dev/null | tail -n 1; }
 
 [ "$(id -u)" -eq 0 ] || { echo "run it with sudo"; exit 1; }
+
+# Asks the registry itself, per package, and tells the three failures apart: no such package or
+# tag (no release published yet), the token isn't allowed to read it (read:packages), or the
+# token isn't accepted. The token goes to curl through stdin, never the command line, and no
+# response body is printed: only status codes, registry error codes and tag names.
+registry_report() {
+  local user="$1" token_file="$2" package bearer response code tags
+  for package in finpilot-release finpilot-api finpilot-web; do
+    response="$(printf 'user = "%s:%s"\n' "$user" "$(cat "$token_file")" \
+      | curl -sS --max-time 20 -K - \
+        "https://ghcr.io/token?service=ghcr.io&scope=repository:hishamfekri/$package:pull")"
+    bearer="$(printf '%s' "$response" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("token",""))' 2>/dev/null)"
+    if [ -z "$bearer" ]; then
+      fail "$package: the registry refused the token (expired, or not the HishamFekri account)"
+      continue
+    fi
+    response="$(printf 'header = "Authorization: Bearer %s"\n' "$bearer" \
+      | curl -sS --max-time 20 -K - -w '\n%{http_code}' \
+        "https://ghcr.io/v2/hishamfekri/$package/tags/list")"
+    code="${response##*$'\n'}"
+    case "$code" in
+      200)
+        tags="$(printf '%s' "${response%$'\n'*}" | python3 -c 'import json,sys; t=json.load(sys.stdin).get("tags") or []; print(len(t), "tags; latest" if "latest" in t else "tags", "; commit tags:", " ".join(sorted(x[4:16] for x in t if x.startswith("sha-"))[-3:]))' 2>/dev/null)"
+        if [ "$package" = finpilot-release ] && ! grep -q "latest" <<< "$tags"; then
+          fail "$package: readable, but has no 'latest' tag yet ($tags)"
+        else
+          pass "$package: readable ($tags)"
+        fi ;;
+      401|403)
+        fail "$package: HTTP $code, the token may not read it (needs read:packages; package owned by HishamFekri?)" ;;
+      404)
+        fail "$package: HTTP 404, no such package (has a Release run published it?)" ;;
+      *)
+        fail "$package: unexpected HTTP $code from the registry" ;;
+    esac
+  done
+}
 info "installed commit: $(cat /srv/docker/finpilot/SOURCE_COMMIT 2>/dev/null || echo unknown)"
 
 site="$D/finpilot.env"
@@ -90,12 +127,8 @@ if [ -s "$token" ]; then
   [ "$perms" = "root 400" ] || [ "$perms" = "root 600" ] && pass "registry token: $perms" || fail "registry token has $perms (expected root 400)"
   user="$(value /etc/finpilot/deployer.env FINPILOT_GHCR_USER)"
   if DOCKER_CONFIG=/etc/finpilot/docker docker login ghcr.io -u "$user" --password-stdin < "$token" > /dev/null 2>&1; then
-    pass "registry token: logs in to ghcr.io"
-    if DOCKER_CONFIG=/etc/finpilot/docker docker manifest inspect ghcr.io/hishamfekri/finpilot-release:latest > /dev/null 2>&1; then
-      pass "registry token: reads the private release manifest"
-    else
-      fail "the token can't read ghcr.io/hishamfekri/finpilot-release:latest (read:packages? a release published?)"
-    fi
+    pass "registry token: logs in to ghcr.io (that proves only that the token is valid)"
+    registry_report "$user" "$token"
   else
     fail "the registry token doesn't log in (expired, wrong, or missing read:packages)"
   fi

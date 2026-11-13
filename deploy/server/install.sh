@@ -55,8 +55,12 @@ install -d -m 0750 -o root -g root "$target" "$deploy"
    --exclude='deploy/release.env' --exclude='deploy/backups' deploy) \
   | (cd "$target" && tar -xf - --no-same-owner)
 echo "$commit" > "$target/SOURCE_COMMIT"
-chown -R root:root "$deploy"
-find "$deploy" -name '*.sh' -exec chmod 0750 {} +
+# Root owns the copied code, but never secrets/ (each file's group is the container user that
+# reads it, set by init-secrets.sh), state/ or finpilot.env: a re-install must not reset them.
+find "$deploy" \( -path "$deploy/secrets" -o -path "$deploy/state" \) -prune \
+  -o ! -path "$deploy/finpilot.env" -exec chown root:root {} +
+find "$deploy" \( -path "$deploy/secrets" -o -path "$deploy/state" \) -prune \
+  -o -name '*.sh' -exec chmod 0750 {} +
 
 say "Configuration in /etc/finpilot"
 install -d -m 0700 /etc/finpilot /etc/finpilot/docker /etc/finpilot/approved /var/cache/finpilot-restic
@@ -92,6 +96,17 @@ fi
 if [ ! -e "$deploy/secrets/database_url" ]; then
   "$deploy/scripts/init-secrets.sh" --generate
 fi
+# Each secret readable by root and the one container user that needs it (as init-secrets.sh
+# sets them): the database (999) for its password, the app and jobs (group 10201) for the rest.
+# Ownership and mode only: no file is read, rewritten or replaced.
+chmod 0751 "$deploy/secrets"
+for name in postgres_password owner_role_password runtime_role_password admin_database_url \
+            owner_database_url database_url google_client_secret beta_allowlist; do
+  file="$deploy/secrets/$name"
+  [ -f "$file" ] || continue
+  if [ "$name" = postgres_password ]; then chown root:999 "$file"; else chown root:10201 "$file"; fi
+  chmod 0640 "$file"
+done
 
 say "systemd units (installed, not enabled)"
 install -m 0644 "$deploy"/server/systemd/finpilot-*.service "$deploy"/server/systemd/finpilot-*.timer \
