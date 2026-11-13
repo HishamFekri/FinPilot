@@ -981,3 +981,30 @@ def test_every_shell_script_is_executable_in_git() -> None:
     ).stdout.splitlines()
     assert listing
     assert [line.split("\t")[1] for line in listing if not line.startswith("100755")] == []
+
+
+def test_the_host_snapshot_works_without_the_storage_disk(tmp_path: Path) -> None:
+    # A GitHub runner has no /srv/storage: df then fails, which must not end the snapshot early.
+    stubs = {
+        "docker": "exit 0",
+        "ss": "exit 0",
+        "df": 'echo "Filesystem Size Used Avail"; echo "/dev/root 72G 59G 13G 82% /"; exit 1',
+    }
+    for name, body in stubs.items():
+        stub = tmp_path / name
+        stub.write_text(f"#!/bin/sh\n{body}\n", encoding="utf-8", newline="\n")
+        stub.chmod(0o755)
+    keep = {k: v for k, v in os.environ.items() if k.upper() in ("PATH", "SYSTEMROOT", "TEMP")}
+    first = 'd="$1"; command -v cygpath > /dev/null && d="$(cygpath -u "$d")"; PATH="$d:$PATH"'
+    out = tmp_path / "snapshot.txt"
+    result = subprocess.run(  # noqa: S603 - a fixed, read-only script
+        [_bash(), "-c", f'{first}; exec bash "$2" --write "$3"', "snapshot", str(tmp_path),
+         str(DEPLOY / "scripts" / "host-snapshot.sh"), str(out)],
+        env={**keep, "HOME": str(tmp_path)},
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )  # fmt: skip
+    assert result.returncode == 0, result.stderr
+    assert "/ avail=13G" in out.read_text(encoding="utf-8").splitlines()

@@ -82,7 +82,7 @@ write_snapshot() {
   echo "## images"
   docker image ls --format '{{.Repository}}:{{.Tag}} {{.ID}}' | sort
   echo "## disk"
-  df -hP / /srv/storage 2>/dev/null | tail -n +2 | awk '{print $6, "avail=" $4}'
+  df -hP / /srv/storage 2>/dev/null | tail -n +2 | awk '{print $6, "avail=" $4}' || true
   docker system df --format '{{.Type}} size={{.Size}}' 2>/dev/null || true
 }
 
