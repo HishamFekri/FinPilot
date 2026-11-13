@@ -899,3 +899,28 @@ def test_the_first_deploy_can_wait_for_the_tunnel_but_never_skips_the_loopback_c
     assert loopback < local_only_exit < public
     assert 'LOOPBACK="http://127.0.0.1:${tunnel_port:-18085}"' in DEPLOYER
     assert 'if [ "$mode" = --verify-public ]; then' in DEPLOYER
+
+
+def test_the_tunnel_change_is_checked_on_a_copy_and_applied_only_with_approval() -> None:
+    route = _text(SERVER / "cloudflared-route.sh")
+    assert "nothing done: pass --check, or --apply --confirm" in route
+    assert 'cloudflared tunnel --config "$candidate" ingress validate' in route
+    assert "would change:" in route  # every existing hostname must map exactly as before
+    assert "die \"FinPilot isn't ready on $TARGET" in route
+    assert route.index('cp -a "$CONFIG" "$backup"') < route.index("systemctl restart cloudflared")
+    assert "restoring the previous config" in route
+    for forbidden in ("caddy", "docker restart", "systemctl restart docker", "ufw "):
+        assert forbidden not in route.lower().replace("never touches caddy", "")
+
+
+def test_the_configuration_check_never_prints_a_secret() -> None:
+    check = _text(SERVER / "check-config.sh")
+    assert "CONFIG OK" in check and "CONFIG NOT READY" in check
+    for leak in (
+        'cat "$secret"',
+        'cat "$token"',
+        'echo "$client"',
+        "cat /etc/finpilot/restic-password",
+    ):
+        assert leak not in check
+    assert '--password-stdin < "$token"' in check

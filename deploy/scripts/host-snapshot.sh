@@ -25,13 +25,39 @@ others() {
         docker ps -aq --no-trunc --filter "label=finpilot.stacktest"; } | sort -u)
 }
 
+# Docker's JSON, read by Python: format templates fail on fields some containers don't have
+# (no health check, no ports), which once broke this snapshot.
+describe() {  # describe containers|networks: one stable line per object, from `docker inspect`
+  python3 -c '
+import json, sys
+kind = sys.argv[1]
+def mount(m):
+    return "%s:%s->%s:%s" % (m.get("Type"), m.get("Name") or m.get("Source"),
+                              m.get("Destination"), m.get("RW"))
+for item in sorted(json.load(sys.stdin), key=lambda i: i.get("Name", "")):
+    if kind == "containers":
+        state = item.get("State") or {}
+        health = (state.get("Health") or {}).get("Status", "none")
+        policy = ((item.get("HostConfig") or {}).get("RestartPolicy") or {}).get("Name", "")
+        ports = json.dumps((item.get("NetworkSettings") or {}).get("Ports") or {}, sort_keys=True)
+        mounts = ",".join(mount(m) for m in item.get("Mounts") or [])
+        print("%s image=%s state=%s health=%s restarts=%s started=%s policy=%s ports=%s mounts=%s" % (
+            item.get("Name"), item.get("Image"), state.get("Status"), health,
+            item.get("RestartCount"), state.get("StartedAt"), policy, ports, mounts))
+    else:
+        subnets = " ".join(c.get("Subnet", "") for c in (item.get("IPAM") or {}).get("Config") or [])
+        members = ",".join(sorted(c.get("Name", "") for c in (item.get("Containers") or {}).values()))
+        print("%s driver=%s internal=%s subnets=%s members=%s" % (
+            item.get("Name"), item.get("Driver"), item.get("Internal"), subnets, members))
+' "$1"
+}
+
 containers() {
-  local id
-  for id in $(others); do
-    docker inspect --format \
-      '{{.Name}} image={{.Image}} state={{.State.Status}} health={{with index .State "Health"}}{{index . "Status"}}{{else}}none{{end}} restarts={{.RestartCount}} started={{.State.StartedAt}} policy={{.HostConfig.RestartPolicy.Name}} ports={{json .NetworkSettings.Ports}} mounts={{range .Mounts}}{{.Type}}:{{if .Name}}{{.Name}}{{else}}{{.Source}}{{end}}->{{.Destination}}:{{.RW}},{{end}}' \
-      "$id"
-  done | sort
+  local ids
+  ids="$(others)"
+  [ -n "$ids" ] || return 0
+  # shellcheck disable=SC2086 - one argument per container ID
+  docker inspect $ids | describe containers
 }
 
 write_snapshot() {
@@ -39,12 +65,10 @@ write_snapshot() {
   echo "## containers"
   containers
   echo "## networks"
-  local name
-  for name in $(docker network ls --format '{{.Name}}' | grep -v "^${EXCLUDE_PROJECT}_" | sort); do
-    docker network inspect --format \
-      '{{.Name}} driver={{.Driver}} internal={{.Internal}} subnets={{range .IPAM.Config}}{{.Subnet}} {{end}}members={{range $id, $c := .Containers}}{{$c.Name}},{{end}}' \
-      "$name"
-  done
+  local names
+  names="$(docker network ls --format '{{.Name}}' | grep -v "^${EXCLUDE_PROJECT}_" | sort || true)"
+  # shellcheck disable=SC2086 - one argument per network name
+  [ -z "$names" ] || docker network inspect $names | describe networks
   echo "## volumes"
   comm -23 \
     <(docker volume ls -q | sort) \
