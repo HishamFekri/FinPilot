@@ -49,12 +49,15 @@ registry_report() {
         else
           pass "$package: readable ($tags)"
         fi ;;
-      401|403)
-        fail "$package: HTTP $code, the token may not read it (needs read:packages; package owned by HishamFekri?)" ;;
-      404)
-        fail "$package: HTTP 404, no such package (has a Release run published it?)" ;;
       *)
-        fail "$package: unexpected HTTP $code from the registry" ;;
+        # The registry's own error code (no secrets in it). GHCR answers 404 NAME_UNKNOWN both
+        # for a package that doesn't exist and for a private one this account can't see.
+        errors="$(printf '%s' "${response%$'\n'*}" | python3 -c 'import json,sys; print(",".join(e.get("code","?") for e in json.load(sys.stdin).get("errors",[])))' 2>/dev/null)"
+        case "$code" in
+          401|403) fail "$package: HTTP $code ${errors:-}: the token may not read it (read:packages)" ;;
+          404) fail "$package: HTTP 404 ${errors:-}: not published, or private and not visible to this account" ;;
+          *) fail "$package: unexpected HTTP $code ${errors:-}" ;;
+        esac ;;
     esac
   done
 }
@@ -111,14 +114,20 @@ for name in postgres_password owner_role_password runtime_role_password admin_da
             owner_database_url database_url google_client_secret beta_allowlist; do
   file="$D/secrets/$name"
   if [ -f "$file" ]; then
-    perms="$(stat -c '%U:%G %a' "$file")"
+    # Numbers, not names: containers use numeric IDs, and on this host gid 999 is named
+    # systemd-journal while 10201 has no name at all.
+    perms="$(stat -c '%u:%g %a' "$file")"
     case "$name:$perms" in
-      postgres_password:"root:999 640"|*:"root:10201 640") pass "secret $name: $perms" ;;
-      *) fail "secret $name has $perms (expected root, group 999 or 10201, mode 640)" ;;
+      postgres_password:"0:999 640"|*:"0:10201 640") pass "secret $name: $perms" ;;
+      *) fail "secret $name has $perms (expected uid 0, gid 999 or 10201, mode 640)" ;;
     esac
   else
     fail "secret $name is missing"
   fi
+done
+for gid in 999 10201; do
+  group="$(getent group "$gid" | cut -d: -f1,4)"
+  info "host group $gid: ${group:-no name} (its members could read the secrets owned by it)"
 done
 
 token=/etc/finpilot/ghcr-token
