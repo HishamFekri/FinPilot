@@ -124,7 +124,13 @@ services:
       # Chromium needs a writable home for its profile while rendering.
       - /home/finpilot:size=64m,uid=10201,gid=10201,mode=0700
     shm_size: 256m
-    networks: [front, data, egress]
+    networks:
+      # The proxy reaches the API by this front-only name. Both are on egress too, where plain
+      # "api" can resolve: the request would then come from an untrusted address, and every
+      # visitor would share one rate-limit allowance.
+      front: { aliases: [api-front] }
+      data: {}
+      egress: {}
     depends_on:
       db: { condition: service_healthy }
     mem_limit: 1g

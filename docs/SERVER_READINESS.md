@@ -558,7 +558,7 @@ Never use `docker system prune`, `docker builder prune`, a daemon restart or a r
 - **Chromium sandbox:** checked three ways:
   - in throwaway containers with no network: Docker's built-in profile (expected to fail), then the API profile (must pass);
   - inside the running API;
-  - through 14 PDF exports under load.
+  - through 10 PDF exports under load (the per-person limit), and the 11th refused.
 - **Direct mode:** all stack tests through the proxy:
   - TLS, the redirect, and the 2.5 MiB body refused with 413;
   - CSRF and Origin, `__Host-` secure cookies, cross-user 404;

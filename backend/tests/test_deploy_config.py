@@ -138,7 +138,10 @@ def test_every_network_has_its_own_fixed_subnet_and_only_egress_reaches_out() ->
 def test_who_is_on_which_network() -> None:
     assert SERVICES["db"]["networks"] == ["data"]
     assert SERVICES["web"]["networks"] == ["front"]
-    assert SERVICES["api"]["networks"] == ["front", "data", "egress"]
+    assert set(SERVICES["api"]["networks"]) == {"front", "data", "egress"}
+    # The proxy must reach the API on front, where its address is the one the API trusts.
+    assert SERVICES["api"]["networks"]["front"]["aliases"] == ["api-front"]
+    assert "{$FINPILOT_API_UPSTREAM:api-front:8000}" in _text(DEPLOY / "caddy" / "site.caddy")
     assert set(SERVICES["proxy"]["networks"]) == {"front", "edge", "egress"}
     for job in JOBS:
         assert SERVICES[job]["networks"] == ["data"], job
@@ -290,8 +293,15 @@ def test_each_upstream_gets_exactly_one_client_address() -> None:
 
 def test_the_proxy_upstreams_name_real_services() -> None:
     upstreams = re.findall(r"reverse_proxy \{\$\w+:([\w.-]+):(\d+)\}", SITE)
-    assert upstreams == [("api", "8000"), ("web", "3000")]
-    assert set(dict(upstreams)) <= set(SERVICES)
+    assert upstreams == [("api-front", "8000"), ("web", "3000")]
+    names = set(SERVICES) | {
+        alias
+        for service in SERVICES.values()
+        if isinstance(service.get("networks"), dict)
+        for net in service["networks"].values()
+        for alias in (net or {}).get("aliases", [])
+    }
+    assert set(dict(upstreams)) <= names
 
 
 @pytest.mark.parametrize(

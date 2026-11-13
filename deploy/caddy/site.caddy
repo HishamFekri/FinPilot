@@ -43,7 +43,7 @@
 	}
 
 	handle /api/v1/* {
-		reverse_proxy {$FINPILOT_API_UPSTREAM:api:8000} {
+		reverse_proxy {$FINPILOT_API_UPSTREAM:api-front:8000} {
 			header_up X-Forwarded-For {client_ip}
 			header_up X-Forwarded-Proto https
 			transport http {

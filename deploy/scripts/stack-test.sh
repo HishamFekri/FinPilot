@@ -348,7 +348,7 @@ head -c 1500 "$REPORT/probe-running-api.json"; echo
 
 say "PDF exports under load, sampled"
 sample_start load
-check "14 PDF exports (8 in a row, 3 pairs at once)" compose run --rm -e STACK_PHASE=load stack-test \
+check "10 PDF exports (6 in a row, 2 pairs at once), then the rate limit" compose run --rm -e STACK_PHASE=load stack-test \
   python -m pytest -q -s -p no:cacheprovider -rs tests_stack -k under_load
 sample_stop load || true
 
@@ -358,8 +358,13 @@ check "web can't reach the database" compose exec -T web node -e \
 check "web has no internet" compose exec -T web node -e \
   "fetch('https://example.com').then(()=>process.exit(1),()=>process.exit(0))"
 check "the database has no internet" fails compose exec -T db getent hosts example.com
-check "the database publishes no port" fails compose port db 5432
-check "the API publishes no port" fails compose port api 8000
+publishes_nothing() {  # a running container with no host port mapping at all
+  local id
+  id="$(compose ps -q "$1")"
+  [ -n "$id" ] && [ -z "$(docker port "$id")" ]
+}
+check "the database publishes no port" publishes_nothing db
+check "the API publishes no port" publishes_nothing api
 check "only the proxy publishes, on 127.0.0.1:18443 and :18080" bash -c \
   "[ \"\$(docker ps --filter label=com.docker.compose.project=$PROJECT --format '{{.Ports}}' | grep -o '[0-9.]*:[0-9]*->' | sort -u | tr '\n' ' ')\" = '127.0.0.1:18080-> 127.0.0.1:18443-> ' ]"
 check "the API runs as 10201" test "$(compose exec -T api id -u | tr -d '\r')" = 10201

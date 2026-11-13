@@ -298,17 +298,20 @@ def test_pdf_exports_under_load(person: Person) -> None:
         assert pdf.content.startswith(b"%PDF")
         durations.append(time.monotonic() - started)
 
-    for locale in ("en", "ar", "tr", "en", "ar", "tr", "en", "ar"):
+    # Exports are limited to 10 a minute per person: use all ten, then check the eleventh.
+    for locale in ("en", "ar", "tr", "en", "ar", "tr"):
         export(locale)
     # Two at a time: PDF_MAX_CONCURRENT is 2, so neither is refused.
-    for _ in range(3):
+    for _ in range(2):
         pair = [threading.Thread(target=export, args=(locale,)) for locale in ("en", "ar")]
         for thread in pair:
             thread.start()
         for thread in pair:
             thread.join()
-    assert len(durations) == 14
+    assert len(durations) == 10
     assert max(durations) < 30, durations
+    refused = person.browser.get(f"{API}/reports/export.pdf", params={"locale": "en"})
+    assert refused.status_code == 429, refused.text[:300]
     print(f"PDF durations (s): {', '.join(f'{d:.2f}' for d in durations)}")
 
 
