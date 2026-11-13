@@ -969,3 +969,15 @@ def test_the_registry_check_keeps_the_token_off_the_command_line() -> None:
         assert package in check and package in RELEASE
     assert "ghcr.io/v2/hishamfekri/$package/tags/list" in check
     assert "REGISTRY: ghcr.io/hishamfekri" in RELEASE
+
+
+def test_every_shell_script_is_executable_in_git() -> None:
+    # The Release runner calls the scripts directly, so a mode lost on a Windows commit breaks it.
+    git = shutil.which("git")
+    if git is None or not (REPO / ".git").exists():
+        pytest.skip("not a git checkout")
+    listing = subprocess.run(  # noqa: S603 - a fixed, read-only git query
+        [git, "ls-files", "-s", "--", "*.sh"], cwd=REPO, capture_output=True, text=True, check=True
+    ).stdout.splitlines()
+    assert listing
+    assert [line.split("\t")[1] for line in listing if not line.startswith("100755")] == []
