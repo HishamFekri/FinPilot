@@ -687,7 +687,7 @@ def test_the_preflight_needs_4_cpus_on_the_server_and_2_on_a_ci_runner(
     result = subprocess.run(  # noqa: S603 - a fixed, read-only script
         [_bash(), "-c", f'{first}; exec bash "$2" --in-place', "preflight", str(tmp_path),
          str(DEPLOY / "inspection" / "stack-test-preflight.sh")],
-        env={**keep, "FINPILOT_PREFLIGHT_PROFILE": profile},
+        env={**keep, "HOME": str(tmp_path), "FINPILOT_PREFLIGHT_PROFILE": profile},
         capture_output=True,
         text=True,
         timeout=60,
