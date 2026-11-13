@@ -29,9 +29,26 @@ def build_engine(settings: Settings) -> Engine:
     )
 
 
+# The settings the running app was created with (create_app calls use_settings). Without this,
+# the engine read a second copy from the environment: an app built with explicit settings failed
+# every request that took a database session when the environment had no DATABASE_URL (CI).
+_app_settings: dict[str, Settings] = {}
+
+
+def use_settings(settings: Settings) -> None:
+    """Points the database layer at the app's own settings, and drops an engine built for others."""
+    if _app_settings.get("current") is settings:
+        return
+    _app_settings["current"] = settings
+    get_engine.cache_clear()
+    clear = getattr(_session_factory, "cache_clear", None)  # tests may replace the factory
+    if clear is not None:
+        clear()
+
+
 @lru_cache
 def get_engine() -> Engine:
-    return build_engine(get_settings())
+    return build_engine(_app_settings.get("current") or get_settings())
 
 
 @lru_cache

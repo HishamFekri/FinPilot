@@ -8,6 +8,7 @@ from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import request_context
 from app.core.rate_limit import RateLimiter
+from app.db import session as db_session
 from app.services.fx import FxGateway
 from app.services.fx_providers import Coinbase, Frankfurter
 from app.services.google_oidc import build_google_provider
@@ -39,6 +40,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redoc_url=None,
     )
     app.state.settings = settings
+    # The database uses these same settings, never a second copy read from the environment.
+    db_session.use_settings(settings)
     # The real Google client or None. Tests replace it only through dependency overrides.
     app.state.google_provider = build_google_provider(settings)
     # Per process. Not shared between workers or kept across restarts (SECURITY.md §13.1).
