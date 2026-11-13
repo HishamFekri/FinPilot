@@ -57,6 +57,13 @@ jobs:
         run: |
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
           df -h /
+          # The deletes load the disk; the preflight wants I/O pressure (avg60) below 15 first.
+          for _ in $(seq 36); do
+            io="$(awk '/^some/{split($3,a,"="); print a[2]}' /proc/pressure/io)"
+            awk -v m="$io" 'BEGIN{exit !(m < 10)}' && break
+            sleep 5
+          done
+          echo "I/O pressure avg60: $io"
 
       - name: Tools the stack test needs
         run: sudo apt-get update -q && sudo apt-get install -y -q restic
