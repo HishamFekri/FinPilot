@@ -309,6 +309,9 @@ networks:
     ipam:
       config:
         - subnet: ${FINPILOT_FRONT_SUBNET:-172.30.10.0/24}
+          # Dynamic addresses (api, web) come from the upper half only, so the proxy's fixed
+          # address can't already be taken when it starts last.
+          ip_range: ${FINPILOT_FRONT_IP_RANGE:-172.30.10.128/25}
   data:
     internal: true
     ipam:

@@ -124,6 +124,13 @@ def test_every_network_has_its_own_fixed_subnet_and_only_egress_reaches_out() ->
         "egress": "${FINPILOT_EGRESS_SUBNET:-172.30.12.0/24}",
         "edge": "${FINPILOT_EDGE_SUBNET:-172.30.13.0/29}",
     }
+    # The proxy starts last at a fixed address: dynamic ones must come from elsewhere.
+    assert networks["front"]["ipam"]["config"][0]["ip_range"] == (
+        "${FINPILOT_FRONT_IP_RANGE:-172.30.10.128/25}"
+    )
+    assert SERVICES["proxy"]["networks"]["front"]["ipv4_address"] == (
+        "${FINPILOT_PROXY_IP:-172.30.10.2}"
+    )
 
 
 def test_who_is_on_which_network() -> None:
