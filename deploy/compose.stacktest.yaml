@@ -47,6 +47,8 @@ services:
   edge:
     <<: *test
     image: ${FINPILOT_CADDY_IMAGE:-caddy:2.10.2-alpine}
+    # As for the proxy: Caddy's binary won't exec without NET_BIND_SERVICE in the bounding set.
+    cap_add: [NET_BIND_SERVICE]
     command: ["caddy", "run", "--config", "/etc/caddy/edge.Caddyfile", "--adapter", "caddyfile"]
     environment:
       FINPILOT_HOST: ${FINPILOT_HOST}

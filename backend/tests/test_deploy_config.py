@@ -72,7 +72,9 @@ def test_the_stack_has_exactly_the_expected_services() -> None:
 def test_every_container_is_locked_down(name: str, service: dict[str, Any]) -> None:
     assert service["read_only"] is True
     assert service["cap_drop"] == ["ALL"]
-    assert "cap_add" not in service
+    # Only the Caddy containers get one back: Caddy's binary won't exec without NET_BIND_SERVICE.
+    caddy = name in ("proxy", "edge")
+    assert service.get("cap_add", []) == (["NET_BIND_SERVICE"] if caddy else [])
     assert "no-new-privileges:true" in service["security_opt"]
     assert not service.get("privileged")
     for forbidden in ("network_mode", "pid", "ipc", "devices", "userns_mode"):

@@ -167,6 +167,9 @@ services:
   proxy:
     <<: *service
     image: ${FINPILOT_CADDY_IMAGE:-caddy:2.10.2-alpine}
+    # The image's caddy binary carries the file capability cap_net_bind_service: without it in
+    # the bounding set the kernel refuses to exec it at all. Nothing else is given back.
+    cap_add: [NET_BIND_SERVICE]
     # direct: TLS here, ports published by compose.direct.yaml.
     # behind: plain HTTP on the edge network only, behind the server's existing proxy.
     # tunnel: plain HTTP on one loopback port for cloudflared (compose.tunnel.yaml).
