@@ -8,7 +8,7 @@ import json
 import uuid
 from collections import defaultdict
 from collections.abc import Iterator
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -31,10 +31,12 @@ from app.services.fx_providers import (
 )
 from tests.auth_harness import sign_in, write_headers
 from tests.google_fakes import FakeGoogle
+from tests.session_clock import SESSION_NOW
 
 API = "/api/v1"
-# The test users live in UTC (the default time zone), so "today" is the UTC date.
-TODAY = datetime.now(UTC).date()
+# The test users live in UTC (the default time zone), so "today" is the UTC date of the run's
+# one pinned instant, the same one the app's calendar clock uses (tests/conftest.py).
+TODAY = SESSION_NOW.date()
 
 
 class FakeProviders:

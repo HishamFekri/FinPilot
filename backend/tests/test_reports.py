@@ -8,7 +8,7 @@ import io
 import json
 import shutil
 import uuid
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -19,9 +19,10 @@ from fastapi.testclient import TestClient
 from app.services.report_text import CATEGORY_KEYS, TEXT
 from tests.auth_harness import sign_in, write_headers
 from tests.google_fakes import FakeGoogle
+from tests.session_clock import SESSION_NOW
 
 API = "/api/v1"
-TODAY = datetime.now(UTC).date()  # test users live in UTC
+TODAY = SESSION_NOW.date()  # test users live in UTC; the app's clock is pinned to SESSION_NOW
 MONTH = TODAY.strftime("%Y-%m")
 FIRST = TODAY.replace(day=1)
 LAST_MONTH = (FIRST - timedelta(days=1)).replace(day=1)

@@ -22,6 +22,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core import clock
 from app.core.errors import ApiError
 from app.core.logging import request_id_var
 from app.db import rls
@@ -43,9 +44,9 @@ NAME_MAX = 100
 
 def today_for(user: User) -> date:
     try:
-        return datetime.now(ZoneInfo(user.time_zone)).date()
+        return clock.today(ZoneInfo(user.time_zone))
     except (KeyError, ValueError):
-        return datetime.now(UTC).date()
+        return clock.today(UTC)
 
 
 def event(

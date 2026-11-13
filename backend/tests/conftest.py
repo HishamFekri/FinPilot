@@ -20,9 +20,11 @@ from sqlalchemy.pool import NullPool
 if TYPE_CHECKING:
     from tests.google_fakes import FakeGoogle
 
+from app.core import clock
 from app.core.config import BACKEND_DIR, Environment, Settings
 from app.db import hardening
 from app.main import create_app
+from tests.session_clock import SESSION_NOW
 
 # Port 1 refuses connections, so a unit test can't reach a real database by accident.
 JOURNAL_TABLES = ("journal_entries", "journal_lines")
@@ -50,6 +52,18 @@ def redact(text_value: str, secrets: Iterable[str]) -> str:
     for secret in secrets:
         text_value = text_value.replace(secret, "***")
     return text_value
+
+
+# The app's calendar clock is pinned to the run's one instant (tests/session_clock.py). CI once
+# collected the tests at 23:5x UTC and ran them after midnight, so the app dated new records a day
+# after the reports' TODAY-bounded ranges.
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _one_calendar_day_per_run() -> Iterator[None]:
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(clock, "now", lambda: SESSION_NOW)
+        yield
 
 
 def redact_longrepr(longrepr: object, secrets: Iterable[str]) -> object:

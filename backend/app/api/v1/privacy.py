@@ -6,7 +6,7 @@ only marks the account as pending, and the person can undo that. Nothing here er
 
 import json
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Response
@@ -21,6 +21,7 @@ from app.api.deps import (
     require_csrf,
 )
 from app.api.v1.cookies import PRIVATE_HEADERS
+from app.core import clock
 from app.core.config import Settings
 from app.core.rate_limit import Limit
 from app.db.models import User
@@ -94,7 +95,7 @@ def data_export(
 ) -> Response:
     """A JSON file of everything that's the person's own. Allowed during a deletion request."""
     data = account_data.build(db, user, limit=settings.data_export_max_rows)
-    name = account_data.filename(datetime.now(UTC).date())
+    name = account_data.filename(clock.today())
     return Response(
         json.dumps(data, ensure_ascii=False, indent=1).encode(),
         media_type="application/json",

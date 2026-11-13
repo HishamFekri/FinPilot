@@ -17,6 +17,7 @@ from sqlalchemy import delete as sql_delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core import clock
 from app.core.errors import ApiError, InvalidText
 from app.db.models import FinancialAccount, LedgerAccount, Transaction, User
 from app.services import ledger, money
@@ -49,7 +50,7 @@ def today_for(user: User) -> date:
         zone = ZoneInfo(user.time_zone)
     except (KeyError, ValueError):
         zone = ZoneInfo("UTC")
-    return datetime.now(zone).date()
+    return clock.today(zone)
 
 
 @dataclass(frozen=True)
