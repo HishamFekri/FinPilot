@@ -25,8 +25,15 @@ redact() {
 }
 section() { printf '\n===== %s =====\n' "$1"; }
 run() { printf -- '--- %s\n' "$1"; shift; timeout "$T" "$@" 2>&1 | redact || true; }
-show() {  # show FILE: a whole text file, redacted, if readable
-  if [ -r "$1" ]; then printf -- '--- %s\n' "$1"; redact < "$1"; else printf -- '--- %s (not readable without root)\n' "$1"; fi
+show() {  # show FILE: a whole text file, redacted, if readable. Never a program's bytes.
+  if [ ! -r "$1" ]; then
+    printf -- '--- %s (not readable without root)\n' "$1"
+  elif ! grep -Iq . "$1" 2>/dev/null; then
+    printf -- '--- %s (a binary or empty file: not shown)\n' "$1"
+  else
+    printf -- '--- %s\n' "$1"
+    head -c 200000 "$1" | redact
+  fi
 }
 
 echo "FinPilot deploy-setup inspection, $(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -45,7 +52,7 @@ for script in $(systemctl cat ai-document-assistant.service ai-document-assistan
                   ai-document-assistant-check.service docker-projects.service 2>/dev/null \
                 | grep -oE '^Exec(Start|StartPre|StartPost)=[-@:+!]*[^ ]+' | cut -d= -f2- | sed 's/^[-@:+!]*//' | sort -u); do
   case "$script" in
-    /usr/bin/docker|/usr/bin/env|/bin/sh|/bin/bash|/usr/bin/bash) continue ;;
+    /usr/bin/docker|/usr/bin/env|/bin/sh|/bin/bash|/usr/bin/bash|/usr/bin/python3*|*/python|*/python3) continue ;;
   esac
   show "$script"
 done

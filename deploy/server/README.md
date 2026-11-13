@@ -127,9 +127,19 @@ ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudo cat /etc/finpilot/restic-password" 
 
 This needs a successful Release run on GitHub for the installed commit.
 
+If the tunnel hostname isn't live yet, deploy and check FinPilot on its loopback port only. That's exactly the port cloudflared will use:
+
 ```powershell
-ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudo systemd-run --wait --pty -p EnvironmentFile=/etc/finpilot/deployer.env /srv/docker/finpilot/deploy/server/finpilot-deployer.sh --first-deploy"
+ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudo systemd-run --wait --pty -p EnvironmentFile=/etc/finpilot/deployer.env /srv/docker/finpilot/deploy/server/finpilot-deployer.sh --first-deploy --local-only"
 ```
+
+Then add the hostname (step 4) and confirm the public site:
+
+```powershell
+ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudo systemd-run --wait --pty -p EnvironmentFile=/etc/finpilot/deployer.env /srv/docker/finpilot/deploy/server/finpilot-deployer.sh --verify-public"
+```
+
+If the hostname is already live, `--first-deploy` alone does both checks.
 
 It refuses if `finpilot_db_data` already exists, so it can't provision over data. Otherwise it:
 1. provisions the **empty** production database: the owner, the restricted runtime role, migrations, RLS and verification;

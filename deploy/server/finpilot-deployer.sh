@@ -16,8 +16,13 @@
 # run here are the ones installed by deploy/server/install.sh from a commit the owner chose; they
 # are never updated from GitHub automatically. Code from GitHub runs only inside the containers.
 #
-#   finpilot-deployer.sh               one cycle (what the timer runs)
-#   finpilot-deployer.sh --first-deploy  provision the empty production database, then deploy
+#   finpilot-deployer.sh                             one cycle (what the timer runs)
+#   finpilot-deployer.sh --first-deploy              provision the empty production database,
+#                                                    deploy, then check the public URL
+#   finpilot-deployer.sh --first-deploy --local-only the same, but check only the loopback port
+#                                                    cloudflared will use (before the hostname
+#                                                    is added to the tunnel)
+#   finpilot-deployer.sh --verify-public             check loopback and the public URL, nothing else
 
 set -euo pipefail
 umask 077
@@ -47,6 +52,35 @@ kuma() {  # kuma up|down MESSAGE: a heartbeat to the Uptime Kuma push monitor, i
   message="$(printf '%s' "$2" | tr -c 'A-Za-z0-9 ._:-' '_' | tr ' ' '+')"
   curl -fsS --max-time 10 -o /dev/null "$(head -n 1 "$file")?status=$1&msg=$message" || true
 }
+
+mode="${1:-}"
+local_only=0
+[ "${2:-}" = --local-only ] && local_only=1
+[ "$local_only" -eq 0 ] || [ "$mode" = --first-deploy ] || die "--local-only goes with --first-deploy"
+public_host="${FINPILOT_PUBLIC_URL#https://}"
+public_host="${public_host%%/*}"
+tunnel_port="$(site_value FINPILOT_TUNNEL_PORT)"
+LOOPBACK="http://127.0.0.1:${tunnel_port:-18085}"
+
+site_ok() {  # site_ok BASE [HOST]: readyz says ready and the home page answers, within a minute
+  local base="$1" n header=()
+  [ -n "${2:-}" ] && header=(-H "Host: $2")
+  for n in 1 2 3 4 5 6 7 8 9 10; do
+    if curl -fsS --max-time 10 "${header[@]}" "$base/api/v1/readyz" | grep -q '"ready"' \
+       && curl -fsS --max-time 10 -o /dev/null "${header[@]}" "$base/en"; then
+      return 0
+    fi
+    sleep 6
+  done
+  return 1
+}
+
+if [ "$mode" = --verify-public ]; then
+  if site_ok "$LOOPBACK" "$public_host"; then log "loopback: ok ($LOOPBACK, Host $public_host)"
+  else die "loopback: FinPilot isn't answering on $LOOPBACK"; fi
+  if site_ok "$FINPILOT_PUBLIC_URL"; then log "public: ok ($FINPILOT_PUBLIC_URL)"; exit 0; fi
+  die "public: $FINPILOT_PUBLIC_URL doesn't answer yet (the tunnel hostname, DNS, or cloudflared)"
+fi
 
 exec 9> /run/finpilot-deploy.lock
 flock -n 9 || { log "another cycle is running"; exit 0; }
@@ -86,11 +120,13 @@ health_report() {
   last="$(cat "$STATE/restart-count" 2>/dev/null || echo "$restarts")"
   echo "$restarts" > "$STATE/restart-count"
   [ "$restarts" -le "$last" ] || problems+="restarted:$((restarts - last)) "
+  curl -fsS --max-time 10 -H "Host: $public_host" "$LOOPBACK/api/v1/readyz" | grep -q '"ready"' \
+    || problems+="loopback-readyz "
   curl -fsS --max-time 10 "$FINPILOT_PUBLIC_URL/api/v1/readyz" | grep -q '"ready"' || problems+="public-readyz "
   if [ -z "$problems" ]; then kuma up "ok ${current_sha:0:12}"; else log "unhealthy: $problems"; kuma down "$problems"; fi
 }
 
-if [ "${1:-}" != --first-deploy ]; then
+if [ "$mode" != --first-deploy ]; then
   [ -f "$STATE/current.env" ] || die "not deployed yet: run finpilot-deployer.sh --first-deploy once"
   # /etc/finpilot/hold pauses automatic deployments (after a manual rollback, say). Health
   # checks continue. Remove the file to resume.
@@ -146,7 +182,7 @@ if [ -n "$held" ] && [ ! -f "$APPROVALS/$sha" ]; then
 fi
 
 # --- First deployment: an EMPTY database only. Never over an existing one.
-if [ "${1:-}" = --first-deploy ]; then
+if [ "$mode" = --first-deploy ]; then
   [ ! -f "$STATE/current.env" ] || die "already deployed: --first-deploy is only for the very first time"
   if docker volume inspect finpilot_db_data > /dev/null 2>&1; then
     die "finpilot_db_data already exists: refusing to provision over it"
@@ -166,28 +202,26 @@ if ! "$DEPLOY_DIR/scripts/deploy.sh" --release "$work/release.env" --confirm \
   exit 1
 fi
 
-# --- 4. The public site, through Cloudflare.
-public_ok() {
-  local n
-  for n in 1 2 3 4 5 6 7 8 9 10; do
-    if curl -fsS --max-time 10 "$FINPILOT_PUBLIC_URL/api/v1/readyz" | grep -q '"ready"' \
-       && curl -fsS --max-time 10 -o /dev/null "$FINPILOT_PUBLIC_URL/en"; then
-      return 0
-    fi
-    sleep 6
-  done
-  return 1
-}
-if ! public_ok; then
+# --- 4. FinPilot on the loopback port cloudflared uses, then the public site through Cloudflare.
+fail_release() {
   touch "$STATE/failed-$sha"
   if [ -f "$STATE/previous.env" ]; then
-    log "the public site didn't answer: rolling back the images"
+    log "$1: rolling back the images"
     "$DEPLOY_DIR/scripts/rollback.sh" --confirm || true
   fi
-  kuma down "release ${sha:0:12} failed its public check"
+  kuma down "release ${sha:0:12}: $1"
   exit 1
+}
+site_ok "$LOOPBACK" "$public_host" || fail_release "FinPilot didn't answer on $LOOPBACK"
+if [ "$local_only" -eq 1 ]; then
+  touch "$STATE/provisioned"
+  record "release ${sha} running (loopback verified; public check pending)"
+  log "release ${sha:0:12} is running and answers on $LOOPBACK"
+  log "next: add the tunnel hostname, restart cloudflared, then run --verify-public"
+  exit 0
 fi
-[ "${1:-}" = --first-deploy ] && touch "$STATE/provisioned"
+site_ok "$FINPILOT_PUBLIC_URL" || fail_release "the public site didn't answer"
+[ "$mode" = --first-deploy ] && touch "$STATE/provisioned"
 rm -f "$STATE/awaiting-approval-$sha"
 record "release ${sha} live"
 log "release ${sha:0:12} is live"

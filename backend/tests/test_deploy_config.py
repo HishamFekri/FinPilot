@@ -889,3 +889,13 @@ def test_deployer_settings_hold_paths_never_secrets() -> None:
             key, value = line.split("=", 1)
             if re.search(r"TOKEN|PASSWORD|SECRET|URL_FILE", key):
                 assert value.startswith("/etc/finpilot/"), key
+
+
+def test_the_first_deploy_can_wait_for_the_tunnel_but_never_skips_the_loopback_check() -> None:
+    assert '"--local-only goes with --first-deploy"' in DEPLOYER
+    loopback = DEPLOYER.index('site_ok "$LOOPBACK" "$public_host" || fail_release')
+    local_only_exit = DEPLOYER.index('if [ "$local_only" -eq 1 ]; then', loopback)
+    public = DEPLOYER.index('site_ok "$FINPILOT_PUBLIC_URL" || fail_release')
+    assert loopback < local_only_exit < public
+    assert 'LOOPBACK="http://127.0.0.1:${tunnel_port:-18085}"' in DEPLOYER
+    assert 'if [ "$mode" = --verify-public ]; then' in DEPLOYER
