@@ -29,6 +29,25 @@ def test_a_sandboxed_browser_is_recognised(tmp_path: Path) -> None:
     assert verdict(processes) == (True, [])
 
 
+def test_retitled_children_and_the_crash_reporter_are_classified(tmp_path: Path) -> None:
+    # What GitHub's runner showed: every child's cmdline is a single space-joined string.
+    _process(tmp_path, 18, [SHELL, "--headless", "--remote-debugging-pipe"], 1, "18")
+    _process(tmp_path, 21, [f"{SHELL} --type=zygote --no-zygote-sandbox"], 1, "21")
+    _process(tmp_path, 22, [f"{SHELL} --type=zygote"], 1, "22 1")
+    _process(tmp_path, 45, [f"{SHELL} --type=gpu-process --user-data-dir=/tmp/x"], 1, "45")
+    _process(tmp_path, 69, [f"{SHELL} --type=renderer --lang=en-US"], 2, "69 2 1")
+    _process(tmp_path, 30, [SHELL.replace("headless_shell", "chrome_crashpad_handler")], 1, "30")
+    processes = chromium_processes(tmp_path)
+    assert sorted(p.kind for p in processes) == [
+        "browser",
+        "gpu-process",
+        "renderer",
+        "zygote",
+        "zygote",
+    ]
+    assert verdict(processes) == (True, [])
+
+
 def test_no_sandbox_or_a_shared_namespace_is_refused() -> None:
     browser = Process(40, "browser", no_sandbox=True, seccomp_filters=1, pid_namespace_depth=1)
     renderer = Process(52, "renderer", no_sandbox=True, seccomp_filters=1, pid_namespace_depth=1)

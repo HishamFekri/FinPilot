@@ -57,11 +57,15 @@ def chromium_processes(proc: Path = Path("/proc")) -> list[Process]:
             status = _status((entry / "status").read_text(encoding="utf-8", errors="replace"))
         except OSError:
             continue  # the process ended, or isn't readable
+        # Chromium retitles its child processes: their cmdline becomes one space-joined string.
+        argv = [token for a in argv for token in a.split(" ") if token]
         if not argv:
             continue
         program = argv[0].rsplit("/", 1)[-1]
         if not any(name in program for name in ("headless_shell", "chrome", "chromium")):
             continue
+        if "crashpad" in program:
+            continue  # the crash reporter: a helper of its own, not a browser or a sandboxed child
         kind = next((a.split("=", 1)[1] for a in argv[1:] if a.startswith("--type=")), "browser")
         filters = status.get("Seccomp_filters", "")
         found.append(
