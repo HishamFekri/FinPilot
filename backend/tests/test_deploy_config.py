@@ -107,7 +107,7 @@ def test_direct_mode_publishes_only_the_proxy_and_by_default_on_loopback() -> No
     assert len(ports) == 2
     for port in ports:
         assert port.startswith("${FINPILOT_BIND_ADDRESS:-127.0.0.1}:")
-    # 8080 is taken by the server's existing Caddy (docs/SERVER_READINESS.md §9).
+    # 8080 is taken by the server's existing Caddy (private server report).
     assert ":-8080}" not in " ".join(ports)
     for service in TEST_SERVICES.values():
         assert "ports" not in service and "expose" not in service
@@ -208,7 +208,7 @@ def test_the_api_runs_in_production_mode_behind_a_named_proxy() -> None:
 
 def test_containers_run_as_users_that_are_unused_on_the_server() -> None:
     # Host users on the server: 1000 is the administrator, 999 a service account, and the AI
-    # app's containers run as 10001 (docs/SERVER_READINESS.md §17, S-I2).
+    # app's containers run as 10001 (private server report, S-I2).
     assert SERVICES["api"]["user"] == "10201:10201"
     assert SERVICES["web"]["user"] == "10202:10202"
     assert SERVICES["db"]["user"] == "999:999"  # the image's own, which owns its data

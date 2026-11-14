@@ -1,31 +1,80 @@
 # FinPilot
 
-Personal finance and shared trip expense management, with financial reporting.
+Personal finance and shared trip expenses in one web app: track your accounts, spending, and budgets, and on a trip see who paid for what, how each cost is split, and who owes whom.
 
-> **Status: under active development, not yet deployed.** Built and under review, in English, Arabic and Turkish:
->
-> - **Sign-in and account:** Google sign-in (the only way in), sessions and signed-in devices, profile and preferences, privacy settings, and account deletion.
-> - **Personal finance:** accounts and transfers on a double-entry ledger, transactions, categories and quick templates, budgets, recurring items and subscriptions, a calendar, debts, installments, and savings goals.
-> - **Analysis:** Insights and Reports, with CSV and PDF export.
-> - **Trip Mode:** shared expenses with payer confirmation, multiple currencies, settlements and disputes, trip planning and budgets.
->
-> Production packaging exists, but the containers haven't been run on the server yet, and beta access control and legal pages are still missing. Nothing here is ready for real financial data. FinPilot is not a bank or payment service, and it will not move money.
+**Live: [finpilot.hishamjouda.com](https://finpilot.hishamjouda.com)**, in English, Arabic, and Turkish.
 
-## Goals
+> The live site is the real product, not a sandbox. Signing in with Google creates a real account, and what you enter is saved. FinPilot is not a bank or payment service, and it never holds or moves money. The privacy notice is still a draft that hasn't been legally reviewed.
 
-- **Personal finance:** accounts, transactions, budgets, and analytics, on a double-entry ledger.
-- **Trip Mode:** shared expenses with payer confirmation, multi-currency support, and settlement tracking.
-- **Reporting:** financial reports with PDF and CSV export.
-- **Languages:** English, Arabic (right-to-left), and Turkish.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/landing-dark.webp">
+  <img src="docs/screenshots/landing-light.webp" alt="FinPilot landing page: “Make sense of where your money goes.”" width="100%">
+</picture>
 
-## Technology
+## What it does
 
-| Area     | Stack                                                                   |
-| -------- | ----------------------------------------------------------------------- |
-| Web      | Next.js, React, TypeScript (strict), Tailwind CSS, shadcn/ui, next-intl |
-| API      | Python, FastAPI, Pydantic, SQLAlchemy (sync), Alembic, psycopg          |
-| Database | PostgreSQL                                                              |
-| Testing  | pytest, Vitest, Testing Library, Ruff, mypy, ESLint, import-linter      |
+**Personal finance**
+
+- Accounts, transfers, and transactions on a double-entry ledger, with categories, quick templates, and several currencies
+- Monthly budgets with early warnings, recurring payments and subscriptions, installment plans, debts, savings goals, and a calendar
+- Insights and reports filtered by period, account, category, currency, and type, with CSV and PDF export and a print layout
+
+**Trip Mode**
+
+- Shared expenses split equally, by fixed amounts, or by percentages, confirmed by the person who paid
+- Balances and suggested payments that show who owes whom; a payment counts once the person who received it confirms it
+- Multiple currencies, with each expense keeping the exchange rate it was recorded with
+- Disputes, trip planning, and trip budgets
+
+**Account and privacy**
+
+- Google sign-in (the only way in), a list of signed-in devices, a personal data download, and account deletion requests
+- Light and dark themes, and Arabic shown right to left
+
+<table>
+  <tr>
+    <td width="62%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/home-dark.webp">
+        <img src="docs/screenshots/home-light.webp" alt="Home: total balance, this month's spending and income, recent activity, and spending by category">
+      </picture>
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/trip-dark.webp">
+        <img src="docs/screenshots/trip-light.webp" alt="A shared trip: three expenses paid by different people, with each person's share">
+      </picture>
+    </td>
+    <td width="38%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/balances-mobile-dark.webp">
+        <img src="docs/screenshots/balances-mobile-light.webp" alt="Trip balances on a phone: who is owed, who owes, and the suggested payments">
+      </picture>
+    </td>
+  </tr>
+</table>
+
+<sub>Screenshots of the app with sample data.</sub>
+
+## How it's built
+
+| Area           | Stack                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| Web            | Next.js, React, TypeScript (strict), Tailwind CSS, next-intl                                |
+| API            | Python, FastAPI, Pydantic, SQLAlchemy, Alembic                                              |
+| Database       | PostgreSQL, with row-level security                                                         |
+| Sign-in        | Google OpenID Connect with PKCE                                                             |
+| Reports        | CSV, and PDF rendered with headless Chromium (Playwright)                                   |
+| Testing        | pytest, Vitest, Testing Library, Playwright browser tests, Ruff, mypy, ESLint               |
+| Infrastructure | Docker Compose, Caddy, Cloudflare Tunnel, GitHub Actions, GitHub Container Registry, restic |
+
+A few decisions worth knowing about:
+
+- **Money is never a float.** Amounts are stored as integers in each currency's smallest unit. The API takes decimal strings and rejects an amount with more decimals than its currency allows, rather than rounding it.
+- **History doesn't move.** A foreign-currency expense references the exchange rate it was recorded with, so later market changes never alter past totals.
+- **Suggested payments, not optimal ones.** Settlements come from a deterministic greedy algorithm that needs at most one payment fewer than the number of people with a balance. It doesn't always find the true minimum, so the app doesn't claim to.
+- **Access is checked twice.** The API checks ownership and trip membership on every request, and PostgreSQL row-level security applies the same rules in the database: personal records are tied to their owner, and a trip's shared records are readable by its members, who never see each other's accounts. A test sweep tries other people's IDs against every API route.
+- **Releases are tested as containers.** After CI passes, GitHub Actions runs the full production stack in containers, then publishes the images. The server pulls only those, backs up the database before each deployment, and waits for approval before any migration that could delete data.
+
+The financial rules, with worked examples, are in [docs/FINANCIAL_RULES.md](docs/FINANCIAL_RULES.md).
 
 ## Project structure
 
@@ -43,16 +92,19 @@ backend/tests_stack/ Tests of the running production stack, through the proxy
 backend/scripts/    Database provisioning, hardening and maintenance
 deploy/             Production packaging: compose, proxy, deployment scripts (see deploy/README.md)
 docs/               Product, architecture, financial, security, and roadmap documents
-.github/workflows/  CI on GitHub-hosted runners
+.github/workflows/  CI and releases on GitHub-hosted runners
 ```
 
-## Prerequisites
+## Running it locally
+
+### Prerequisites
 
 - Node.js 24 or newer, with npm
 - [uv](https://docs.astral.sh/uv/) for Python; it uses the version in `backend/.python-version`
 - PostgreSQL 15 or newer. Without a database, the app still starts, `/api/v1/readyz` reports 503, and database tests are skipped
+- For signing in: a Google OAuth client of your own (see below)
 
-## Setup
+### Setup
 
 ```bash
 npm install
@@ -69,9 +121,11 @@ uv run python -m scripts.provision_local_db               # apply, in your own t
 
 Or copy `backend/.env.example` to `backend/.env`, and point it at databases you created yourself. Never commit `.env`.
 
+**Sign-in.** Google is the only way in. Create an OAuth client (type Web application) in Google Cloud with the redirect URI `http://localhost:8000/api/v1/auth/google/callback`, and set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` in `backend/.env`, as shown in `backend/.env.example`. Never reuse the production client.
+
 Optionally, copy `apps/web/.env.example` to `apps/web/.env.local`.
 
-## Running locally
+### Start
 
 ```bash
 # Terminal 1, from backend/
@@ -115,25 +169,22 @@ From `backend/`:
 | `uv run lint-imports`     | Check that layers depend downward                                                      |
 | `uv run alembic history`  | List migrations                                                                        |
 
-## Testing with a database
+### Testing with a database
 
 Database tests run when `TEST_DATABASE_URL` is set in the environment or in `backend/.env`, and otherwise show as skipped. They refuse to run unless the database name ends in `_test` and the host is local, and they check the name again with the server after connecting. Never point them at a database you care about.
 
-## Roadmap
-
-| Phase | Delivers                                                             | Status              |
-| ----- | -------------------------------------------------------------------- | ------------------- |
-| A     | Personal finance demo with synthetic data                            | Built, under review |
-| B     | Trip Mode demo with synthetic data                                   | Built, under review |
-| C     | Complete web product: reports, exports, budgets, all three languages | Mostly built        |
-| D     | Production readiness: packaging, server test, private beta           | In progress         |
-| Later | Android and iOS apps, and widgets                                    | Planned             |
-
-Details are in [docs/ROADMAP.md](docs/ROADMAP.md).
-
 ## Deployment
 
-Production is designed to run as containers on one server, behind a reverse proxy, with a restricted database role and row-level security. [deploy/README.md](deploy/README.md) has the instructions and rollback steps. Nothing is deployed yet. The isolated integration test on the server is prepared but hasn't run yet (see its status line and [docs/SERVER_READINESS.md](docs/SERVER_READINESS.md)).
+Production runs as containers on a single self-hosted server: Caddy in front, the API on a restricted database role with row-level security, and Cloudflare Tunnel for incoming traffic, so no port is open. Releases are built and tested on GitHub-hosted runners and pulled by the server. [deploy/README.md](deploy/README.md) covers packaging and rollback, and [deploy/server/README.md](deploy/server/README.md) covers the server.
+
+## What's next
+
+- **A mobile app**, built on the same API
+- **A better phone experience**, possibly as an installable PWA first
+- **Spreadsheet (XLSX) export and scheduled monthly reports**, alongside today's CSV, PDF, and print
+- **Changes based on feedback** from the people using it
+
+Still open before FinPilot can call itself fully launched: a legally reviewed privacy notice and terms, completing account erasure in production, and a daily cap on new sign-ups. The full plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Contributing and security
 

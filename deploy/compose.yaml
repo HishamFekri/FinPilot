@@ -19,7 +19,7 @@
 #   egress  outbound: the proxy (certificates, direct mode) and the api (Google, exchange rates).
 # In behind mode nothing is published on the host at all.
 #
-# User IDs are unused on the host (docs/SERVER_READINESS.md §17, S-I2): api and jobs 10201,
+# User IDs are unused on the host (checked in the private server report): api and jobs 10201,
 # web 10202. The database keeps the image's 999, which owns its data directory.
 #
 # Nothing here migrates, provisions or deletes on start. The jobs under the "ops" profile run

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The whole production stack in containers, with throwaway everything, isolated from whatever
-# else the Docker host runs. Built for the home server's integration test (docs/SERVER_READINESS.md
-# §20) and for any developer machine with Docker.
+# else the Docker host runs. Built for the home server's integration test and for any developer machine
+# with Docker.
 #
 #   deploy/scripts/stack-test.sh --run
 #

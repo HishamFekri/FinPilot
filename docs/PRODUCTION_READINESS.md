@@ -40,7 +40,7 @@ Run `deploy/scripts/stack-test.sh --run` on a machine with Docker before going f
 
 ### Status after P4 preparation (2026-11-13)
 
-The server integration test is ready to run, and the owner runs it (SSH needs the key's passphrase). It hasn't run yet, so the container rows above stay **unverified** until its report arrives. Details are in [`SERVER_READINESS.md`](SERVER_READINESS.md) §21 and [`deploy/README.md`](../deploy/README.md).
+The server integration test is ready to run, and the owner runs it (SSH needs the key's passphrase). It hasn't run yet, so the container rows above stay **unverified** until its report arrives. Details are in [`deploy/README.md`](../deploy/README.md).
 
 | Item | Change in P4 |
 |---|---|
@@ -309,7 +309,7 @@ What's built: the download, the reversible request, the blocks and warnings, and
 
 ## 5. Read-only server inspection (for a later stage)
 
-> P3 (2026-11-12): done. Findings, the behind-proxy design and the integration-test plan are in [`SERVER_READINESS.md`](SERVER_READINESS.md); the script is [`deploy/inspection/inspect-server.sh`](../deploy/inspection/inspect-server.sh).
+> P3 (2026-11-12): done. The findings, the behind-proxy design and the integration-test plan are in the private server report ([`SERVER_READINESS.md`](SERVER_READINESS.md) is its public summary); the script is [`deploy/inspection/inspect-server.sh`](../deploy/inspection/inspect-server.sh).
 
 **Don't run these yet.** They're for the owner to run, or to approve running, at the inspection stage.
 

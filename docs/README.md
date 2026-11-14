@@ -10,7 +10,7 @@
 | [SECURITY.md](SECURITY.md) | Security and privacy design |
 | [SECURITY_AUDIT.md](SECURITY_AUDIT.md) | The latest audit: findings, fixes, and open decisions |
 | [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) | Readiness for a private deployment and closed beta: blockers, deployment design, plan, gates, rollback |
-| [SERVER_READINESS.md](SERVER_READINESS.md) | Home server readiness (P3): inspection status, pass criteria, resource budget, proxy topology |
+| [SERVER_READINESS.md](SERVER_READINESS.md) | Deployment summary: where FinPilot runs, how requests and releases reach it, backups, open items. The full server report is private |
 | [ROADMAP.md](ROADMAP.md) | Delivery phases, estimates, and test strategy |
 | [RISKS_AND_OPEN_QUESTIONS.md](RISKS_AND_OPEN_QUESTIONS.md) | Decisions and design risks |
 

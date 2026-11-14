@@ -2,7 +2,7 @@
 # TLS itself and publishes its two ports on FINPILOT_BIND_ADDRESS, loopback unless changed.
 # In behind mode this file isn't used, and nothing is published on the host.
 #
-# The HTTP port's default is 8085: 8080 is already taken on the home server (docs/SERVER_READINESS.md §9).
+# The HTTP port's default is 8085: 8080 is already taken on the home server.
 
 services:
   proxy:

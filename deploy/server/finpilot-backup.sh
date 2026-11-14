@@ -7,7 +7,7 @@
 #   3. restic check of the repository's structure;
 #   4. a heartbeat to the Uptime Kuma push monitor: "up" on success, "down" with the failing step.
 # The repository is on the external SSD (a different disk from the live database). An off-site
-# copy isn't configured: docs/SERVER_READINESS.md §12 lists it as an open launch risk.
+# copy isn't configured: docs/SERVER_READINESS.md lists it as an open launch risk.
 
 set -euo pipefail
 umask 077

@@ -448,7 +448,7 @@ Target changed: a private deployment on the home server, then a closed beta. Dem
 
 ## Home server inspection (2026-11-12): P3 done
 
-The owner ran the read-only inspection, and [`SERVER_READINESS.md`](SERVER_READINESS.md) is complete. The server can carry FinPilot's limits with wide margins: 14.3 GB of memory free, 72 GB on the NVMe and 1.8 TB on the SSD. Public traffic arrives through a Cloudflare Tunnel into the existing Caddy on 127.0.0.1:8080.
+The owner ran the read-only inspection, and the server report is complete (kept privately; [`SERVER_READINESS.md`](SERVER_READINESS.md) is the public summary). The server can carry FinPilot's limits with wide margins, and public traffic arrives through a Cloudflare Tunnel.
 
 Before public launch:
 - Make the existing Caddy forward real client addresses (S-B1).
@@ -470,7 +470,7 @@ Built locally:
 - restic backups;
 - a read-only preflight, host snapshots, a watchdog, label-only cleanup, an emergency stop, and a secret-refusing source bundle.
 
-The owner runs the test on the server ([`deploy/README.md`](../deploy/README.md)), and its results go into [`SERVER_READINESS.md`](SERVER_READINESS.md) §21. Public launch stays NO-GO.
+The owner runs the test on the server ([`deploy/README.md`](../deploy/README.md)), and its results go into the private server report. Public launch stays NO-GO.
 
 ## Production deployment and CI/CD (2026-11-13): P5 built, deployment pending
 

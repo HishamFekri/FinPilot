@@ -1,6 +1,6 @@
 # Deploying FinPilot
 
-The production packaging: two images, one compose project, a reverse proxy with two modes, and scripts that do nothing without an explicit flag. The design and its reasons are in [`docs/PRODUCTION_READINESS.md`](../docs/PRODUCTION_READINESS.md). The home server's facts are in [`docs/SERVER_READINESS.md`](../docs/SERVER_READINESS.md).
+The production packaging: two images, one compose project, a reverse proxy with two modes, and scripts that do nothing without an explicit flag. The design and its reasons are in [`docs/PRODUCTION_READINESS.md`](../docs/PRODUCTION_READINESS.md). A public summary of the production deployment is in [`docs/SERVER_READINESS.md`](../docs/SERVER_READINESS.md).
 
 **Status (2026-11-13):** production deployment and automatic CI/CD are built (P5). The home server uses **tunnel mode**, and the exact procedure is in [`server/README.md`](server/README.md). Nothing is live until that runbook's verification checklist passes. The integration test below now also runs on GitHub-hosted runners for every release.
 
@@ -33,7 +33,7 @@ flowchart LR
     API -.->|"Google, exchange rates"| Egress
 ```
 
-This is behind mode, the planned production topology on the home server (SERVER_READINESS §15). In **direct mode** the proxy instead terminates TLS itself and publishes loopback ports (`compose.direct.yaml`). The stack test uses direct mode first and then behind mode.
+This is behind mode, the production topology on the home server. In **direct mode** the proxy instead terminates TLS itself and publishes loopback ports (`compose.direct.yaml`). The stack test uses direct mode first and then behind mode.
 
 | Container | Networks | Internet | Secrets it can read | User |
 |---|---|---|---|---|
@@ -235,7 +235,7 @@ If a step fails, the previous images are put back.
 scripts/backup.sh --confirm --restic-repo /srv/storage/backups/finpilot/restic --restic-password-file /root/finpilot-restic.pass [--restic-init]
 ```
 
-The dump streams straight into restic, encrypted on the client. If the dump fails part-way, no snapshot is kept. The off-site repository (restic on B2 or another S3-compatible store, with object lock) and the nightly timer are still to be chosen and approved (SERVER_READINESS §12).
+The dump streams straight into restic, encrypted on the client. If the dump fails part-way, no snapshot is kept. The off-site repository (restic on B2 or another S3-compatible store, with object lock) and the nightly timer are still to be chosen and approved.
 
 ## Rollback
 
@@ -253,7 +253,7 @@ The dump streams straight into restic, encrypted on the client. If the dump fail
 
 ## What this doesn't do yet
 
-These are launch blockers or pre-beta work (PRODUCTION_READINESS.md, SERVER_READINESS.md §16):
+These are launch blockers or pre-beta work (PRODUCTION_READINESS.md):
 - **The server integration test's results**, until its report is in.
 - **The existing Caddy's client-address settings and the `finpilot_edge` connection** (S-B1). These are changes to an existing service, made only after approval.
 - **Off-site backups:** the repository, the nightly timer, restore drills, and alerting.
