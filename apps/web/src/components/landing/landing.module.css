@@ -24,7 +24,13 @@
   /* The page colour under a name no band redefines, so band edges can fade into it; and the
      colour the trip band fades into, the closing band's. */
   --page: #f3f6f6;
-  --band-end: var(--tang);
+  --band-end: var(--gold-band);
+  /* Gold: the closing band, the same deep, warm gold in both themes. Band ink 10.7:1, softer ink
+     8.2:1; the light gold accent (small marks at night) is 6.7:1 or more on every dark surface. */
+  --gold: #f2c25b;
+  --gold-band: #463510;
+  --gold-deep: #2e2209;
+  --gold-ink: #fbf3dc;
   --shadow: 0 30px 60px -32px rgb(11 59 69 / 0.45);
   --ease: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
@@ -64,12 +70,6 @@
   --terra: #8a3311;
   --terra-deep: #6a250b;
   --terra-ink: #fdf0e6;
-  /* Gold: the closing band (a deep, warm gold) and small touches elsewhere at night. Band ink
-     10.7:1, softer ink 8.2:1; the light gold accent is 6.7:1 or more on every dark surface. */
-  --gold: #f2c25b;
-  --gold-band: #463510;
-  --gold-deep: #2e2209;
-  --gold-ink: #fbf3dc;
   /* The forest-green page colour itself, under a name the teal bands don't redefine, so their
      edges can fade into it. */
   --page: #0b1b15;
@@ -92,32 +92,53 @@
    is taller by --hero-fade), so it's met while scrolling, never as a band on arrival. Its curve
    is a smoothstep, soft at both ends, so neither end of the fade shows. */
 .root .hero {
-  --hero-fade: 260px;
-  background: linear-gradient(
-    to bottom,
-    var(--field) calc(100% - var(--hero-fade)),
-    color-mix(in oklab, var(--page) 2.8%, var(--field)) calc(100% - var(--hero-fade) * 0.9),
-    color-mix(in oklab, var(--page) 10.4%, var(--field)) calc(100% - var(--hero-fade) * 0.8),
-    color-mix(in oklab, var(--page) 21.6%, var(--field)) calc(100% - var(--hero-fade) * 0.7),
-    color-mix(in oklab, var(--page) 35.2%, var(--field)) calc(100% - var(--hero-fade) * 0.6),
-    color-mix(in oklab, var(--page) 50%, var(--field)) calc(100% - var(--hero-fade) * 0.5),
-    color-mix(in oklab, var(--page) 64.8%, var(--field)) calc(100% - var(--hero-fade) * 0.4),
-    color-mix(in oklab, var(--page) 78.4%, var(--field)) calc(100% - var(--hero-fade) * 0.3),
-    color-mix(in oklab, var(--page) 89.6%, var(--field)) calc(100% - var(--hero-fade) * 0.2),
-    color-mix(in oklab, var(--page) 97.2%, var(--field)) calc(100% - var(--hero-fade) * 0.1),
-    var(--page) 100%
-  );
+  --hero-fade: 340px;
+  /* Where the fade is pale enough for dark text (header.tsx). */
+  --tone-pale-bottom: 170px;
+  background:
+    radial-gradient(1100px 620px at 82% 12%, rgb(72 160 172 / 0.3), transparent 62%),
+    radial-gradient(800px 460px at 8% 55%, rgb(255 106 43 / 0.08), transparent 60%),
+    linear-gradient(
+      to bottom,
+      #0b3b45 calc(100% - var(--hero-fade)),
+      #0d4250 calc(calc(100% - var(--hero-fade)) + var(--hero-fade) * 0.111),
+      #145466 calc(calc(100% - var(--hero-fade)) + var(--hero-fade) * 0.222),
+      #22707f calc(calc(100% - var(--hero-fade)) + var(--hero-fade) * 0.333),
+      #4a93a0 calc(calc(100% - var(--hero-fade)) + var(--hero-fade) * 0.444),
+      #7db4bc calc(calc(100% - var(--hero-fade)) + var(--hero-fade) * 0.556),
+      #abcfd3 calc(calc(100% - var(--hero-fade)) + var(--hero-fade) * 0.667),
+      #d3e5e6 calc(calc(100% - var(--hero-fade)) + var(--hero-fade) * 0.778),
+      #e9f1f1 calc(calc(100% - var(--hero-fade)) + var(--hero-fade) * 0.889),
+      #f3f6f6 calc(calc(100% - var(--hero-fade)) + var(--hero-fade))
+    );
 }
 .root .trip {
-  background: linear-gradient(
-    to bottom,
-    var(--page) 0,
-    var(--field) 18vh,
-    var(--field) calc(100% - 26vh),
-    var(--band-end) 100%
-  );
-  /* Under the gradient, the colour it ends in, for the last fraction of a pixel. */
-  background-color: var(--band-end);
+  --tone-pale-top: 20vh;
+  background:
+    radial-gradient(1100px 620px at 82% 16%, rgb(72 160 172 / 0.26), transparent 62%),
+    linear-gradient(
+      to bottom,
+      #f3f6f6 0px,
+      #e9f1f1 calc(0px + 40vh * 0.111),
+      #d3e5e6 calc(0px + 40vh * 0.222),
+      #abcfd3 calc(0px + 40vh * 0.333),
+      #7db4bc calc(0px + 40vh * 0.444),
+      #4a93a0 calc(0px + 40vh * 0.556),
+      #22707f calc(0px + 40vh * 0.667),
+      #145466 calc(0px + 40vh * 0.778),
+      #0d4250 calc(0px + 40vh * 0.889),
+      #0b3b45 calc(0px + 40vh),
+      #0b3b45 calc(100% - 55vh),
+      #0a3439 calc(100% - 55vh * 0.889),
+      #0e2e2f calc(100% - 55vh * 0.778),
+      #152a25 calc(100% - 55vh * 0.667),
+      #1f291b calc(100% - 55vh * 0.556),
+      #2a2a14 calc(100% - 55vh * 0.444),
+      #342d10 calc(100% - 55vh * 0.333),
+      #3c3010 calc(100% - 55vh * 0.222),
+      #423310 calc(100% - 55vh * 0.111),
+      #463510 100%
+    );
 }
 /* Night: the same gradients, longer, with the glows drawn over them. */
 :global(.dark) .hero {
@@ -150,8 +171,6 @@
       var(--field) calc(100% - 70vh),
       var(--band-end) 100%
     );
-  /* Under the gradient, the colour it ends in, for the last fraction of a pixel. */
-  background-color: var(--band-end);
 }
 /* Cards inside the teal bands are teal too (white cards on teal, in light), one step lighter
    than the band. Contrast on these cards: ink 11:1, ink-2 7.1:1, pos 6.6:1, tang-text 5.4:1. */
@@ -600,6 +619,9 @@
 /* ---------- 1. Hero */
 .hero {
   --hero-fade: 0px;
+  /* What the floating wordmark should treat as this band's colour: its background is a gradient,
+     which a colour check can't read (header.tsx). */
+  --tone-bg: var(--field);
   position: relative;
   min-block-size: calc(100svh + var(--hero-fade));
   background: var(--field);
@@ -1843,6 +1865,7 @@
 
 /* ---------- 5. Trip Mode */
 .trip {
+  --tone-bg: var(--field);
   position: relative;
   block-size: 460vh;
   background: var(--field);
@@ -2502,9 +2525,10 @@
   padding-block-start: clamp(88px, 12vh, 128px);
   overflow: clip;
 }
-/* Dark: the orange band becomes a deep, warm gold. --tang-ink is the band's ink everywhere
-   inside it (heading, text, footer, credit), so redefining it here is enough. */
-:global(.dark) .final {
+/* The closing band is a deep, warm gold in both themes (one rule, so the two can't drift).
+   --tang-ink is the band's ink everywhere inside it (heading, text, footer, credit), so
+   redefining it here is enough. */
+.root .final {
   --tang-ink: var(--gold-ink);
   background:
     linear-gradient(to bottom, var(--gold-band) 0, transparent 240px),
@@ -2512,13 +2536,13 @@
     radial-gradient(800px 520px at 5% 100%, var(--gold-deep), transparent 70%), var(--gold-band);
 }
 /* On gold, Google's light button stands out more than its dark one (both are allowed). */
-:global(.dark) .final .google {
+.root .final .google {
   background: #ffffff;
   color: #1f1f1f;
   box-shadow: inset 0 0 0 1px #747775;
 }
 @media (hover: hover) and (pointer: fine) {
-  :global(.dark) .final .google:hover {
+  .root .final .google:hover {
     background: #f8faff;
     box-shadow:
       inset 0 0 0 1px #747775,

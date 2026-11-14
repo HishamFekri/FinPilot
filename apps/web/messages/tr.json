@@ -33,7 +33,7 @@
       "title": "Paranızın nereye gittiğini anlayın.",
       "lede": "FinPilot gelir ve giderlerinizi takip etmenize, bütçe planlamanıza ve seyahat masraflarını arkadaşlarınızla bölüşmenize yardımcı olur. Her şeyi siz kaydedersiniz; banka bağlantısı yoktur.",
       "how": "Nasıl çalıştığını görün",
-      "assure": "FinPilot özel beta aşamasında: Google ile giriş yalnızca davet edilen hesaplara açık. FinPilot Google şifrenizi asla görmez; paranızı tutmaz ve aktarmaz.",
+      "assure": "Başlamak için Google hesabınızla giriş yapın. FinPilot Google şifrenizi asla görmez; paranızı tutmaz ve aktarmaz.",
       "scroll": "Rotayı izleyin",
       "preview": {
         "balance": "Bakiye",
@@ -228,7 +228,7 @@
       "line2": "Yolculuğunuz.",
       "line3": "Sizin FinPilot'unuz.",
       "body": "Tek bir harcamayla başlayın. Rota oradan kendini çizer.",
-      "access": "Özel beta: giriş, davet edilen Google hesaplarına açıktır."
+      "access": "Yeni misiniz? Google ile giriş yapmak hesabınızı oluşturur."
     },
     "footer": {
       "createdBy": "Hazırlayan",
@@ -285,7 +285,7 @@
       "google_unavailable": "Google şu anda yanıt vermiyor. Lütfen birkaç dakika sonra tekrar deneyin.",
       "failed": "Giriş tamamlanamadı. Lütfen tekrar deneyin.",
       "unreachable": "FinPilot'a şu anda ulaşılamıyor. Bağlantınızı kontrol edip tekrar deneyin.",
-      "not_invited": "FinPilot özel beta aşamasında ve bu Google hesabı henüz davet listesinde değil."
+      "registration_closed": "FinPilot şu anda yeni hesap kabul etmiyor. Zaten bir hesabınız varsa her zamanki gibi giriş yapabilirsiniz."
     },
     "notices": {
       "expired": "Oturumunuz sona erdi. Devam etmek için tekrar giriş yapın."
@@ -3321,10 +3321,10 @@
     }
   },
   "legal": {
-    "title": "Gizlilik bildirimi ve beta koşulları (taslak)",
-    "metaDescription": "FinPilot'un özel betasının bilgilerinizi nasıl ele aldığı. Çalışma taslağı.",
-    "draft": "Bu, FinPilot'un özel betası için bir çalışma taslağıdır. Henüz bir avukat tarafından incelenmedi ve herhangi bir yasaya uygunluk iddiası taşımıyor. İncelenmiş bir sürüm yayımlanana kadar FinPilot yeni hesapları yalnızca davetle kabul ediyor.",
-    "updated": "Son güncelleme: 13 Kasım 2026",
+    "title": "Gizlilik bildirimi ve kullanım koşulları (taslak)",
+    "metaDescription": "FinPilot'un bilgilerinizi nasıl ele aldığı. Çalışma taslağı.",
+    "draft": "Bu bir çalışma taslağıdır. Henüz bir avukat tarafından incelenmedi ve herhangi bir yasaya uygunluk iddiası taşımıyor.",
+    "updated": "Son güncelleme: 14 Kasım 2026",
     "back": "FinPilot'a dön",
     "sections": {
       "operator": {
@@ -3356,12 +3356,12 @@
         "body": "Kayıtlarınızı CSV veya PDF olarak dışa aktarabilir, hesabınızı istediğiniz zaman Ayarlar'da Gizlilik bölümünden silebilirsiniz."
       },
       "beta": {
-        "heading": "Beta koşulları",
-        "body": "Beta olduğu gibi, garanti olmadan sunulur; değişebilir ya da sona erebilir. Önemli hiçbir şey için tek kaydınız olarak FinPilot'a güvenmeyin. FinPilot'taki hiçbir şey finansal tavsiye değildir."
+        "heading": "Kullanım koşulları",
+        "body": "FinPilot olduğu gibi, garanti olmadan sunulur; değişebilir ya da sona erebilir. Önemli hiçbir şey için tek kaydınız olarak FinPilot'a güvenmeyin. FinPilot'taki hiçbir şey finansal tavsiye değildir."
       },
       "contact": {
         "heading": "Sorular",
-        "body": "Sorularınızı veya taleplerinizi sizi davet eden kişiye ya da ana sayfanın altındaki profiller üzerinden işletmeciye iletin."
+        "body": "Sorularınızı veya taleplerinizi ana sayfanın altındaki profiller üzerinden işletmeciye iletin."
       }
     }
   }

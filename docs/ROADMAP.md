@@ -475,7 +475,7 @@ The owner runs the test on the server ([`deploy/README.md`](../deploy/README.md)
 ## Production deployment and CI/CD (2026-11-13): P5 built, deployment pending
 
 Built and tested locally:
-- a closed-beta admission gate: an allowlist, with `open` refused in production;
+- a closed-beta admission gate: an allowlist, with `open` refused in production (opened on 2026-11-14: `open` is now the production default);
 - a draft privacy notice and beta terms, labelled as not legally reviewed;
 - tunnel mode for the proxy;
 - the Release workflow: a container stack test, then the tested images pushed to private GHCR;

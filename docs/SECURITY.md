@@ -967,6 +967,12 @@ Details: [`deploy/README.md`](../deploy/README.md) and `PRODUCTION_READINESS.md`
 - **Container user IDs** are unique on the home server: api 10201, web 10202. Before, web ran as 1000, the host administrator's ID, and the API as 10001, the AI app's ID, so a container escape would have landed as those users.
 - **Backups** stream straight into restic, encrypted on the client. A dump that fails part-way leaves no snapshot behind.
 
+## Public registration (2026-11-14)
+
+- **Admission.** Production now defaults to `REGISTRATION_MODE=open`: anyone whose Google address is verified can create an account, and the startup refusal of `open` is gone. `allowlist` (still needs a non-empty list) and `closed` remain as switches; `closed` pauses new sign-ups with an environment change and a restart, no deploy. A refusal is shown as `registration_closed`.
+- **Unchanged:** identity is Google's subject ID, never the address; nothing is linked by email; existing accounts sign in whatever the mode; every personal table stays under row-level security, checked by the cross-user sweep over every route.
+- **Still open for public launch (§13.1):** a global daily cap on new accounts, shared rate-limit counters (the in-process limiter holds with one worker but resets on restart), production account erasure (§11.5), and the legal review of the draft notice and terms.
+
 ## Closed beta and automatic deployment (2026-11-13)
 
 - **Admission.** A verified Google address alone no longer creates an account. Production defaults to `REGISTRATION_MODE=allowlist`, with the addresses in a secrets file, and refuses to start with `open` or with an empty allowlist. A refused sign-in creates nothing; the audit log records only the reason, never the address. Existing accounts always sign in, subject to their status.

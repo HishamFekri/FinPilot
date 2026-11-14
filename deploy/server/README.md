@@ -79,10 +79,10 @@ Send me the file path before step 4.
 1. **APIs & Services › Credentials › Create credentials › OAuth client ID**, type **Web application**, named "FinPilot production".
 2. **Authorized JavaScript origins:** `https://finpilot.hishamjouda.com`
 3. **Authorized redirect URIs:** exactly `https://finpilot.hishamjouda.com/api/v1/auth/google/callback`
-4. **OAuth consent screen:**
-   - External, publishing status **Testing**;
-   - add yourself, and later each beta tester, as **test users**. That's a second gate on top of FinPilot's allowlist;
-   - scopes: `openid`, `email`, `profile` only.
+4. **OAuth consent screen** (Google Auth Platform):
+   - **Audience:** External. For public registration the publishing status must be **In production**: in **Testing**, only the listed test users (at most 100) can sign in, whatever FinPilot allows;
+   - **Branding:** app name, user support email, home page `https://finpilot.hishamjouda.com`, privacy policy `https://finpilot.hishamjouda.com/en/privacy`, authorized domain `hishamjouda.com`, developer contact email;
+   - **Data access:** scopes `openid`, `email`, `profile` only. These are non-sensitive, so publishing needs no Google security assessment.
 5. Keep the client ID and client secret for step 3. The secret goes only into a file on the server.
 
 ## 3. Install on the server (you)
@@ -101,7 +101,7 @@ Then add the four secrets. Each command opens an editor or waits for a paste fol
 ```powershell
 ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudoedit /srv/docker/finpilot/deploy/finpilot.env"              # FINPILOT_GOOGLE_CLIENT_ID=...
 ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudoedit /srv/docker/finpilot/deploy/secrets/google_client_secret"
-ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudoedit /srv/docker/finpilot/deploy/secrets/beta_allowlist"    # your Google address
+ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudoedit /srv/docker/finpilot/deploy/secrets/beta_allowlist"    # only in allowlist mode: one address per line
 ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudo sh -c 'umask 077; cat > /etc/finpilot/ghcr-token'"         # paste the read:packages token, Enter, Ctrl-D
 ssh -t SERVER_USER@SERVER_TAILSCALE_IP "sudo cat /etc/finpilot/restic-password"                         # copy into your password manager now
 ```
@@ -170,7 +170,7 @@ Netdata already picks up the FinPilot containers' CPU and memory. The deploy tim
 
 ## 7. Verification checklist (you, with a real Google account)
 
-1. Sign in with your allowlisted account. Then try an account that isn't on the list: it's refused with "private beta", and no account is created.
+1. Sign in with your account. With `FINPILOT_REGISTRATION_MODE=open`, a second Google account you've never used here gets a new, empty account. With `allowlist` or `closed`, it's refused with "isn't taking new accounts", and nothing is created.
 2. Create an account and a transaction. Open Reports; export CSV, then PDF in Arabic and Turkish. Sign out.
 3. Back up and restore into an isolated database, never over the live one:
    ```bash
@@ -208,5 +208,7 @@ When the deployer logs `HELD: new migrations change or remove data`:
 
 These are launch risks, not deployment steps:
 - **Off-site backups:** none is configured. The restic repository is on the same machine.
-- **Legal review:** the privacy notice and terms are a labelled draft. Until they're reviewed, public registration stays impossible: production refuses `REGISTRATION_MODE=open`.
+- **Legal review:** the privacy notice and terms are a labelled draft, not reviewed by a lawyer. Public registration no longer waits for it in code (`FINPILOT_REGISTRATION_MODE=open` is the default); launching publicly before that review is the owner's decision.
+- **Account erasure:** a person can ask to delete their account (sessions end, their money stops moving), but `scripts/erase_account.py` still refuses every database not named `*_test` until the retention questions in `SECURITY.md` §11.5 are decided. Production deletion requests can't be completed yet.
+- **Pausing sign-ups:** set `FINPILOT_REGISTRATION_MODE=closed` in `finpilot.env` and restart the api container. Existing accounts keep signing in. There is no automatic daily cap on new accounts yet.
 - **The stack test on the home server itself.** The GitHub runner run covers the containers, but not the server's own kernel and AppArmor settings for the Chromium sandbox. The first deployment's PDF export is the check there.

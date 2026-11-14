@@ -333,7 +333,8 @@ check "refuses a catch-all trusted proxy" fails compose run --rm --no-deps -e TR
 check "refuses an http Google redirect" fails compose run --rm --no-deps \
   -e GOOGLE_REDIRECT_URI=http://finpilot.test/api/v1/auth/google/callback api "${probe_cmd[@]}"
 check "refuses a missing Google client" fails compose run --rm --no-deps -e GOOGLE_CLIENT_ID= api "${probe_cmd[@]}"
-check "refuses open registration in production" fails compose run --rm --no-deps -e REGISTRATION_MODE=open api "${probe_cmd[@]}"
+check "refuses allowlist mode with an empty allowlist" fails compose run --rm --no-deps \
+  -e REGISTRATION_MODE=allowlist -e BETA_ALLOWLIST= api "${probe_cmd[@]}"
 check "refuses an http origin" fails compose run --rm --no-deps -e WEB_ORIGIN=http://finpilot.test api "${probe_cmd[@]}"
 check "migrations refuse to run without separate migration credentials" fails compose run --rm --no-deps \
   -e MIGRATION_DATABASE_URL_FILE= migrate

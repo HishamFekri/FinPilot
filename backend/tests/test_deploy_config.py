@@ -664,7 +664,7 @@ def test_init_secrets_creates_strong_secrets_once_and_prints_none(tmp_path: Path
     )
     assert read["owner_database_url"].startswith("postgresql+psycopg://finpilot_owner:")
     assert read["google_client_secret"] == ""  # the owner supplies it; empty refuses to start
-    assert read["beta_allowlist"] == ""  # likewise: production refuses an empty allowlist
+    assert read["beta_allowlist"] == ""  # used only in allowlist mode, which needs addresses
 
     again = _script("init-secrets.sh", *args, FINPILOT_SITE_ENV=str(site))
     assert again.returncode != 0 and "never replaced" in again.stderr
@@ -779,7 +779,7 @@ def test_the_stack_test_checks_tunnel_mode_the_way_cloudflared_connects() -> Non
         "Cloudflare's client address is used: its 21st sign-in attempt is refused",
         "another Cloudflare client still gets in",
         "a forged X-Forwarded-For buys nothing in tunnel mode",
-        "refuses open registration in production",
+        "refuses allowlist mode with an empty allowlist",
     ):
         assert check in test, check
     assert "18085" in _text(DEPLOY / "inspection" / "stack-test-preflight.sh")

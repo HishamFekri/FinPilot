@@ -188,7 +188,9 @@ if [ "$mode" = --first-deploy ]; then
     die "finpilot_db_data already exists: refusing to provision over it"
   fi
   [ -s "$DEPLOY_DIR/secrets/google_client_secret" ] || die "add the Google client secret first"
-  [ -s "$DEPLOY_DIR/secrets/beta_allowlist" ] || die "add your address to secrets/beta_allowlist first"
+  if grep -q '^FINPILOT_REGISTRATION_MODE=allowlist' "$DEPLOY_DIR/finpilot.env" 2>/dev/null; then
+    [ -s "$DEPLOY_DIR/secrets/beta_allowlist" ] || die "allowlist mode: add the allowed addresses to secrets/beta_allowlist first"
+  fi
   log "provisioning the empty production database"
   "$DEPLOY_DIR/scripts/provision.sh" --release "$work/release.env" --confirm-new-database
 fi

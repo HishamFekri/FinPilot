@@ -5,7 +5,7 @@
 #   sudo bash /srv/docker/finpilot/deploy/server/check-config.sh
 #
 # Checks: the installed commit; finpilot.env (tunnel mode, host, origin, a real Google client ID);
-# the Google client secret (present, one line, Google's format); the beta allowlist (valid
+# the Google client secret (present, one line, Google's format); in allowlist mode, the list (valid
 # addresses, shown masked); each secret file's owner and mode; the registry token (it can log in
 # and read the private release manifest); the restic repository (it opens with its password);
 # the deployer settings; the systemd units (installed, timers still off). Ends with
@@ -76,7 +76,13 @@ if [ -f "$site" ]; then
     fail "FINPILOT_GOOGLE_CLIENT_ID isn't a Google client ID yet (still the placeholder?)"
   fi
   mode="$(value "$site" FINPILOT_REGISTRATION_MODE)"
-  [ "${mode:-allowlist}" = allowlist ] && pass "registration: allowlist" || info "registration mode: $mode"
+  mode="${mode:-open}"
+  case "$mode" in
+    open) pass "registration: open (anyone with a verified Google address can sign up)" ;;
+    allowlist) pass "registration: allowlist (only the listed addresses can sign up)" ;;
+    closed) info "registration: closed (new sign-ups are paused; existing accounts sign in)" ;;
+    *) fail "FINPILOT_REGISTRATION_MODE is '$mode' (expected open, allowlist or closed)" ;;
+  esac
 else
   fail "$site is missing (run install.sh)"
 fi
@@ -94,7 +100,9 @@ else
 fi
 
 allow="$D/secrets/beta_allowlist"
-if [ -s "$allow" ]; then
+if [ "${mode:-open}" != allowlist ]; then
+  info "beta allowlist: not used in ${mode:-open} mode"
+elif [ -s "$allow" ]; then
   count=0; bad=0
   while IFS= read -r line; do
     line="$(echo "$line" | tr -d '[:space:]')"
@@ -107,7 +115,7 @@ if [ -s "$allow" ]; then
   done < "$allow"
   [ "$bad" -eq 0 ] && [ "$count" -gt 0 ] && pass "beta allowlist: $count address(es)" || fail "beta allowlist: $bad line(s) aren't email addresses"
 else
-  fail "the beta allowlist is empty (production refuses to start)"
+  fail "allowlist mode, but the beta allowlist is empty (production refuses to start)"
 fi
 
 for name in postgres_password owner_role_password runtime_role_password admin_database_url \

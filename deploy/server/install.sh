@@ -115,7 +115,7 @@ systemctl daemon-reload
 
 say "Installed from ${commit:0:12}. Still to do by hand (deploy/server/README.md):"
 echo "  1. FINPILOT_GOOGLE_CLIENT_ID in $deploy/finpilot.env, and the secret in $deploy/secrets/google_client_secret"
-echo "  2. your Google address in $deploy/secrets/beta_allowlist"
+echo "  2. only for an invitation-only launch: FINPILOT_REGISTRATION_MODE=allowlist and the addresses in $deploy/secrets/beta_allowlist"
 echo "  3. a read:packages token in /etc/finpilot/ghcr-token (0400)"
 echo "  4. the Cloudflare Tunnel public hostname $host -> http://127.0.0.1:18085"
 echo "  5. sudo systemd-run --wait --pty -p EnvironmentFile=/etc/finpilot/deployer.env $deploy/server/finpilot-deployer.sh --first-deploy"

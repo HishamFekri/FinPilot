@@ -50,12 +50,30 @@ export function LandingHeader() {
       const [r = 0, g = 0, b = 0, a = 0] = ctx.getImageData(0, 0, 1, 1).data;
       return { r, g, b, a: a / 255 };
     };
-    // The first mostly opaque background under a point, ignoring the header itself.
+    // The first mostly opaque background under a point, ignoring the header itself. A band drawn
+    // with a gradient names its colour in --tone-bg, since a gradient has no background colour.
     const backgroundAt = (x: number, y: number): RGB => {
       for (const node of document.elementsFromPoint(x, y)) {
         if (el.contains(node)) continue;
-        const bg = toRGB(getComputedStyle(node).backgroundColor);
+        const style = getComputedStyle(node);
+        const bg = toRGB(style.backgroundColor);
         if (bg.a > 0.5) return bg;
+        const hint = style.getPropertyValue("--tone-bg").trim();
+        if (hint) {
+          // A band whose edges fade to the page names how far the pale part reaches: there, the
+          // page behind is the colour that counts.
+          const box = node.getBoundingClientRect();
+          const length = (name: string) => {
+            const v = style.getPropertyValue(name).trim();
+            const n = Number.parseFloat(v);
+            if (!Number.isFinite(n)) return 0;
+            return v.endsWith("vh") ? (n * window.innerHeight) / 100 : n;
+          };
+          const pale =
+            y - box.top < length("--tone-pale-top") ||
+            box.bottom - y < length("--tone-pale-bottom");
+          if (!pale) return toRGB(hint);
+        }
       }
       return toRGB(getComputedStyle(document.body).backgroundColor);
     };

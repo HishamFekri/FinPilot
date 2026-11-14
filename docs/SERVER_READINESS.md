@@ -601,6 +601,6 @@ Pending the owner's run. Until then, nothing in this section counts as verified 
 | Migrations | Automatic when additive. Held for your approval when an `upgrade()` drops, truncates, deletes, rewrites or retypes data. Always preceded by a restic backup |
 | Overlaps | `flock` on the server; GitHub concurrency group `release-main`, never cancelled |
 | Database | New, empty `finpilot_db_data` on the NVMe. `--first-deploy` refuses if the volume exists. Nothing is copied from `finpilot_dev` |
-| Beta | `REGISTRATION_MODE=allowlist` in production by default; `open` is refused at startup. Google consent screen in Testing mode as a second gate |
+| Registration | `REGISTRATION_MODE=open` in production by default (since 2026-11-14); `allowlist` and `closed` remain as switches. Public sign-in also needs the Google consent screen published (In production) |
 | Backups | restic nightly at 03:40, with 7 daily, 4 weekly and 6 monthly snapshots, a check, and an Uptime Kuma heartbeat. **No off-site copy:** an open launch risk |
 | Monitoring | Uptime Kuma: two HTTP monitors and two push monitors (deploy and health, backup). Netdata sees the containers |

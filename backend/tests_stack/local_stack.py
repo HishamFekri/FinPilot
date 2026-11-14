@@ -165,8 +165,7 @@ class Stack:
             "catch-all proxy": {"TRUSTED_PROXIES": "0.0.0.0/0"},
             "no proxy": {"TRUSTED_PROXIES": ""},
             "http origin": {"WEB_ORIGIN": f"http://{HOST}:{HTTPS}"},
-            "open registration": {"REGISTRATION_MODE": "open"},
-            "empty allowlist": {"BETA_ALLOWLIST": ""},
+            "empty allowlist": {"REGISTRATION_MODE": "allowlist", "BETA_ALLOWLIST": ""},
         }
         refused = []
         for name, change in cases.items():

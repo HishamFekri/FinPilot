@@ -33,7 +33,7 @@
       "title": "Make sense of where your money goes.",
       "lede": "FinPilot helps you track income and expenses, plan budgets, and split trip costs with friends. You record everything yourself, with no bank connection.",
       "how": "See how it works",
-      "assure": "FinPilot is in a private beta: Google sign-in is open to invited accounts only. FinPilot never sees your Google password, and never holds or moves your money.",
+      "assure": "Sign in with your Google account to get started. FinPilot never sees your Google password, and never holds or moves your money.",
       "scroll": "Follow the route",
       "preview": {
         "balance": "Balance",
@@ -228,7 +228,7 @@
       "line2": "Your journey.",
       "line3": "Your FinPilot.",
       "body": "Start with one expense. The route draws itself from there.",
-      "access": "Private beta: sign-in works for invited Google accounts."
+      "access": "New here? Signing in with Google creates your account."
     },
     "footer": {
       "createdBy": "By",
@@ -285,7 +285,7 @@
       "google_unavailable": "Google isn't responding right now. Please try again in a few minutes.",
       "failed": "Sign-in didn't complete. Please try again.",
       "unreachable": "FinPilot can't be reached right now. Check your connection and try again.",
-      "not_invited": "FinPilot is in a private beta, and this Google account isn't on the invitation list yet."
+      "registration_closed": "FinPilot isn't taking new accounts right now. If you already have an account, you can sign in as usual."
     },
     "notices": {
       "expired": "Your session has ended. Sign in again to continue."
@@ -3321,10 +3321,10 @@
     }
   },
   "legal": {
-    "title": "Privacy notice and beta terms (draft)",
-    "metaDescription": "How FinPilot's private beta handles your information. A working draft.",
-    "draft": "This is a working draft for FinPilot's private beta. It hasn't been reviewed by a lawyer, and it doesn't claim compliance with any law. Until a reviewed version is published, FinPilot accepts new accounts only by invitation.",
-    "updated": "Last updated: 13 November 2026",
+    "title": "Privacy notice and terms (draft)",
+    "metaDescription": "How FinPilot handles your information. A working draft.",
+    "draft": "This is a working draft. It hasn't been reviewed by a lawyer, and it doesn't claim compliance with any law.",
+    "updated": "Last updated: 14 November 2026",
     "back": "Back to FinPilot",
     "sections": {
       "operator": {
@@ -3356,12 +3356,12 @@
         "body": "You can export your records as CSV or PDF, and delete your account at any time in Settings, under Privacy."
       },
       "beta": {
-        "heading": "Beta terms",
-        "body": "The beta is offered as it is, without guarantees, and it may change or stop. Don't rely on FinPilot as your only record of anything important. Nothing in FinPilot is financial advice."
+        "heading": "Terms of use",
+        "body": "FinPilot is offered as it is, without guarantees, and it may change or stop. Don't rely on FinPilot as your only record of anything important. Nothing in FinPilot is financial advice."
       },
       "contact": {
         "heading": "Questions",
-        "body": "Send questions or requests to the person who invited you, or to the operator through the profiles linked at the bottom of the home page."
+        "body": "Send questions or requests to the operator through the profiles linked at the bottom of the home page."
       }
     }
   }

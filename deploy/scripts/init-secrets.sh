@@ -75,5 +75,5 @@ else
 fi
 
 say "Created ${#names[@]} secret files in $dir. No value was printed."
-say "Next: put the production Google client secret into $dir/google_client_secret,"
-say "and your own address (one per line) into $dir/beta_allowlist."
+say "Next: put the production Google client secret into $dir/google_client_secret."
+say "Only in allowlist mode: the addresses allowed to sign up, one per line, in $dir/beta_allowlist."

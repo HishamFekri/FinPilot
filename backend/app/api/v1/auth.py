@@ -49,7 +49,7 @@ ERROR_CODES = {
     "cancelled": "cancelled",
     "email_not_verified": "email_not_verified",
     "account_unavailable": "account_unavailable",
-    "registration_closed": "not_invited",
+    "registration_closed": "registration_closed",
     "google_unavailable": "google_unavailable",
     "unreachable": "unreachable",
 }

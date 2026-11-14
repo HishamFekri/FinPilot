@@ -115,9 +115,9 @@ services:
       DB_POOL_SIZE: "5"
       DB_MAX_OVERFLOW: "5"
       PDF_MAX_CONCURRENT: "2"
-      # Closed beta: only addresses in the beta_allowlist secret may create an account.
-      # "open" is refused in production (docs/PRODUCTION_READINESS.md PB-1).
-      REGISTRATION_MODE: ${FINPILOT_REGISTRATION_MODE:-allowlist}
+      # Who may create an account: "open" (public), "allowlist" (only the addresses in the
+      # beta_allowlist secret) or "closed" (pauses sign-ups). Existing accounts always sign in.
+      REGISTRATION_MODE: ${FINPILOT_REGISTRATION_MODE:-open}
     secrets: [database_url, google_client_secret, beta_allowlist]
     tmpfs:
       - /tmp:size=256m
@@ -358,6 +358,6 @@ secrets:
     file: ${FINPILOT_SECRETS_PATH:-./secrets}/database_url
   google_client_secret:
     file: ${FINPILOT_SECRETS_PATH:-./secrets}/google_client_secret
-  # Not a password, but private: who may join the closed beta, one address per line.
+  # Not a password, but private: who may sign up in allowlist mode, one address per line.
   beta_allowlist:
     file: ${FINPILOT_SECRETS_PATH:-./secrets}/beta_allowlist

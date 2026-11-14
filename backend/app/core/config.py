@@ -105,12 +105,12 @@ class Settings(BaseSettings):
     trusted_proxies: str | None = None
 
     # Who may create a NEW account (existing accounts always sign in, subject to their status):
-    #   closed     nobody
+    #   open       anyone with a verified Google address: public registration
     #   allowlist  only the addresses in BETA_ALLOWLIST (comma or newline separated; in production
     #              a secrets file, `beta_allowlist`, so addresses never appear in the environment)
-    #   open       anyone with a verified Google address. Refused in production until a legally
-    #              reviewed privacy notice and retention policy exist (PRODUCTION_READINESS PB-1)
-    # Unset: "allowlist" in production and demo, "open" in development and tests.
+    #   closed     nobody: the switch that pauses sign-ups (an environment change and a restart,
+    #              no deploy)
+    # Unset: "open", except the demo, which has no Google sign-in at all ("allowlist").
     registration_mode: Literal["closed", "allowlist", "open"] | None = None
     beta_allowlist: str | None = None
 
@@ -166,11 +166,6 @@ class Settings(BaseSettings):
                 raise ValueError("BETA_ALLOWLIST must list email addresses")
         if self.app_env is not Environment.PRODUCTION:
             return
-        if self.effective_registration_mode == "open":
-            raise ValueError(
-                "REGISTRATION_MODE=open isn't allowed in production: public sign-up needs a "
-                "reviewed privacy notice and retention policy first"
-            )
         if self.effective_registration_mode == "allowlist" and not self.beta_allowlist_addresses:
             raise ValueError(
                 "REGISTRATION_MODE=allowlist needs BETA_ALLOWLIST (the owner's address at least); "
@@ -181,9 +176,7 @@ class Settings(BaseSettings):
     def effective_registration_mode(self) -> str:
         if self.registration_mode is not None:
             return self.registration_mode
-        return (
-            "open" if self.app_env in (Environment.DEVELOPMENT, Environment.TEST) else "allowlist"
-        )
+        return "allowlist" if self.app_env is Environment.DEMO else "open"
 
     @property
     def beta_allowlist_addresses(self) -> frozenset[str]:
