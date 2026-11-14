@@ -10,7 +10,6 @@ import s from "./landing.module.css";
 import { prefersReducedMotion, tweenNumber } from "./motion";
 import { GoogleButton } from "./shared";
 
-const HERO_PATH = "M -80 870 C 260 850, 470 890, 700 838 S 1080 800, 1270 826 S 1420 610, 1540 520";
 const END_BALANCE = STORY_EVENTS.reduce((sum, e) => sum + e.amount, STORY_START_BALANCE);
 // The month so far, in the preview's two figures: everything that came in, everything that went.
 const MONEY_IN = STORY_EVENTS.reduce((sum, e) => sum + Math.max(e.amount, 0), 0);
@@ -21,12 +20,11 @@ export function Hero() {
   const t = useTranslations("landing");
   const f = useFormatters();
   const heroRef = useRef<HTMLElement>(null);
-  const routeRef = useRef<SVGGElement>(null);
   const floatRef = useRef<HTMLDivElement>(null);
   const deviceRef = useRef<HTMLDivElement>(null);
   const balanceRef = useRef<HTMLElement>(null);
 
-  // The preview's balance counts up once, as its route draws. The server renders the final value.
+  // The preview's balance counts up once, after the page settles. The server renders the final value.
   useEffect(() => {
     const el = balanceRef.current;
     if (!el || prefersReducedMotion()) return;
@@ -41,7 +39,7 @@ export function Hero() {
     };
   }, [f]);
 
-  // Depth on scroll: the route drifts slower than the page, and the tilted preview settles flat.
+  // Depth on scroll: the preview drifts against the page, and the tilt settles flat.
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
@@ -52,9 +50,7 @@ export function Hero() {
     const update = () => {
       frame = 0;
       const y = window.scrollY;
-      hero.dataset.scrolled = String(y > 60);
       if (reduced || y > window.innerHeight * 1.3) return;
-      if (routeRef.current) routeRef.current.style.transform = `translateY(${y * 0.22}px)`;
       if (floatRef.current) floatRef.current.style.transform = `translateY(${y * -0.07}px)`;
       if (deviceRef.current && wide.matches) {
         const k = Math.min(1, y / 420);
@@ -91,41 +87,7 @@ export function Hero() {
       id="top"
       className={s.hero}
       aria-labelledby="hero-title"
-      data-scrolled="false"
     >
-      <svg
-        className={s.heroRoute}
-        viewBox="0 0 1440 900"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
-      >
-        <g ref={routeRef}>
-          <path className={s.routeGhost} d={HERO_PATH} />
-          <path className={s.routeLine} d={HERO_PATH} pathLength={1} />
-          <circle
-            className={s.routeStop}
-            cx="700"
-            cy="838"
-            r="11"
-            style={{ animationDelay: "900ms" }}
-          />
-          <circle
-            className={s.routeStop}
-            cx="1270"
-            cy="826"
-            r="11"
-            style={{ animationDelay: "1400ms" }}
-          />
-          <circle
-            className={s.routeStop}
-            cx="1440"
-            cy="598"
-            r="14"
-            style={{ animationDelay: "1850ms" }}
-          />
-        </g>
-      </svg>
-
       <div className={cn(s.wrap, s.heroInner)}>
         <div>
           <h1 id="hero-title" className={s.heroTitle}>
@@ -193,12 +155,6 @@ export function Hero() {
         </figure>
       </div>
 
-      <a className={s.cue} href="#story">
-        <span className={s.cueTrack} aria-hidden="true">
-          <i />
-        </span>
-        {t("hero.scroll")}
-      </a>
     </section>
   );
 }
