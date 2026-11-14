@@ -13,7 +13,7 @@ import { AccountDialog } from "../accounts/parts";
 import appStyles from "../app.module.css";
 import { useAuth } from "../auth-provider";
 import { MoneyInput } from "../money-input";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import { FinanceGate, useFinance } from "./finance-provider";
 import s from "./finance.module.css";
 import { CategoryIcon, useAccountName, useCategoryName, useFinanceError } from "./parts";
@@ -169,9 +169,7 @@ function TemplatesPage() {
       {failed ? (
         <Notice tone="error">{message(null)}</Notice>
       ) : !list ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner />
-        </p>
+        <Loading />
       ) : list.length === 0 ? (
         <div className={s.emptyState}>
           <p className={s.emptyTitle}>{t("emptyTitle")}</p>

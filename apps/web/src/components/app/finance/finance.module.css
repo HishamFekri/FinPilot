@@ -1,5 +1,5 @@
 /* Expense-first screens: Home with Quick Add, transactions, categories. Tokens come from the app
-   shell's .theme (Waypoint teal and tangerine; Midnight Indigo in dark). Calm, compact, fast. */
+   shell's .theme (Waypoint teal and tangerine; deep forest green in dark). Calm, compact, fast. */
 
 /* --- Category palette: soft tile, strong ink. Each pair is checked for contrast in both themes. */
 .catIcon {
@@ -76,8 +76,8 @@
   --cat-fg: #6a5a3c;
 }
 :global(.dark) .catIcon {
-  --cat-bg: #232848;
-  --cat-fg: #c2c7e8;
+  --cat-bg: #1d3529;
+  --cat-fg: #c5d3c8;
 }
 :global(.dark) .catIcon[data-color="tangerine"] {
   --cat-bg: #3a2420;

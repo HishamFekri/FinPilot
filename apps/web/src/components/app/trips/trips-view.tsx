@@ -13,7 +13,7 @@ import { useAuth, useUser } from "../auth-provider";
 import { FinanceGate, useFinance } from "../finance/finance-provider";
 import fs from "../finance/finance.module.css";
 import { useFinanceError } from "../finance/parts";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import { isolate, useDateRange } from "./parts";
 import { TripPhaseTag } from "./planning";
 import s from "./trips.module.css";
@@ -93,9 +93,7 @@ function Trips() {
           </button>
         </Notice>
       ) : !value ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{t("loading")}</span>
-        </p>
+        <Loading label={t("loading")} />
       ) : value.length === 0 ? (
         <div className={s.empty}>
           <MapIcon aria-hidden="true" />

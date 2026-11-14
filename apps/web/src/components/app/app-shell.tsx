@@ -4,8 +4,9 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Tooltip } from "@base-ui/react/tooltip";
 import { CloudOff, Ellipsis, MonitorSmartphone, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { type ReactNode, type RefObject, useContext, useRef, useState } from "react";
+import { type ReactNode, type RefObject, useContext, useEffect, useRef, useState } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { installHistoryDepth } from "@/lib/history-depth";
 import { cn } from "@/lib/utils";
 import { AuthProvider, useAuth, useUser } from "./auth-provider";
 import { FinanceProvider } from "./finance/finance-provider";
@@ -28,6 +29,8 @@ export function usePortalRoot(): RefObject<HTMLDivElement | null> {
 
 /** Everything under /{locale}/app: the session check, then the shell around each page. */
 export function AppShell({ children }: { children: ReactNode }) {
+  // From here on, every history entry knows whether an in-app page is behind it (BackLink).
+  useEffect(() => installHistoryDepth(), []);
   return (
     <AuthProvider>
       <Gate>{children}</Gate>

@@ -9,7 +9,7 @@ import { formatDate } from "@/lib/format";
 import type { Money as MoneyValue } from "@/lib/money";
 import type { AccountValue, BalanceGroup } from "@/lib/balances";
 import { Money } from "../accounts/parts";
-import { Notice, Spinner } from "../ui";
+import { Loading, Notice } from "../ui";
 import { useLoad } from "../use-load";
 import { CurrencyPicker } from "./display-currency";
 import s from "./balances.module.css";
@@ -94,9 +94,7 @@ export function TotalBalanceCard({
       {failed ? (
         <Notice tone="error">{t("failed")}</Notice>
       ) : !data ? (
-        <p className={s.note}>
-          <Spinner /> {t("loading")}
-        </p>
+        <Loading label={t("loading")} lines={1} />
       ) : (
         <>
           <div className={s.figure}>

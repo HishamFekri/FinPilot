@@ -3,7 +3,6 @@
 import { ArrowLeft, CircleCheck, Download, FileText, Printer } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useState } from "react";
-import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { ApiError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -11,13 +10,14 @@ import { type TripReport, type TripReportFilters, tripReportApi } from "@/lib/li
 import { formatMoney, isNegative, isZero } from "@/lib/money";
 import { TRIP_CATEGORIES } from "@/lib/trips";
 import { cn } from "@/lib/utils";
+import { BackLink } from "../back-link";
 import { Money } from "../accounts/parts";
 import { useFileExport } from "../analytics/use-file-export";
 import appStyles from "../app.module.css";
 import { useAuth, useUser } from "../auth-provider";
 import { FinanceGate } from "../finance/finance-provider";
 import fin from "../finance/finance.module.css";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import { isolate, TripCategoryIcon, useDateRange, useTripCategory } from "./parts";
 import s from "./trips.module.css";
 import { Select } from "../select";
@@ -83,9 +83,9 @@ function TripReportPage({ id }: { id: string }) {
   const loading = data?.for !== stamp;
   const value = data?.value;
   const back = (
-    <Link href={`/app/trips/${id}`} className={cn(s.back, s.noPrint)}>
+    <BackLink href={`/app/trips/${id}`} className={cn(s.back, s.noPrint)}>
       <ArrowLeft aria-hidden="true" className={fin.flipRtl} /> {t("back")}
-    </Link>
+    </BackLink>
   );
 
   if (data?.failed && !value) {
@@ -108,11 +108,7 @@ function TripReportPage({ id }: { id: string }) {
     );
   }
   if (!value) {
-    return (
-      <p className={appStyles.muted} role="status">
-        <Spinner /> <span>{t("loading")}</span>
-      </p>
-    );
+    return <Loading label={t("loading")} />;
   }
 
   const r = value;

@@ -16,30 +16,6 @@ export function FinalCta() {
 
   return (
     <section data-surface="tang" ref={ref} className={s.final} aria-labelledby="final-title">
-      <svg
-        className={s.finalRoute}
-        viewBox="0 0 1440 400"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <path d="M -20 392 C 300 386, 520 340, 760 360 S 1080 392, 1250 262" pathLength={1} />
-        <g className={s.finalFlag}>
-          <line
-            x1="1250"
-            y1="262"
-            x2="1250"
-            y2="196"
-            stroke="currentColor"
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M1250 196 l46 16 l-46 16 z"
-            fill="currentColor"
-            style={{ fill: "currentColor", stroke: "none", opacity: 1 }}
-          />
-        </g>
-      </svg>
       <div className={cn(s.wrap, s.finalInner)}>
         <h2 id="final-title">
           <span className={s.finalLine}>{t("line1")}</span>
@@ -47,7 +23,10 @@ export function FinalCta() {
           <span className={s.finalLine}>{t("line3")}</span>
         </h2>
         <p className={s.finalBody}>{t("body")}</p>
-        <GoogleButton />
+        <div className={s.finalAction}>
+          <GoogleButton />
+          <p className={s.finalAccess}>{t("access")}</p>
+        </div>
       </div>
       <SiteFooter />
     </section>

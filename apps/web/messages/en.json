@@ -33,7 +33,7 @@
       "title": "Make sense of where your money goes.",
       "lede": "FinPilot helps you track income and expenses, plan budgets, and split trip costs with friends. You record everything yourself, with no bank connection.",
       "how": "See how it works",
-      "assure": "Sign in with your Google account. FinPilot never sees your Google password, and never holds or moves your money.",
+      "assure": "FinPilot is in a private beta: Google sign-in is open to invited accounts only. FinPilot never sees your Google password, and never holds or moves your money.",
       "scroll": "Follow the route",
       "preview": {
         "balance": "Balance",
@@ -117,7 +117,7 @@
       "benefits": {
         "one": "A monthly limit for each category.",
         "two": "What's left, always one glance away.",
-        "three": "Overspending spotted early, with the reason behind it."
+        "three": "An early warning as you near a limit, with the expenses that count toward it."
       },
       "preview": {
         "title": "{month} budget",
@@ -176,7 +176,8 @@
         "deniz": "Deniz",
         "lina": "Lina",
         "sami": "Sami"
-      }
+      },
+      "suggested": "Suggested payments"
     },
     "reports": {
       "title": "Reports and insights",
@@ -226,7 +227,8 @@
       "line1": "Your money.",
       "line2": "Your journey.",
       "line3": "Your FinPilot.",
-      "body": "Start with one expense. The route draws itself from there."
+      "body": "Start with one expense. The route draws itself from there.",
+      "access": "Private beta: sign-in works for invited Google accounts."
     },
     "footer": {
       "createdBy": "By",
@@ -259,7 +261,7 @@
       "planning": {
         "step": "Planning",
         "title": "Plan a better month",
-        "body": "Set realistic limits for next month, based on what you actually spent."
+        "body": "Set next month's limits with your last six months of spending beside them."
       }
     },
     "googleLoading": "Opening Google…",

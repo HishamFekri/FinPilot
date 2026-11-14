@@ -21,20 +21,3 @@ export function GoogleG({ className }: { className?: string }) {
     </svg>
   );
 }
-
-/** FinPilot's mark: a short route between two stops. Unchanged from the approved design. */
-export function BrandMark({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 30 30" aria-hidden="true">
-      <path
-        d="M5 23 C 9 10, 15 22, 25 7"
-        fill="none"
-        stroke="#ff6a2b"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-      />
-      <circle cx="5" cy="23" r="3.6" fill="#8fd0ff" />
-      <circle cx="25" cy="7" r="3.6" fill="currentColor" />
-    </svg>
-  );
-}

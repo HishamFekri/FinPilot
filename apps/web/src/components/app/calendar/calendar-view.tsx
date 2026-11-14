@@ -18,7 +18,7 @@ import fin from "../finance/finance.module.css";
 import { TransactionRow, useAccountName, useFinanceError } from "../finance/parts";
 import { TransactionDialog, useTxnDialog } from "../finance/transaction-dialog";
 import { ConfirmDialog, OccurrenceRow } from "../recurring/parts";
-import { Button, Notice, Spinner, Tag } from "../ui";
+import { Button, Loading, Notice, Tag } from "../ui";
 import { Link } from "@/i18n/navigation";
 import s from "./calendar.module.css";
 import { Select } from "../select";
@@ -203,9 +203,7 @@ function CalendarPage() {
           </button>
         </Notice>
       ) : !value ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner />
-        </p>
+        <Loading />
       ) : (
         <div className={cn(s.layout, stale && fin.refreshing)} aria-busy={stale || undefined}>
           <div className={s.calendar}>
@@ -474,9 +472,7 @@ function DayPanel({
       ) : null}
       <h3 className={s.subhead}>{t("entries")}</h3>
       {!rows || rows.for !== request ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner />
-        </p>
+        <Loading />
       ) : rows.items && rows.items.length > 0 ? (
         <ul className={cn(fin.rows, fin.rowsWrap)}>
           {rows.items.map((txn) => (

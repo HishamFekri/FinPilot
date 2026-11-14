@@ -10,7 +10,7 @@ import type { SessionInfo } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { useAuth, useUser } from "./auth-provider";
 import s from "./app.module.css";
-import { bdi, Button, Notice, Spinner, Tag } from "./ui";
+import { bdi, Button, Loading, Notice, Tag } from "./ui";
 
 type Load =
   | { kind: "loading" }
@@ -152,9 +152,7 @@ export function SessionsView() {
 
         {load.kind === "loading" ? (
           <div className={s.panelBody}>
-            <p className={s.muted} role="status">
-              <Spinner /> <span>{t("loading")}</span>
-            </p>
+            <Loading label={t("loading")} />
           </div>
         ) : load.kind === "failed" ? (
           <div className={s.panelBody}>

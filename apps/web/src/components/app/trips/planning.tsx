@@ -24,7 +24,7 @@ import { ConfirmDialog } from "../confirm-dialog";
 import { useFinance } from "../finance/finance-provider";
 import { useFinanceError } from "../finance/parts";
 import { Select } from "../select";
-import { Button, Notice, Spinner, Tag } from "../ui";
+import { Button, Loading, Notice, Tag } from "../ui";
 import { useLoad } from "../use-load";
 import s from "./trips.module.css";
 
@@ -373,9 +373,7 @@ export function PlanCard({ trip, writable }: { trip: Trip; writable: boolean }) 
         {error ? (
           <Notice tone="error">{t("failed")}</Notice>
         ) : !data ? (
-          <p className={s.note}>
-            <Spinner />
-          </p>
+          <Loading />
         ) : data.length === 0 ? (
           <p className={s.note}>{t("empty")}</p>
         ) : (
@@ -573,9 +571,7 @@ export function TripBudgetsCard({
       <div className={`${s.cardBody} ${s.cardStack}`}>
         {error ? <Notice tone="error">{t("failed")}</Notice> : null}
         {!data ? (
-          <p className={s.note}>
-            <Spinner />
-          </p>
+          <Loading />
         ) : (
           <>
             <div className={s.budgetBlock}>

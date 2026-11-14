@@ -1,5 +1,6 @@
 import { CircleAlert, CircleCheck, Info } from "lucide-react";
-import { type ButtonHTMLAttributes, type ReactNode, useState } from "react";
+import { useTranslations } from "next-intl";
+import { type ButtonHTMLAttributes, type CSSProperties, type ReactNode, useState } from "react";
 import { initials } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import s from "./app.module.css";
@@ -49,6 +50,39 @@ export function Button({
 
 export function Spinner() {
   return <span className={s.spinner} aria-hidden="true" />;
+}
+
+/**
+ * Content on its way. Holds roughly the space the content will take (`lines` rows), so nothing
+ * below it jumps when it arrives, and fades in only after a short delay, so a quick load shows
+ * nothing at all rather than a flash.
+ */
+export function Loading({
+  label,
+  lines = 3,
+  className,
+}: {
+  label?: ReactNode;
+  lines?: number;
+  className?: string;
+}) {
+  const t = useTranslations("app.home");
+  return (
+    <div
+      className={cn(s.loading, className)}
+      role="status"
+      style={{ "--lines": lines } as CSSProperties}
+    >
+      <span className={s.loadingLabel}>
+        <Spinner /> <span>{label ?? t("loading")}</span>
+      </span>
+      <span className={s.loadingRows} aria-hidden="true">
+        {Array.from({ length: lines }, (_, i) => (
+          <span key={i} className={s.skel} />
+        ))}
+      </span>
+    </div>
+  );
 }
 
 const NOTICE = {

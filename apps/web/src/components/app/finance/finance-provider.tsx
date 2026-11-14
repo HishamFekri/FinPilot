@@ -16,7 +16,7 @@ import { type Category, financeApi, type SetupState } from "@/lib/finance";
 import { localeTag } from "@/lib/format";
 import appStyles from "../app.module.css";
 import { useAuth, useUser } from "../auth-provider";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import s from "./finance.module.css";
 import { Select } from "../select";
 
@@ -187,15 +187,6 @@ export function FinanceGate({ children }: { children: ReactNode }) {
     return <ChooseCurrency onDone={() => void state.changed()} />;
   }
   return <>{children}</>;
-}
-
-function Loading() {
-  const t = useTranslations("app.home");
-  return (
-    <p className={appStyles.muted} role="status">
-      <Spinner /> <span>{t("loading")}</span>
-    </p>
-  );
 }
 
 function Failed({ onRetry }: { onRetry: () => void }) {

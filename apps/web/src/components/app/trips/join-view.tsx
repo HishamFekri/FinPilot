@@ -8,7 +8,7 @@ import { ApiError } from "@/lib/api";
 import { INVITE_STORAGE_KEY, type InvitePreview, tripsApi } from "@/lib/trips";
 import appStyles from "../app.module.css";
 import { useAuth } from "../auth-provider";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import { useDateRange } from "./parts";
 import s from "./trips.module.css";
 
@@ -106,9 +106,7 @@ export function JoinView() {
     <div className={s.page}>
       <h1 className={appStyles.pageTitle}>{t("title")}</h1>
       {state.kind === "loading" ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{t("loading")}</span>
-        </p>
+        <Loading label={t("loading")} />
       ) : state.kind === "invalid" ? (
         <>
           <Notice tone="error">{t(`invalid.${state.reason}`)}</Notice>

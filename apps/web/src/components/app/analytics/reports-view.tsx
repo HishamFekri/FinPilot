@@ -24,7 +24,7 @@ import { FinanceGate, useFinance } from "../finance/finance-provider";
 import fs from "../finance/finance.module.css";
 import { signedAmount, useAccountName, useCategoryName } from "../finance/parts";
 import { TransactionDialog, useTxnDialog } from "../finance/transaction-dialog";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import s from "./analytics.module.css";
 import { CategoryBars, CategoryTable, SeriesTable, useBucketLabel } from "./charts";
 import { Kpis } from "./insights-view";
@@ -420,9 +420,7 @@ function ReportsPage({ embedded }: { embedded: boolean }) {
           </button>
         </Notice>
       ) : !value ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{t("loading")}</span>
-        </p>
+        <Loading label={t("loading")} />
       ) : (
         <div className={cn(s.page, stale && fs.refreshing)} aria-busy={stale || undefined}>
           <ReportMeta report={value} />
@@ -823,9 +821,7 @@ function DetailsSection({
       {failed ? (
         <Notice tone="error">{rt("loadFailed")}</Notice>
       ) : !items ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{rt("loading")}</span>
-        </p>
+        <Loading label={rt("loading")} />
       ) : items.length === 0 ? (
         <p className={s.note}>{rt("none")}</p>
       ) : (

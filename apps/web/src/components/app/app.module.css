@@ -1,5 +1,5 @@
 /* FinPilot app, Waypoint direction with Calibre's restraint.
-   Same palette as the landing page: deep teal, tangerine, sky in light; Midnight Indigo in dark.
+   Same palette as the landing page: deep teal, tangerine, sky in light; deep forest green in dark.
    Logical properties only, so Arabic mirrors by construction. */
 
 .theme {
@@ -46,24 +46,26 @@
 .theme ::selection {
   background: color-mix(in oklab, var(--tang) 28%, transparent);
 }
-/* Midnight navy, warm ink. On --bg: ink 17:1, ink-2 8.5:1, ink-3 6:1; tang-text 7:1. */
+/* Deep forest green, warm off-white ink. Three surface levels: page (--bg), panel (--surface),
+   raised (--surface-2). Contrast, worst case on --surface-2: ink 12:1, ink-2 7.7:1, ink-3 6.1:1,
+   tang-text 6:1, pos 8.9:1, neg 6.1:1. Navigation uses sky, so it never reads as income. */
 :global(.dark) .theme {
-  --bg: #0a0d1a;
-  --surface: #12162a;
-  --surface-2: #1a1f38;
-  --ink: #f5f1e8;
-  --ink-2: #a8adc6;
-  --ink-3: #9096b6;
-  --hair: #20263f;
-  --hair-2: #2f3654;
-  --rail: #070a14;
-  --rail-2: #12162a;
-  --rail-3: #1a2038;
-  --rail-ink: #f5f1e8;
-  --rail-ink-2: #9aa0bc;
-  --nav-accent: #3ddbb0;
-  --nav-accent-wash: rgb(61 219 176 / 0.1);
-  --nav-accent-glow: rgb(61 219 176 / 0.4);
+  --bg: #0a1813;
+  --surface: #10231b;
+  --surface-2: #173126;
+  --ink: #f4efe4;
+  --ink-2: #b6c4b8;
+  --ink-3: #9db0a2;
+  --hair: #1c3428;
+  --hair-2: #2c4c3b;
+  --rail: #07130e;
+  --rail-2: #10231b;
+  --rail-3: #1a3628;
+  --rail-ink: #f4efe4;
+  --rail-ink-2: #a9baac;
+  --nav-accent: #8fd0ff;
+  --nav-accent-wash: rgb(143 208 255 / 0.1);
+  --nav-accent-glow: rgb(143 208 255 / 0.35);
   --tang-text: #ff8a52;
   --tang-wash: rgb(255 106 43 / 0.12);
   --pos: #8ce0b4;
@@ -1216,6 +1218,35 @@
   display: grid;
   gap: 14px;
 }
+/* <Loading />: label and placeholder rows, invisible for the first 150 ms. */
+.loading {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-block-size: calc(var(--lines, 3) * 56px + 8px);
+  color: var(--ink-2);
+  animation: loadingIn 200ms var(--ease) 150ms both;
+}
+.loadingLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.loadingRows {
+  display: grid;
+  gap: 12px;
+}
+.loadingRows .skel {
+  block-size: 44px;
+  border-radius: 10px;
+}
+.loadingRows .skel:nth-child(3n + 2) {
+  inline-size: 82%;
+}
+.loadingRows .skel:nth-child(3n) {
+  inline-size: 64%;
+}
 .skel {
   block-size: 14px;
   border-radius: 6px;
@@ -1419,6 +1450,10 @@
   .skel {
     animation: none;
   }
+  /* Still hidden for the first moment, so quick loads don't flash; then shown at once. */
+  .loading {
+    animation-duration: 1ms;
+  }
 }
 
 @keyframes spin {
@@ -1430,6 +1465,11 @@
   from {
     opacity: 0;
     transform: translateY(10px);
+  }
+}
+@keyframes loadingIn {
+  from {
+    opacity: 0;
   }
 }
 @keyframes shimmer {
@@ -1448,7 +1488,7 @@
 }
 :global(.dark) :global(body):has(.shell),
 :global(.dark) :global(body):has(.gate) {
-  background: #0a0d1a;
+  background: #0a1813;
 }
 .skip {
   position: fixed;

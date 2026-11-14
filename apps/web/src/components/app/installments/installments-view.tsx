@@ -10,7 +10,7 @@ import { type InstallmentPlan, installmentsApi } from "@/lib/installments";
 import { Money } from "../accounts/parts";
 import appStyles from "../app.module.css";
 import { FinanceGate } from "../finance/finance-provider";
-import { Button, Notice, Spinner, Tag } from "../ui";
+import { Button, Loading, Notice, Tag } from "../ui";
 import { useLoad } from "../use-load";
 import { InstallmentAnalytics } from "./installment-analytics";
 import { PlanDialog } from "./plan-form";
@@ -120,9 +120,7 @@ function InstallmentsPage() {
           </button>
         </Notice>
       ) : !data ? (
-        <p className={s.note}>
-          <Spinner /> {t("loading")}
-        </p>
+        <Loading label={t("loading")} />
       ) : data.length === 0 ? (
         <div className={s.emptyState}>
           <h2 className={s.subTitle}>{t("emptyTitle")}</h2>

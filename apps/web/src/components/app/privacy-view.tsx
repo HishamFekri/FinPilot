@@ -10,7 +10,7 @@ import { googleStartHref } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { useAuth, useUser } from "./auth-provider";
 import s from "./app.module.css";
-import { bdi, Button, buttonClass, Notice, Spinner } from "./ui";
+import { bdi, Button, buttonClass, Loading, Notice } from "./ui";
 
 type Blocker = {
   kind: "trip_balance" | "trip_pending" | "trip_dispute" | "trip_owner";
@@ -184,9 +184,7 @@ export function PrivacyView() {
         <div className={s.panelBody}>
           {failure ? <Notice tone="error">{t(`failed.${failure}`)}</Notice> : null}
           {load.kind === "loading" ? (
-            <p className={s.muted} role="status">
-              <Spinner /> <span>{t("loading")}</span>
-            </p>
+            <Loading label={t("loading")} />
           ) : load.kind === "failed" ? (
             <Notice tone="error">{t("loadFailed")}</Notice>
           ) : pending ? (

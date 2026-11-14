@@ -27,7 +27,7 @@ import { useAuth, useUser } from "../auth-provider";
 import { useFinance } from "../finance/finance-provider";
 import { useCategoryName } from "../finance/parts";
 import { Select } from "../select";
-import { Notice, Spinner } from "../ui";
+import { Loading, Notice } from "../ui";
 import { usePercent } from "./budgets-view";
 import {
   CategoryBars,
@@ -187,9 +187,7 @@ export function IntelligenceView() {
           </button>
         </Notice>
       ) : !value ? (
-        <p className={s.muted}>
-          <Spinner /> {t("loading")}
-        </p>
+        <Loading label={t("loading")} />
       ) : value.empty || !value.totals ? (
         <div className={s.empty}>
           <p className={s.emptyTitle}>{t("empty.title")}</p>

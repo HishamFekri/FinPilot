@@ -5,13 +5,12 @@ import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import s from "./landing.module.css";
 import { SettingsMenu } from "./settings-menu";
-import { BrandMark, GoogleButton } from "./shared";
+import { GoogleButton } from "./shared";
 
 type RGB = { r: number; g: number; b: number; a: number };
 
-const LIGHT_TEXT = { r: 242, g: 243, b: 252, a: 1 }; // #f2f3fc
+const LIGHT_TEXT = { r: 243, g: 238, b: 227, a: 1 }; // #f3eee3
 const DARK_TEXT = { r: 13, g: 27, b: 34, a: 1 }; // #0d1b22
-const TANGERINE = { r: 255, g: 106, b: 43, a: 1 }; // the mark's route colour
 
 function luminance({ r, g, b }: RGB): number {
   const lin = (v: number) => {
@@ -110,9 +109,6 @@ export function LandingHeader() {
       const bg = backgroundAt(box.left + box.width / 2, box.top + box.height / 2);
       const tone = contrast(LIGHT_TEXT, bg) >= contrast(DARK_TEXT, bg) ? "light" : "dark";
       if (el.dataset.tone !== tone) el.dataset.tone = tone;
-      // Over orange, the mark's tangerine route would disappear: draw it in the text colour.
-      const mark = contrast(TANGERINE, bg) < 1.6 ? "ink" : "brand";
-      if (el.dataset.mark !== mark) el.dataset.mark = mark;
       // Hide at once; come back only after the area has stayed clear for a moment, so the
       // wordmark doesn't flicker between lines of text.
       if (crowded(box)) {
@@ -150,13 +146,11 @@ export function LandingHeader() {
       className={s.header}
       data-scrolled="false"
       data-tone="light"
-      data-mark="brand"
       data-clear="true"
     >
       <div className={cn(s.wrap, s.headerInner)}>
         <a ref={brandRef} className={s.brand} href="#top">
-          <BrandMark />
-          <span>{shell("brand")}</span>
+          {shell("brand")}
         </a>
         <div className={s.headerEnd}>
           <GoogleButton size="compact" />

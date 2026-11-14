@@ -16,7 +16,7 @@ import appStyles from "../app.module.css";
 import { useAuth, useUser } from "../auth-provider";
 import { FinanceGate, useFinance } from "../finance/finance-provider";
 import fs from "../finance/finance.module.css";
-import { buttonClass, Notice, Spinner } from "../ui";
+import { buttonClass, Loading, Notice } from "../ui";
 import s from "./analytics.module.css";
 import {
   CategoryBars,
@@ -135,9 +135,7 @@ function InsightsPage({ embedded }: { embedded: boolean }) {
           </button>
         </Notice>
       ) : !value ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{t("loading")}</span>
-        </p>
+        <Loading label={t("loading")} />
       ) : !value.currency || !value.totals ? (
         <div className={s.empty}>
           <ChartColumn aria-hidden="true" />

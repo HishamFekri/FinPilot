@@ -3,13 +3,13 @@
 import { Archive, ArchiveRestore, ChevronLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { type FormEvent, useCallback, useEffect, useId, useState, type ReactNode } from "react";
-import { Link } from "@/i18n/navigation";
 import { type Category, financeApi, type Kind } from "@/lib/finance";
 import { cn } from "@/lib/utils";
+import { BackLink } from "../back-link";
 import { AccountDialog } from "../accounts/parts";
 import appStyles from "../app.module.css";
 import { useAuth } from "../auth-provider";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import { ConfirmDialog } from "../confirm-dialog";
 import { DeleteOrArchive, useRemovalFailure } from "../removal";
 import { GroupedCategories } from "./category-groups";
@@ -178,10 +178,10 @@ function Categories() {
           }
         }}
       />
-      <Link href="/app/settings" className={s.backLink}>
+      <BackLink href="/app/settings" className={s.backLink}>
         <ChevronLeft aria-hidden="true" className={s.flipRtl} />
         {t("back")}
-      </Link>
+      </BackLink>
       <div className={s.historyHead}>
         <div>
           <h1 className={appStyles.pageTitle}>{t("title")}</h1>
@@ -224,9 +224,7 @@ function Categories() {
           </button>
         </Notice>
       ) : all === null ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{t("loading")}</span>
-        </p>
+        <Loading label={t("loading")} />
       ) : (
         <>
           {kind === "expense" ? (

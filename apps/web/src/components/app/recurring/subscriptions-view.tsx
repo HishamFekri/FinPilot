@@ -16,7 +16,7 @@ import { useAuth, useUser } from "../auth-provider";
 import { FinanceGate, useFinance } from "../finance/finance-provider";
 import { useAccountName, useFinanceError } from "../finance/parts";
 import { MoneyInput } from "../money-input";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import { ConfirmDialog, OccurrenceRow } from "./parts";
 import s from "./subscriptions.module.css";
 import { Select } from "../select";
@@ -85,9 +85,7 @@ function SubscriptionHistory({ rule, onClose }: { rule: Rule; onClose: () => voi
       {error ? (
         <Notice tone="error">{t("failed")}</Notice>
       ) : !data ? (
-        <p className={s.note}>
-          <Spinner />
-        </p>
+        <Loading />
       ) : rows.length === 0 ? (
         <p className={s.note}>{t("empty")}</p>
       ) : (
@@ -173,9 +171,7 @@ function SubscriptionsPage() {
       {failed ? (
         <Notice tone="error">{message(null)}</Notice>
       ) : !value ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner />
-        </p>
+        <Loading />
       ) : items.length === 0 ? (
         <div className={s.empty}>
           <p className={s.emptyTitle}>{t("emptyTitle")}</p>

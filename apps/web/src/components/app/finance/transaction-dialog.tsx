@@ -15,7 +15,7 @@ import { AccountDialog, AmountField, todayIn } from "../accounts/parts";
 import appStyles from "../app.module.css";
 import { useAuth, useUser } from "../auth-provider";
 import { MoneyInput } from "../money-input";
-import { bdi, Button, Notice, Spinner, Tag } from "../ui";
+import { bdi, Button, Loading, Notice, Tag } from "../ui";
 import { useFinance } from "./finance-provider";
 import s from "./finance.module.css";
 import {
@@ -223,9 +223,7 @@ function DetailDialog({
     >
       {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       {detail.kind === "loading" ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner />
-        </p>
+        <Loading />
       ) : detail.kind === "missing" ? (
         <Notice tone="error">{t("missing")}</Notice>
       ) : detail.kind === "failed" || !txn ? (

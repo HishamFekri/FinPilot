@@ -21,13 +21,14 @@ import {
   tripsApi,
 } from "@/lib/trips";
 import { cn } from "@/lib/utils";
+import { BackLink } from "../back-link";
 import { AccountDialog, Money } from "../accounts/parts";
 import appStyles from "../app.module.css";
 import { useAuth, useUser } from "../auth-provider";
 import { FinanceGate } from "../finance/finance-provider";
 import fin from "../finance/finance.module.css";
 import { useFinanceError } from "../finance/parts";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import { DisputeBox, DisputedTag } from "./disputes";
 import { ExpenseDialog } from "./expense-dialog";
 import { ApproveAndRecord, MyTripMoney } from "./my-money";
@@ -141,9 +142,9 @@ function TripPage({ id }: { id: string }) {
   if (data?.failed) {
     return (
       <div className={s.page}>
-        <Link href="/app/trips" className={s.back}>
+        <BackLink href="/app/trips" className={s.back}>
           <ArrowLeft aria-hidden="true" className={fin.flipRtl} /> {t("back")}
-        </Link>
+        </BackLink>
         <Notice tone="error">
           {data.missing ? t("notFound") : t("loadFailed")}{" "}
           {data.missing ? null : (
@@ -156,11 +157,7 @@ function TripPage({ id }: { id: string }) {
     );
   }
   if (!value) {
-    return (
-      <p className={appStyles.muted} role="status">
-        <Spinner /> <span>{t("loading")}</span>
-      </p>
-    );
+    return <Loading label={t("loading")} />;
   }
 
   const { trip, dashboard, expenses, members, activity, payments } = value;
@@ -204,9 +201,9 @@ function TripPage({ id }: { id: string }) {
     <div className={s.page}>
       {confirmEl}
       <div>
-        <Link href="/app/trips" className={s.back}>
+        <BackLink href="/app/trips" className={s.back}>
           <ArrowLeft aria-hidden="true" className={fin.flipRtl} /> {t("back")}
-        </Link>
+        </BackLink>
       </div>
       <div className={s.head}>
         <div>
@@ -915,9 +912,7 @@ function ExpenseDetail({
           {failure ? <Notice tone="error">{failure}</Notice> : null}
           {!expense || !v ? (
             failed ? null : (
-              <p className={appStyles.muted} role="status">
-                <Spinner /> <span>{t("loading")}</span>
-              </p>
+              <Loading label={t("loading")} />
             )
           ) : (
             <>

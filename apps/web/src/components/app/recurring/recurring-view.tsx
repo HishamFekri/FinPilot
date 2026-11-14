@@ -35,7 +35,7 @@ import { FinanceGate, useFinance } from "../finance/finance-provider";
 import fs from "../finance/finance.module.css";
 import { CategoryPicker, TransactionRow, useAccountName, useFinanceError } from "../finance/parts";
 import { TransactionDialog, useTxnDialog } from "../finance/transaction-dialog";
-import { Button, Notice, Spinner, Tag } from "../ui";
+import { Button, Loading, Notice, Spinner, Tag } from "../ui";
 import { ConfirmDialog, KindIcon, OccurrenceRow, useWindowText } from "./parts";
 import s from "./recurring.module.css";
 import { MoneyInput } from "../money-input";
@@ -148,9 +148,7 @@ function Recurring() {
           </button>
         </Notice>
       ) : !value ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{t("loading")}</span>
-        </p>
+        <Loading label={t("loading")} />
       ) : value.rules.length === 0 && value.debts.length === 0 ? (
         <section className={cn(fs.panel, fs.emptyState)}>
           <CalendarClock aria-hidden="true" className={s.emptyIcon} />

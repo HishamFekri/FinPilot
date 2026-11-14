@@ -44,7 +44,7 @@ import {
 } from "../finance/parts";
 import { TransactionDialog, useTxnDialog } from "../finance/transaction-dialog";
 import { MoneyInput } from "../money-input";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import s from "./analytics.module.css";
 import { Select } from "../select";
 import { ConfirmDialog } from "../confirm-dialog";
@@ -223,9 +223,7 @@ function Budgets() {
           </button>
         </Notice>
       ) : !value ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{t("loading")}</span>
-        </p>
+        <Loading label={t("loading")} />
       ) : (
         <div className={cn(stale && fs.refreshing)} aria-busy={stale || undefined}>
           {value.budgets.length === 0 ? (
@@ -869,9 +867,7 @@ function DetailDialog({
         {failed ? (
           <Notice tone="error">{t("loadFailed")}</Notice>
         ) : !data ? (
-          <p className={appStyles.muted} role="status">
-            <Spinner /> <span>{t("loading")}</span>
-          </p>
+          <Loading label={t("loading")} />
         ) : (
           <>
             <h3 className={s.subhead}>{t("recent")}</h3>

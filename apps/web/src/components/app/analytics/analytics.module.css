@@ -1,6 +1,6 @@
 /* Budgets, Insights and Reports. Waypoint tokens from app.module.css; logical properties only.
    Chart series: income = blue, spending = tangerine (validated with the dataviz palette checker,
-   light on #fff and dark on #151935; both pass CVD and contrast). */
+   light on #fff and dark on #10231b; both pass CVD and contrast). */
 
 .page {
   --series-income: #2a78d6;

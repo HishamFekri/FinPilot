@@ -4,18 +4,18 @@ import { ArrowLeft, CalendarRange, HandCoins, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type { Locale } from "@/i18n/routing";
-import { Link } from "@/i18n/navigation";
 import { goalsApi } from "@/lib/everyday";
 import { formatDate } from "@/lib/format";
 import { type InstallmentItem, type InstallmentPlan, installmentsApi } from "@/lib/installments";
 import { formatMoney } from "@/lib/money";
+import { BackLink } from "../back-link";
 import { Money } from "../accounts/parts";
 import appStyles from "../app.module.css";
 import { useAuth } from "../auth-provider";
 import { ConfirmDialog } from "../confirm-dialog";
 import { FinanceGate, useFinance } from "../finance/finance-provider";
 import { Select } from "../select";
-import { Button, Notice, Spinner, Tag } from "../ui";
+import { Button, Loading, Notice, Tag } from "../ui";
 import { useLoad } from "../use-load";
 import { useInstallmentError } from "./errors";
 import { PlanProgress } from "./installments-view";
@@ -149,12 +149,7 @@ function PlanPage({ id }: { id: string }) {
         </button>
       </Notice>
     );
-  if (!current)
-    return (
-      <p className={s.note}>
-        <Spinner /> {t("loading")}
-      </p>
-    );
+  if (!current) return <Loading label={t("loading")} />;
 
   const p = current;
   const updated = (next: InstallmentPlan, text?: string) => {
@@ -164,10 +159,10 @@ function PlanPage({ id }: { id: string }) {
 
   return (
     <div className={appStyles.stack}>
-      <Link href="/app/installments" className={s.back}>
+      <BackLink href="/app/installments" className={s.back}>
         <ArrowLeft aria-hidden="true" className={s.flipRtl} />
         {t("back")}
-      </Link>
+      </BackLink>
       <header className={s.pageHead}>
         <div>
           <h1 className={appStyles.pageTitle} dir="auto">

@@ -33,7 +33,7 @@
       "title": "Paranızın nereye gittiğini anlayın.",
       "lede": "FinPilot gelir ve giderlerinizi takip etmenize, bütçe planlamanıza ve seyahat masraflarını arkadaşlarınızla bölüşmenize yardımcı olur. Her şeyi siz kaydedersiniz; banka bağlantısı yoktur.",
       "how": "Nasıl çalıştığını görün",
-      "assure": "Google hesabınızla giriş yapın. FinPilot Google şifrenizi asla görmez; paranızı tutmaz ve aktarmaz.",
+      "assure": "FinPilot özel beta aşamasında: Google ile giriş yalnızca davet edilen hesaplara açık. FinPilot Google şifrenizi asla görmez; paranızı tutmaz ve aktarmaz.",
       "scroll": "Rotayı izleyin",
       "preview": {
         "balance": "Bakiye",
@@ -117,7 +117,7 @@
       "benefits": {
         "one": "Her kategori için aylık bir sınır.",
         "two": "Kalan tutar her zaman bir bakış uzağınızda.",
-        "three": "Aşımı erkenden, nedeniyle birlikte fark edin."
+        "three": "Bir sınıra yaklaşırken erken uyarı ve o sınıra sayılan harcamalar."
       },
       "preview": {
         "title": "{month} bütçesi",
@@ -176,7 +176,8 @@
         "deniz": "Deniz",
         "lina": "Lina",
         "sami": "Sami"
-      }
+      },
+      "suggested": "Önerilen ödemeler"
     },
     "reports": {
       "title": "Raporlar ve analizler",
@@ -226,7 +227,8 @@
       "line1": "Paranız.",
       "line2": "Yolculuğunuz.",
       "line3": "Sizin FinPilot'unuz.",
-      "body": "Tek bir harcamayla başlayın. Rota oradan kendini çizer."
+      "body": "Tek bir harcamayla başlayın. Rota oradan kendini çizer.",
+      "access": "Özel beta: giriş, davet edilen Google hesaplarına açıktır."
     },
     "footer": {
       "createdBy": "Hazırlayan",
@@ -259,7 +261,7 @@
       "planning": {
         "step": "Planlama",
         "title": "Daha iyi bir ay planlayın",
-        "body": "Gerçekte harcadıklarınıza göre gelecek ay için gerçekçi sınırlar koyun."
+        "body": "Gelecek ayın sınırlarını son altı ayın harcamalarını yanınızda görerek belirleyin."
       }
     },
     "googleLoading": "Google açılıyor…",

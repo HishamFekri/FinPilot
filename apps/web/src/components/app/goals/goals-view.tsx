@@ -16,7 +16,7 @@ import { useAuth } from "../auth-provider";
 import { FinanceGate, useFinance } from "../finance/finance-provider";
 import { useFinanceError } from "../finance/parts";
 import { MoneyInput } from "../money-input";
-import { Button, Notice, Spinner } from "../ui";
+import { Button, Loading, Notice } from "../ui";
 import s from "./goals.module.css";
 import { Select } from "../select";
 import { useConfirm } from "../confirm-dialog";
@@ -120,9 +120,7 @@ function GoalsPage() {
       {failed ? (
         <Notice tone="error">{message(null)}</Notice>
       ) : !list ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner />
-        </p>
+        <Loading />
       ) : list.length === 0 ? (
         <div className={s.empty}>
           <Target aria-hidden="true" />
@@ -620,9 +618,7 @@ function HistoryDialog({
       }
     >
       {!full ? (
-        <p className={appStyles.muted} role="status">
-          <Spinner />
-        </p>
+        <Loading />
       ) : (
         <ol className={s.history}>
           {(full.history ?? []).map((e) => (

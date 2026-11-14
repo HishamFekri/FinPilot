@@ -20,17 +20,18 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { ApiError } from "@/lib/api";
 import { type Account, type ActivityItem, accountsApi } from "@/lib/accounts";
 import { formatDate } from "@/lib/format";
 import { isNegative, isZero } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { BackLink } from "../back-link";
 import appStyles from "../app.module.css";
 import { usePortalRoot } from "../app-shell";
 import { useAuth } from "../auth-provider";
-import { bdi, Button, Notice, Spinner, Tag } from "../ui";
+import { bdi, Button, Loading, Notice, Tag } from "../ui";
 import { EditAccountDialog } from "./account-form";
 import { useFinanceRevision, useFinanceState } from "../finance/finance-provider";
 import { EquivalentsDialog, EquivalentsStrip } from "../finance/equivalents";
@@ -116,19 +117,17 @@ export function AccountDetailView({ accountId }: { accountId: string }) {
   }, [fetchDetail, revision]);
 
   const back = (
-    <Link href="/app/accounts" className={s.back}>
+    <BackLink href="/app/accounts" className={s.back}>
       <ArrowLeft aria-hidden="true" />
       {t("actions.back")}
-    </Link>
+    </BackLink>
   );
 
   if (detail.kind === "loading") {
     return (
       <>
         {back}
-        <p className={appStyles.muted} role="status">
-          <Spinner /> <span>{t("loading")}</span>
-        </p>
+        <Loading label={t("loading")} />
       </>
     );
   }
@@ -299,7 +298,8 @@ export function AccountDetailView({ accountId }: { accountId: string }) {
         onConfirm={async () => {
           try {
             await accountsApi.remove(account.id);
-            router.push("/app/accounts");
+            // replace: Back mustn't lead to the account that no longer exists.
+            router.replace("/app/accounts");
             return null;
           } catch (error) {
             return removalFailure(error);

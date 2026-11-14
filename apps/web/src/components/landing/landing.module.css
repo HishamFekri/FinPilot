@@ -1,5 +1,5 @@
 /* FinPilot landing page, Waypoint direction.
-   Light: deep teal, tangerine, sky. Dark: midnight navy with the same accents.
+   Light: deep teal, tangerine, sky. Dark: deep forest green with the same accents.
    Logical properties only, so Arabic mirrors by construction. --dir is 1 in LTR, -1 in RTL, for
    the few transforms that move along the inline axis. */
 
@@ -21,6 +21,10 @@
   --sky: #8fd0ff;
   --sky-ink: #06222a;
   --pos: #1b7553;
+  /* The page colour under a name no band redefines, so band edges can fade into it; and the
+     colour the trip band fades into, the closing band's. */
+  --page: #f3f6f6;
+  --band-end: var(--tang);
   --shadow: 0 30px 60px -32px rgb(11 59 69 / 0.45);
   --ease: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
@@ -36,34 +40,174 @@
   line-height: 1.55;
   overflow-x: clip;
 }
-/* Dark: Midnight Indigo. Contrast on --bg: ink 17:1, ink-2 9:1, tang-text 6:1 on surfaces. */
+/* Dark: deep forest green, warm off-white ink. Contrast, worst case on --field-3: ink 10:1,
+   ink-2 6.5:1, tang-text 5.2:1; on --bg: ink 15:1, ink-2 9.7:1. */
 :global(.dark) .root {
-  --bg: #0d1024;
-  --surface: #161a36;
-  --surface-2: #20264a;
-  --ink: #f2f3fc;
-  --ink-2: #a9afd4;
-  --hair: #2b3160;
-  --field: #080a1a;
-  --field-2: #151a3d;
-  --field-3: #262d63;
-  --on-field: #f2f3fc;
-  --on-field-2: #a9afd4;
+  --bg: #0b1b15;
+  --surface: #12271e;
+  --surface-2: #1a3428;
+  --ink: #f3eee3;
+  --ink-2: #b4c3b6;
+  --hair: #264233;
+  /* The light page's deep teal bands stay teal at night: a muted teal that leans green, so it
+     flows into the forest green of the neutral sections while still reading as its own band. */
+  --field: #0c2925;
+  --field-2: #133b35;
+  --field-3: #1a4a42;
+  --on-field: #eef6f1;
+  --on-field-2: #aacbc1;
   --tang-text: #ff8c5a;
   --pos: #5fd3a0;
-  --glow: rgb(88 80 214 / 0.34);
+  --glow: rgb(80 176 148 / 0.2);
+  /* Night versions of the orange and sky bands: burnt terracotta and deep ocean blue, each with
+     its own ink. Worst case: terracotta ink-2 5.6:1, ocean ink-2 6.6:1 (on its rows). */
+  --terra: #8a3311;
+  --terra-deep: #6a250b;
+  --terra-ink: #fdf0e6;
+  /* Gold: the closing band (a deep, warm gold) and small touches elsewhere at night. Band ink
+     10.7:1, softer ink 8.2:1; the light gold accent is 6.7:1 or more on every dark surface. */
+  --gold: #f2c25b;
+  --gold-band: #463510;
+  --gold-deep: #2e2209;
+  --gold-ink: #fbf3dc;
+  /* The forest-green page colour itself, under a name the teal bands don't redefine, so their
+     edges can fade into it. */
+  --page: #0b1b15;
+  --band-end: var(--gold-band);
+  --ocean: #0f3552;
+  --ocean-row: #1a4566;
+  --ocean-ink: #e4f2ff;
   --shadow: 0 30px 70px -30px rgb(0 0 0 / 0.75);
 }
 /* One restrained glow where the route lives, so the bands read as night, not flat black. */
-:global(.dark) .hero,
-:global(.dark) .trip {
+/* Night has no hard edges between sections: each band fades into its neighbours. The hero melts
+   into the forest green below; the trip band rises out of it and settles into the gold of the
+   closing section. */
+/* Band edges fade into their neighbours in both themes. Each band is ONE gradient that runs
+   from its neighbour's colour to its own and on to the next: no fade laid over a flat colour,
+   because two layers that both end on a fraction of a pixel leave a 1px sliver of the colour
+   underneath. ".root" outranks the base .hero and .trip rules further down; the night versions
+   below outrank these in turn.
+   The hero's colour fills the whole first screen; the fade into the page sits below it (the hero
+   is taller by --hero-fade), so it's met while scrolling, never as a band on arrival. Its curve
+   is a smoothstep, soft at both ends, so neither end of the fade shows. */
+.root .hero {
+  --hero-fade: 260px;
+  background: linear-gradient(
+    to bottom,
+    var(--field) calc(100% - var(--hero-fade)),
+    color-mix(in oklab, var(--page) 2.8%, var(--field)) calc(100% - var(--hero-fade) * 0.9),
+    color-mix(in oklab, var(--page) 10.4%, var(--field)) calc(100% - var(--hero-fade) * 0.8),
+    color-mix(in oklab, var(--page) 21.6%, var(--field)) calc(100% - var(--hero-fade) * 0.7),
+    color-mix(in oklab, var(--page) 35.2%, var(--field)) calc(100% - var(--hero-fade) * 0.6),
+    color-mix(in oklab, var(--page) 50%, var(--field)) calc(100% - var(--hero-fade) * 0.5),
+    color-mix(in oklab, var(--page) 64.8%, var(--field)) calc(100% - var(--hero-fade) * 0.4),
+    color-mix(in oklab, var(--page) 78.4%, var(--field)) calc(100% - var(--hero-fade) * 0.3),
+    color-mix(in oklab, var(--page) 89.6%, var(--field)) calc(100% - var(--hero-fade) * 0.2),
+    color-mix(in oklab, var(--page) 97.2%, var(--field)) calc(100% - var(--hero-fade) * 0.1),
+    var(--page) 100%
+  );
+}
+.root .trip {
+  background: linear-gradient(
+    to bottom,
+    var(--page) 0,
+    var(--field) 18vh,
+    var(--field) calc(100% - 26vh),
+    var(--band-end) 100%
+  );
+  /* Under the gradient, the colour it ends in, for the last fraction of a pixel. */
+  background-color: var(--band-end);
+}
+/* Night: the same gradients, longer, with the glows drawn over them. */
+:global(.dark) .hero {
   background:
     radial-gradient(1100px 620px at 82% 12%, var(--glow), transparent 62%),
-    radial-gradient(900px 520px at 8% 100%, rgb(255 106 43 / 0.09), transparent 60%), var(--field);
+    radial-gradient(800px 460px at 8% 60%, rgb(242 194 91 / 0.08), transparent 60%),
+    linear-gradient(
+      to bottom,
+      var(--field) calc(100% - var(--hero-fade)),
+      color-mix(in oklab, var(--page) 2.8%, var(--field)) calc(100% - var(--hero-fade) * 0.9),
+      color-mix(in oklab, var(--page) 10.4%, var(--field)) calc(100% - var(--hero-fade) * 0.8),
+      color-mix(in oklab, var(--page) 21.6%, var(--field)) calc(100% - var(--hero-fade) * 0.7),
+      color-mix(in oklab, var(--page) 35.2%, var(--field)) calc(100% - var(--hero-fade) * 0.6),
+      color-mix(in oklab, var(--page) 50%, var(--field)) calc(100% - var(--hero-fade) * 0.5),
+      color-mix(in oklab, var(--page) 64.8%, var(--field)) calc(100% - var(--hero-fade) * 0.4),
+      color-mix(in oklab, var(--page) 78.4%, var(--field)) calc(100% - var(--hero-fade) * 0.3),
+      color-mix(in oklab, var(--page) 89.6%, var(--field)) calc(100% - var(--hero-fade) * 0.2),
+      color-mix(in oklab, var(--page) 97.2%, var(--field)) calc(100% - var(--hero-fade) * 0.1),
+      var(--page) 100%
+    );
+}
+:global(.dark) .trip {
+  background:
+    radial-gradient(1100px 620px at 82% 14%, var(--glow), transparent 62%),
+    radial-gradient(900px 600px at 10% 82%, rgb(242 194 91 / 0.1), transparent 62%),
+    linear-gradient(
+      to bottom,
+      var(--page) 0,
+      var(--field) 60vh,
+      var(--field) calc(100% - 70vh),
+      var(--band-end) 100%
+    );
+  /* Under the gradient, the colour it ends in, for the last fraction of a pixel. */
+  background-color: var(--band-end);
+}
+/* Cards inside the teal bands are teal too (white cards on teal, in light), one step lighter
+   than the band. Contrast on these cards: ink 11:1, ink-2 7.1:1, pos 6.6:1, tang-text 5.4:1. */
+:global(.dark) .hero,
+:global(.dark) .trip,
+:global(.dark) .jIncome {
+  --surface: #133b35;
+  --surface-2: #1a4a42;
+  --bg: #0f312c;
+  --hair: #24574e;
+  --ink: #eef6f1;
+  --ink-2: #aacbc1;
 }
 :global([dir="rtl"]) .root {
   --dir: -1;
 }
+/* Night cards: a dim off-white tinted from the forest green (never cream, never bright white),
+   with dark ink and secondary text drawn from the same green, so the illustrations sit in the
+   page's own colour family. Contrast, worst case on the inner chips: ink 10.5:1, ink-2 5:1,
+   pos 4.7:1, tang-text 4.7:1. */
+:global(.dark) :is(.device, .jIncomeCard, .jExpenses, .event, .quick, .budgetCard, .scene, .sheet) {
+  --surface: #dde5df;
+  --surface-2: #c3cfc7;
+  --bg: #d0dad3;
+  --hair: #bccac1;
+  --ink: #10201a;
+  --ink-2: #41544a;
+  --pos: #17603f;
+  --tang-text: #923509;
+  --tang-ink: #1a0d05;
+  --sky-ink: #06222a;
+  color: var(--ink);
+}
+:global(.dark) .budgetCard {
+  background: var(--surface);
+}
+:global(.dark) :is(.event, .quick, .budgetCard, .scene, .sheet) {
+  /* Depth from a light above: a soft shadow that falls downward, no coloured halo. */
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.25),
+    0 28px 56px -28px rgb(0 0 0 / 0.8);
+}
+/* Gold touches at night, kept to small marks (never numbers): the ticks beside each benefit, the
+   "example" markers and the report features' icons. */
+:global(.dark) .benefitIcon {
+  background: rgb(242 194 91 / 0.16);
+  color: var(--gold);
+}
+:global(.dark) .example::before {
+  border-color: var(--gold);
+}
+:global(.dark) .featureIcon {
+  background: rgb(242 194 91 / 0.14);
+  color: var(--gold);
+}
+
 .root :lang(ar) {
   line-height: 1.7;
 }
@@ -266,14 +410,10 @@
   transition: color 220ms ease;
 }
 .header[data-tone="light"] {
-  color: #f2f3fc;
+  color: #f3eee3;
 }
 .header[data-tone="dark"] {
   color: #0d1b22;
-}
-/* On orange, the mark's tangerine route would vanish: draw it in ink there. */
-.header[data-mark="ink"] .brandMark path {
-  stroke: currentColor;
 }
 .header a,
 .header button,
@@ -290,7 +430,7 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  min-block-size: 44px;
   font-family: var(--font-display-stack);
   font-weight: 700;
   font-size: 18px;
@@ -303,13 +443,6 @@
 .header[data-clear="false"] .brand {
   opacity: 0;
   pointer-events: none;
-}
-.brandMark path {
-  transition: stroke 220ms ease;
-}
-.brandMark {
-  inline-size: 30px;
-  block-size: 30px;
 }
 .headerEnd {
   margin-inline-start: auto;
@@ -466,20 +599,22 @@
 }
 /* ---------- 1. Hero */
 .hero {
+  --hero-fade: 0px;
   position: relative;
-  min-block-size: 100svh;
+  min-block-size: calc(100svh + var(--hero-fade));
   background: var(--field);
   color: var(--on-field);
   display: grid;
   align-items: center;
   overflow: clip;
-  padding-block: 92px 84px;
+  padding-block: 92px calc(84px + var(--hero-fade));
 }
+/* The route belongs to the first screen, above the fade. */
 .heroRoute {
   position: absolute;
-  inset: 0;
+  inset: 0 0 auto;
   inline-size: 100%;
-  block-size: 100%;
+  block-size: calc(100% - var(--hero-fade));
   pointer-events: none;
 }
 :global([dir="rtl"]) .heroRoute {
@@ -569,6 +704,61 @@
   transform-origin: center;
   will-change: transform;
 }
+:global(.dark) .device {
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 0.25),
+    0 50px 90px -40px rgb(0 0 0 / 0.8);
+}
+/* Money in and money out, with a bar for how much of the income has gone. */
+.deviceStats {
+  margin: 16px 0 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.deviceStats > div {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  animation: settle 600ms var(--ease) 900ms both;
+}
+.deviceStats > div + div {
+  animation-delay: 1000ms;
+}
+.deviceStats dt {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.deviceStats dd {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.deviceSpent {
+  grid-column: 1 / -1;
+  display: block;
+  block-size: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.deviceSpent i {
+  display: block;
+  block-size: 100%;
+  inline-size: var(--spent);
+  border-radius: inherit;
+  background: var(--tang);
+  transform-origin: left;
+  animation: barGrow 1100ms var(--ease) 1100ms both;
+}
+:global([dir="rtl"]) .deviceSpent i {
+  transform-origin: right;
+}
 .deviceTop {
   display: flex;
   align-items: center;
@@ -594,47 +784,6 @@
   font-family: var(--display);
   font-size: clamp(28px, 2.4vw, 38px);
   letter-spacing: -0.03em;
-}
-.miniRoute {
-  display: block;
-  inline-size: 100%;
-  block-size: auto;
-  margin-block: 14px 6px;
-}
-:global([dir="rtl"]) .miniRoute {
-  transform: scaleX(-1);
-}
-.miniRoute path {
-  fill: none;
-  stroke-linecap: round;
-}
-.miniRoad {
-  stroke: var(--surface-2);
-  stroke-width: 12;
-}
-.miniLine {
-  stroke: var(--field);
-  stroke-width: 3;
-  stroke-dasharray: 1;
-  animation: draw 1400ms var(--ease-io) 700ms both;
-}
-:global(.dark) .miniLine {
-  stroke: var(--sky);
-}
-.miniStop {
-  fill: var(--surface);
-  stroke: var(--field);
-  stroke-width: 3;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: pop 380ms var(--ease-back) both;
-}
-:global(.dark) .miniStop {
-  stroke: var(--sky);
-}
-.miniStopHot {
-  fill: var(--tang);
-  stroke: var(--tang);
 }
 .deviceList {
   list-style: none;
@@ -694,7 +843,7 @@
 
 .cue {
   position: absolute;
-  inset-block-end: clamp(56px, 8vh, 84px);
+  inset-block-end: calc(clamp(56px, 8vh, 84px) + var(--hero-fade, 0px));
   inset-inline-start: 50%;
   transform: translateX(calc(var(--dir) * -50%));
   display: grid;
@@ -848,6 +997,20 @@
   background: var(--sky);
   color: var(--sky-ink);
 }
+/* Night: the orange card turns terracotta and the sky card deep ocean, with their own ink. */
+:global(.dark) .jInsights {
+  --tang-ink: var(--terra-ink);
+  background:
+    radial-gradient(520px 320px at 85% 15%, rgb(255 138 82 / 0.28), transparent 65%), var(--terra);
+}
+:global(.dark) .jPlanning {
+  --sky-ink: var(--ocean-ink);
+  background:
+    radial-gradient(520px 320px at 85% 15%, rgb(143 208 255 / 0.18), transparent 65%), var(--ocean);
+}
+:global(.dark) .jPlanning .jPlan li {
+  background: var(--ocean-row);
+}
 .jVisual {
   position: relative;
   display: grid;
@@ -870,25 +1033,57 @@
   font-size: clamp(18px, 1.6vw, 24px);
   color: var(--pos);
 }
-.jInflow {
-  inline-size: 100%;
-  block-size: auto;
-  overflow: visible;
+/* Under the salary: the account it landed in, and the balance it leaves. */
+.jIncomeFacts {
+  margin: 0;
+  display: grid;
+  gap: 10px;
 }
-:global([dir="rtl"]) .jInflow {
-  transform: scaleX(-1);
+.jIncomeFacts > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 600ms var(--ease),
+    transform 600ms var(--ease);
 }
-.jInflow path {
-  fill: none;
-  stroke: var(--tang);
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke-dashoffset 1400ms var(--ease-io) 200ms;
+.journey[data-in="true"] .jIncomeFacts > div {
+  opacity: 1;
+  transform: none;
+  transition-delay: 300ms;
 }
-.journey[data-in="true"] .jInflow path {
-  stroke-dashoffset: 0;
+.journey[data-in="true"] .jIncomeFacts > div + div {
+  transition-delay: 420ms;
+}
+.jIncomeFacts dt {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--on-field-2);
+}
+.jIncomeFacts dd {
+  margin: 0;
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  font-weight: 600;
+  text-align: end;
+}
+.jIncomeFacts strong {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+.jIncomeFacts small {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--on-field-2);
 }
 .jReceipts,
 .jPlan {
@@ -971,10 +1166,26 @@
   opacity: calc(var(--cover, 0) * 0.42);
   pointer-events: none;
 }
+/* The three scenes share one continuous surface, so no corner, shadow or dimming marks where one
+   rises over the other. */
+.stackItem::after {
+  display: none;
+}
 .stackItem + .stackItem > section {
-  border-start-start-radius: 40px;
-  border-start-end-radius: 40px;
-  box-shadow: 0 -30px 60px -30px rgb(0 0 0 / 0.35);
+  /* A rising scene starts see-through, so what it covers fades out under it instead of being
+     cut by a line. The fade ends above the scene's own content (its top padding is 80px or
+     more), so the two never overlap. */
+  background: linear-gradient(to bottom, transparent 0, var(--page) 64px);
+}
+.stackItem + .stackItem > .plan {
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    var(--page) 64px,
+    var(--surface) 40%,
+    var(--surface) 70%,
+    var(--page) 100%
+  );
 }
 
 /* ---------- 2. Your money, your story */
@@ -1606,11 +1817,7 @@
 :global([dir="rtl"]) .budgetBar i {
   --origin: right;
 }
-:global(.dark) .budgetBar i {
-  background: var(--sky);
-}
-.budgetHigh .budgetBar i,
-:global(.dark) .budgetHigh .budgetBar i {
+.budgetHigh .budgetBar i {
   background: var(--tang);
 }
 .plan[data-in="true"] .budgetBar i {
@@ -1799,15 +2006,19 @@
   background: var(--field);
   color: var(--on-field);
 }
-:global(.dark) .toneInk {
-  background: #f1f5fb;
-  color: #101827;
-}
 .personNet {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
   font-size: 13px;
   font-weight: 600;
   min-block-size: 1.4em;
   transition: opacity 300ms ease;
+}
+.personNetLabel {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-2);
 }
 .netPos {
   color: var(--pos);
@@ -1946,11 +2157,19 @@
   margin: 0;
   padding: 0;
 }
+.transfersTitle {
+  font-family: var(--font-stack);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--ink-2);
+  margin-block-end: -4px;
+}
 .transfer {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 12px;
+  gap: 8px 12px;
   padding: 12px 14px;
   border-radius: 18px;
   background: var(--bg);
@@ -1984,6 +2203,28 @@
   white-space: nowrap;
   opacity: 0;
   transition: opacity 300ms ease calc(var(--d, 0ms) + 500ms);
+}
+/* An arrowhead at the receiver's end: the money moves from the first person to the second. */
+.transferLine::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: -2px;
+  inset-block-start: 50%;
+  inline-size: 12px;
+  block-size: 12px;
+  background: var(--tang);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transform: translateY(-50%) scaleX(var(--dir));
+  opacity: 0;
+  transition: opacity 250ms ease calc(var(--d, 0ms) + 650ms);
+}
+.stagePanel[data-active="true"] .transferLine::after {
+  opacity: 1;
+}
+.transferText {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  font-weight: 600;
 }
 .stagePanel[data-active="true"] .transferLine i {
   transform: scaleX(1);
@@ -2250,48 +2491,39 @@
 /* ---------- 7. Final call to action */
 .final {
   position: relative;
+  /* Overlaps the trip band by a pixel (it already ends in this colour), so the shared row is never
+     half-covered by both and lightened by the page beneath. */
+  margin-block-start: -1px;
   background: var(--tang);
   color: var(--tang-ink);
   display: grid;
   grid-template-rows: 1fr auto;
-  --foot: 72px;
   min-block-size: 100dvh;
   padding-block-start: clamp(88px, 12vh, 128px);
   overflow: clip;
 }
-/* The route runs above the footer, never through it. */
-.finalRoute {
-  position: absolute;
-  inset-inline: 25% 5%;
-  inset-block-end: calc(var(--foot) + clamp(16px, 4vh, 40px));
-  inline-size: 70%;
-  block-size: 52%;
-  pointer-events: none;
+/* Dark: the orange band becomes a deep, warm gold. --tang-ink is the band's ink everywhere
+   inside it (heading, text, footer, credit), so redefining it here is enough. */
+:global(.dark) .final {
+  --tang-ink: var(--gold-ink);
+  background:
+    linear-gradient(to bottom, var(--gold-band) 0, transparent 240px),
+    radial-gradient(1000px 620px at 85% 35%, rgb(242 194 91 / 0.26), transparent 62%),
+    radial-gradient(800px 520px at 5% 100%, var(--gold-deep), transparent 70%), var(--gold-band);
 }
-:global([dir="rtl"]) .finalRoute {
-  transform: scaleX(-1);
+/* On gold, Google's light button stands out more than its dark one (both are allowed). */
+:global(.dark) .final .google {
+  background: #ffffff;
+  color: #1f1f1f;
+  box-shadow: inset 0 0 0 1px #747775;
 }
-.finalRoute path {
-  fill: none;
-  stroke: var(--tang-ink);
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  opacity: 0.22;
-  transition: stroke-dashoffset 1800ms var(--ease-io);
-}
-.final[data-in="true"] .finalRoute path {
-  stroke-dashoffset: 0;
-}
-.finalFlag {
-  transform-box: fill-box;
-  transform-origin: bottom left;
-  transform: scale(0);
-  transition: transform 480ms var(--ease-back) 1600ms;
-}
-.final[data-in="true"] .finalFlag {
-  transform: scale(1);
+@media (hover: hover) and (pointer: fine) {
+  :global(.dark) .final .google:hover {
+    background: #f8faff;
+    box-shadow:
+      inset 0 0 0 1px #747775,
+      0 1px 3px rgb(0 0 0 / 0.4);
+  }
 }
 .final > .wrap {
   inline-size: 100%;
@@ -2329,6 +2561,17 @@
 .finalBody {
   font-size: clamp(15.5px, 1.1vw, 18px);
   max-inline-size: 34rem;
+}
+.finalAction {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+.finalAccess {
+  font-size: 14px;
+  font-weight: 500;
+  max-inline-size: 30rem;
+  color: color-mix(in oklab, var(--tang-ink) 80%, transparent);
 }
 
 /* ---------- Footer: the last row of the orange page. Signature, copyright, profiles. */
@@ -2465,13 +2708,6 @@
 }
 /* Phones: signature and profiles share a row; the copyright sits under them. */
 @media (max-width: 767px) {
-  .final {
-    --foot: 108px;
-  }
-  /* A lower, flatter route on phones, so the flag stays clear of the text. */
-  .finalRoute {
-    block-size: 26%;
-  }
   .siteFooter {
     grid-template-columns: 1fr auto;
     grid-template-areas:
@@ -2495,6 +2731,11 @@
 @keyframes spin {
   to {
     transform: rotate(1turn);
+  }
+}
+@keyframes barGrow {
+  from {
+    transform: scaleX(0);
   }
 }
 @keyframes menuIn {
@@ -2714,7 +2955,7 @@
     gap: 10px;
   }
   .hero {
-    padding-block: 88px 100px;
+    padding-block: 88px calc(100px + var(--hero-fade));
   }
   .heroTitle {
     font-size: clamp(36px, 10.5vw, 44px);

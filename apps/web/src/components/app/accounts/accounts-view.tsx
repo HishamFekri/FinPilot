@@ -8,7 +8,7 @@ import { type Account, accountsApi, type CurrencyInfo, type CurrencyTotal } from
 import { cn } from "@/lib/utils";
 import appStyles from "../app.module.css";
 import { useAuth } from "../auth-provider";
-import { Button, Notice, Spinner, Tag } from "../ui";
+import { Button, Loading, Notice, Tag } from "../ui";
 import { useFinanceRevision } from "../finance/finance-provider";
 import { CreateAccountDialog } from "./account-form";
 import { useAccountName } from "../finance/parts";
@@ -167,11 +167,7 @@ export function AccountsView() {
   };
 
   if (load.kind === "loading") {
-    return (
-      <p className={appStyles.muted} role="status">
-        <Spinner /> <span>{t("loading")}</span>
-      </p>
-    );
+    return <Loading label={t("loading")} />;
   }
   if (load.kind === "failed") {
     return (
@@ -297,9 +293,7 @@ export function AccountsView() {
           {archivedFailed ? (
             <Notice tone="error">{t("loadFailed")}</Notice>
           ) : archived === null ? (
-            <p className={appStyles.muted} role="status">
-              <Spinner /> <span>{t("loading")}</span>
-            </p>
+            <Loading label={t("loading")} />
           ) : archived.length === 0 ? (
             <p className={appStyles.muted}>{t("archivedEmpty")}</p>
           ) : (

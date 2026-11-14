@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { BrandMark as Mark, GoogleG } from "@/components/brand";
+import { GoogleG } from "@/components/brand";
 import { cn } from "@/lib/utils";
 import { useGoogleSignIn } from "./google-sign-in";
 import s from "./landing.module.css";
@@ -39,9 +39,4 @@ export function GoogleButton({ size = "large" }: { size?: "large" | "compact" })
       ) : null}
     </a>
   );
-}
-
-/** FinPilot's mark, sized for the landing page. */
-export function BrandMark() {
-  return <Mark className={s.brandMark} />;
 }

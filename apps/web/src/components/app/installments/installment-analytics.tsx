@@ -9,7 +9,7 @@ import { type CurrencyOverview, installmentsApi, ratioPercent } from "@/lib/inst
 import { editableAmount, formatMoney, parseAmount } from "@/lib/money";
 import { Money } from "../accounts/parts";
 import appStyles from "../app.module.css";
-import { Notice, Spinner, Tag } from "../ui";
+import { Loading, Notice, Tag } from "../ui";
 import { useLoad } from "../use-load";
 import s from "./installments.module.css";
 
@@ -124,12 +124,7 @@ export function InstallmentAnalytics({ showLinks = true }: { showLinks?: boolean
   const { data, error } = useLoad("installments-overview", installmentsApi.overview);
 
   if (error) return <Notice tone="error">{t("failed")}</Notice>;
-  if (!data)
-    return (
-      <p className={s.note}>
-        <Spinner /> {t("loading")}
-      </p>
-    );
+  if (!data) return <Loading label={t("loading")} />;
   if (data.currencies.length === 0)
     return (
       <div className={s.empty}>

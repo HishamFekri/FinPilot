@@ -19,7 +19,7 @@ import { useUser } from "../auth-provider";
 import { FinanceGate, useFinance } from "../finance/finance-provider";
 import { useAccountName, useCategoryName } from "../finance/parts";
 import { InstallmentAnalytics } from "../installments/installment-analytics";
-import { Notice, Spinner, Tag } from "../ui";
+import { Loading, Notice, Tag } from "../ui";
 import { useLoad } from "../use-load";
 import { useDisplayCurrency } from "../balances/display-currency";
 import { TotalBalanceCard, useTotalBalance } from "../balances/total-balance";
@@ -68,9 +68,12 @@ function AnalyticsPage() {
         className={s.tabsRoot}
         value={tab}
         onValueChange={(value) => {
+          // One history entry per tab the person chooses, so Back and Forward step through tabs
+          // like pages. The default tab on arrival writes nothing.
+          if (value === tab) return;
           const next = new URLSearchParams(params.toString());
           next.set("tab", String(value));
-          router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+          router.push(`${pathname}?${next.toString()}`, { scroll: false });
         }}
       >
         <Tabs.List className={cn(s.tabs, s.noPrint)} aria-label={t("sections")}>
@@ -195,9 +198,7 @@ function Overview() {
       <h2 className={s.sectionTitle}>{t("title")}</h2>
       {thisMonth.error ? <Notice tone="error">{t("failed")}</Notice> : null}
       {!thisMonth.data ? (
-        <p className={s.muted}>
-          <Spinner /> {t("loading")}
-        </p>
+        <Loading label={t("loading")} />
       ) : thisMonth.data.currencies.length === 0 ? (
         <p className={s.muted}>{t("nothingYet")}</p>
       ) : (
@@ -397,9 +398,7 @@ function BudgetsPanel() {
       <h2 className={s.sectionTitle}>{t("title")}</h2>
       {error ? <Notice tone="error">{t("failed")}</Notice> : null}
       {!data ? (
-        <p className={s.muted}>
-          <Spinner />
-        </p>
+        <Loading />
       ) : data.budgets.length === 0 ? (
         <p className={s.muted}>
           {t("empty")}{" "}
@@ -451,9 +450,7 @@ function TripsPanel() {
       <p className={s.muted}>{t("lead")}</p>
       {error ? <Notice tone="error">{t("failed")}</Notice> : null}
       {!data ? (
-        <p className={s.muted}>
-          <Spinner />
-        </p>
+        <Loading />
       ) : data.length === 0 ? (
         <p className={s.muted}>{t("empty")}</p>
       ) : (

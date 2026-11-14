@@ -101,6 +101,10 @@ export function Trip() {
                       style={{ opacity: step >= 4 ? 1 : 0 }}
                     >
                       {f.money(net, { whole: true, sign: true })}
+                      {/* In words too: a plus sign alone doesn't say who is owed. */}
+                      <small className={s.personNetLabel}>
+                        {net >= 0 ? t("ahead") : t("behind")}
+                      </small>
                     </span>
                   </li>
                 );
@@ -185,6 +189,7 @@ export function Trip() {
               </div>
 
               <div className={s.stagePanel} {...panelState(2)}>
+                <h3 className={s.transfersTitle}>{t("suggested")}</h3>
                 <ul className={s.transfers}>
                   {TRIP_SETTLEMENTS.map((x, i) => (
                     <li key={x.to} className={s.transfer}>
@@ -201,13 +206,14 @@ export function Trip() {
                       <span className={cn(s.avatar, TONE[person(x.to).tone])} aria-hidden="true">
                         {name(person(x.to).id).charAt(0)}
                       </span>
-                      <span className={s.srOnly}>
+                      {/* Said in words, not only drawn: who pays, who receives, how much. */}
+                      <p className={s.transferText}>
                         {t("pays", {
                           from: name(person(x.from).id),
                           to: name(person(x.to).id),
-                          amount: f.money(x.amount),
+                          amount: f.money(x.amount, { whole: true }),
                         })}
-                      </span>
+                      </p>
                     </li>
                   ))}
                 </ul>

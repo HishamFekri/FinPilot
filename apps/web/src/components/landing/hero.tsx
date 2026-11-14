@@ -2,7 +2,7 @@
 
 import { Briefcase, House, ShoppingBasket } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { STORY_EVENTS, STORY_START_BALANCE } from "./data";
 import { useFormatters } from "./format";
@@ -12,6 +12,10 @@ import { GoogleButton } from "./shared";
 
 const HERO_PATH = "M -80 870 C 260 850, 470 890, 700 838 S 1080 800, 1270 826 S 1420 610, 1540 520";
 const END_BALANCE = STORY_EVENTS.reduce((sum, e) => sum + e.amount, STORY_START_BALANCE);
+// The month so far, in the preview's two figures: everything that came in, everything that went.
+const MONEY_IN = STORY_EVENTS.reduce((sum, e) => sum + Math.max(e.amount, 0), 0);
+const MONEY_OUT = STORY_EVENTS.reduce((sum, e) => sum - Math.min(e.amount, 0), 0);
+const SPENT_SHARE = Math.round((MONEY_OUT / MONEY_IN) * 100);
 
 export function Hero() {
   const t = useTranslations("landing");
@@ -150,49 +154,20 @@ export function Hero() {
                   {f.money(END_BALANCE)}
                 </strong>
               </p>
-              <svg className={s.miniRoute} viewBox="0 0 320 84" aria-hidden="true">
-                <path className={s.miniRoad} d="M 10 60 C 60 10, 110 80, 160 44 S 260 12, 310 30" />
-                <path
-                  className={s.miniLine}
-                  d="M 10 60 C 60 10, 110 80, 160 44 S 260 12, 310 30"
-                  pathLength={1}
-                />
-                <circle
-                  className={cn(s.miniStop, s.miniStopHot)}
-                  cx="10"
-                  cy="60"
-                  r="7"
-                  style={{ animationDelay: "700ms" }}
-                />
-                <circle
-                  className={s.miniStop}
-                  cx="88"
-                  cy="44"
-                  r="6"
-                  style={{ animationDelay: "1000ms" }}
-                />
-                <circle
-                  className={s.miniStop}
-                  cx="160"
-                  cy="44"
-                  r="6"
-                  style={{ animationDelay: "1300ms" }}
-                />
-                <circle
-                  className={s.miniStop}
-                  cx="240"
-                  cy="22"
-                  r="6"
-                  style={{ animationDelay: "1600ms" }}
-                />
-                <circle
-                  className={cn(s.miniStop, s.miniStopHot)}
-                  cx="310"
-                  cy="30"
-                  r="7"
-                  style={{ animationDelay: "1900ms" }}
-                />
-              </svg>
+              <dl className={s.deviceStats}>
+                <div>
+                  <dt>{t("story.in")}</dt>
+                  <dd className={cn(s.num, s.amountIn)}>{f.money(MONEY_IN, { sign: true })}</dd>
+                </div>
+                <div>
+                  <dt>{t("story.out")}</dt>
+                  <dd className={s.num}>{f.money(-MONEY_OUT, { sign: true })}</dd>
+                </div>
+                {/* How much of the month's income has gone out: a picture of the two figures. */}
+                <span className={s.deviceSpent} aria-hidden="true">
+                  <i style={{ "--spent": `${SPENT_SHARE}%` } as CSSProperties} />
+                </span>
+              </dl>
               <ul className={s.deviceList}>
                 {tx.map(({ icon: Icon, label, day, amount, tone }) => (
                   <li key={label}>

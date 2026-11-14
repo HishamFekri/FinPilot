@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth-provider";
 import { useFinanceRevision } from "./finance/finance-provider";
+import { recall, remember } from "./load-cache";
 
 type Loaded<T> = { for: string; data?: T; error?: unknown };
 
@@ -17,12 +18,15 @@ export function useLoad<T>(key: string, load: () => Promise<T>) {
   const revision = useFinanceRevision();
   const [attempt, setAttempt] = useState(0);
   const stamp = `${key}|${revision}|${attempt}`;
+  const remembered = `${key}|${revision}`;
   const [state, setState] = useState<Loaded<T>>({ for: "" });
   useEffect(() => {
     let cancelled = false;
     load()
       .then((data) => {
-        if (!cancelled) setState({ for: stamp, data });
+        if (cancelled) return;
+        remember(remembered, data);
+        setState({ for: stamp, data });
       })
       .catch((error: unknown) => {
         if (!cancelled && !handleAuthError(error)) setState({ for: stamp, error });
@@ -35,7 +39,7 @@ export function useLoad<T>(key: string, load: () => Promise<T>) {
   }, [stamp, handleAuthError]);
   const current = state.for === stamp ? state : null;
   return {
-    data: current?.data ?? (state.for.startsWith(`${key}|`) ? state.data : undefined),
+    data: current?.data ?? (state.for.startsWith(`${key}|`) ? state.data : recall<T>(remembered)),
     error: current?.error,
     loading: current === null,
     reload: () => setAttempt((n) => n + 1),

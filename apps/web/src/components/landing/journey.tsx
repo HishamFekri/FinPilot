@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useFormatters } from "./format";
+import { STORY_START_BALANCE } from "./data";
 import s from "./landing.module.css";
 import { prefersReducedMotion, useReveal, useScrollProgress } from "./motion";
 
@@ -28,6 +29,7 @@ const PLAN = [
  */
 export function Journey() {
   const t = useTranslations("landing.journey");
+  const landing = useTranslations("landing");
   const cat = useTranslations("landing.cat");
   const f = useFormatters();
   const ref = useRef<HTMLElement>(null);
@@ -101,9 +103,25 @@ export function Journey() {
                   <span>{t("income.label")}</span>
                   <strong className={s.num}>{f.money(2900, { sign: true })}</strong>
                 </div>
-                <svg className={s.jInflow} viewBox="0 0 400 120">
-                  <path d="M 0 100 C 120 100, 160 20, 400 30" pathLength={1} />
-                </svg>
+                {/* Where the salary landed, and the balance it leaves: the month's clear number. */}
+                <dl className={s.jIncomeFacts}>
+                  <div>
+                    <dt>{landing("record.demo.account")}</dt>
+                    <dd>
+                      {landing("record.demo.bank")}
+                      <small>{f.date(9, 1)}</small>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{landing("hero.preview.balance")}</dt>
+                    <dd>
+                      <strong className={s.num}>{f.money(STORY_START_BALANCE + 2900)}</strong>
+                      <small>
+                        {landing("story.startNote", { amount: f.money(STORY_START_BALANCE) })}
+                      </small>
+                    </dd>
+                  </div>
+                </dl>
               </div>
             </article>
 
