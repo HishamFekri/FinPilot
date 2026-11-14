@@ -154,7 +154,6 @@ export function Hero() {
           </figcaption>
         </figure>
       </div>
-
     </section>
   );
 }
